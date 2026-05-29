@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Queue List – Inform Driver Mockup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#e8eaf0;display:flex;align-items:flex-start;justify-content:center;padding:20px;font-family:'Segoe UI',Arial,sans-serif;}
+.scene-wrap{border-radius:10px;box-shadow:0 6px 32px rgba(0,0,0,0.22);overflow:hidden;}
+#scene{width:1920px;height:1080px;transform-origin:top left;background:#f0f2f5;display:flex;flex-direction:row;position:relative;}
+
+/* SIDEBAR */
+.sb{width:220px;background:#1a1f36;flex-shrink:0;display:flex;flex-direction:column;font-size:13px;}
+.sb-logo{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo .sp{color:#fff;font-size:20px;font-weight:700;}
+.sb-logo .xp{color:#EE4D2D;}
+.sb-uattag{background:#EE4D2D;color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:4px;}
+.sb-sec{font-size:10px;color:#4a5568;padding:12px 20px 4px;text-transform:uppercase;letter-spacing:.7px;}
+.sb-item{padding:10px 20px;color:#8892b0;border-left:3px solid transparent;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.sb-item.act{color:#fff;background:rgba(238,77,45,.15);border-left-color:#EE4D2D;}
+.sb-item.sub{padding-left:32px;font-size:12px;}
+.sb-item.sub.act{color:#fff;background:rgba(238,77,45,.1);border-left-color:#EE4D2D;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{height:52px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 28px;flex-shrink:0;gap:8px;}
+.bread{font-size:13px;color:#718096;display:flex;align-items:center;gap:6px;}
+.bread .cur{color:#1a202c;font-weight:500;}
+.bread-sep{color:#cbd5e0;}
+.topbar-r{margin-left:auto;display:flex;gap:10px;}
+.btn-red{background:#EE4D2D;color:#fff;border:none;border-radius:4px;padding:7px 18px;font-size:13px;cursor:pointer;font-weight:500;}
+.btn-outline{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:4px;padding:7px 14px;font-size:13px;cursor:pointer;}
+
+/* CONTENT */
+.content{flex:1;padding:20px 28px;overflow-y:auto;background:#f5f6f8;}
+
+/* PAGE TITLE */
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.page-title{font-size:15px;font-weight:600;color:#1a202c;display:flex;align-items:center;gap:8px;}
+.page-title::before{content:'';display:inline-block;width:4px;height:16px;background:#EE4D2D;border-radius:2px;}
+
+/* FILTERS */
+.filters{background:#fff;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.07);padding:14px 18px;margin-bottom:14px;}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;}
+.filter-row:last-child{margin-bottom:0;}
+.fi{display:flex;align-items:stretch;border:1px solid #e2e8f0;border-radius:4px;height:32px;overflow:hidden;}
+.fi-l{padding:0 10px;font-size:12px;color:#4a5568;border-right:1px solid #e2e8f0;display:flex;align-items:center;background:#f7fafc;font-weight:500;white-space:nowrap;}
+.fi input,.fi select{border:none;outline:none;padding:0 8px;font-size:12px;color:#a0aec0;background:#fff;height:100%;min-width:120px;}
+
+/* TABLE BOX */
+.tbox{background:#fff;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.07);overflow:hidden;}
+
+/* TABS */
+.ttabs{display:flex;border-bottom:1px solid #e2e8f0;padding:0 18px;}
+.ttab{padding:11px 16px;font-size:13px;color:#718096;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;}
+.ttab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+.ttab .cnt{background:#eee;color:#555;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:4px;}
+.ttab .cnt.red{background:#FFEBEE;color:#C62828;}
+
+/* STATUS CHIPS */
+.chips{display:flex;gap:8px;padding:10px 18px;border-bottom:1px solid #f0f0f0;flex-wrap:wrap;}
+.chip{padding:4px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;}
+.chip.pending{background:#EBF5FF;color:#1565C0;}
+.chip.done{background:#E8F5E9;color:#276749;}
+.chip.assigned{background:#FFF3E0;color:#E65100;}
+.chip.pending-lbl::before{content:'● ';font-size:8px;}
+
+/* TABLE */
+.act-bar{padding:10px 18px;display:flex;gap:8px;border-bottom:1px solid #f0f0f0;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:11px 14px;border-bottom:1px solid #e2e8f0;white-space:nowrap;font-size:12px;}
+td{padding:11px 14px;border-bottom:1px solid #f5f5f5;color:#2d3748;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafcff;}
+tr.highlighted td{background:#FFF8F0;}
+
+/* STATUS BADGES */
+.s-occupied     {background:#E8F5E9;color:#276749;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500;white-space:nowrap;}
+.s-pending      {background:#EBF5FF;color:#1565C0;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500;white-space:nowrap;}
+.s-dock-assigned{background:#FFF3E0;color:#E65100;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500;white-space:nowrap;}
+tr.highlighted2 td{background:#FFFBF0;}
+.task-done {background:#E8F5E9;color:#276749;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500;}
+.task-pend {background:#F5F5F5;color:#718096;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500;}
+.task-prog {background:#FFF3E0;color:#E65100;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500;}
+
+/* ACTION BUTTONS */
+.btn-inform{background:#EE4D2D;color:#fff;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:500;white-space:nowrap;}
+.btn-inform:hover{background:#d84315;}
+.btn-sm{background:#fff;border:1px solid #e2e8f0;color:#4a5568;border-radius:4px;padding:5px 10px;font-size:12px;cursor:pointer;}
+.btn-sm:hover{border-color:#EE4D2D;color:#EE4D2D;}
+.action-group{display:flex;gap:6px;align-items:center;}
+
+/* PAGINATION */
+.pagination{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #f0f0f0;font-size:13px;color:#718096;}
+.pg-info{font-size:12px;}
+.pg-btns{display:flex;gap:4px;align-items:center;}
+.pg-btn{border:1px solid #e2e8f0;background:#fff;border-radius:3px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;}
+.pg-btn.act{background:#EE4D2D;color:#fff;border-color:#EE4D2D;}
+
+/* ═══ MODAL ═══ */
+.ovl{display:none;position:absolute;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:1000;}
+.ovl.open{display:flex;}
+.modal{background:#fff;border-radius:8px;box-shadow:0 16px 48px rgba(0,0,0,.28);width:520px;overflow:hidden;}
+.modal-hdr{padding:20px 24px 0;display:flex;align-items:flex-start;gap:14px;}
+.modal-icon{width:44px;height:44px;border-radius:50%;background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.modal-title{font-size:17px;font-weight:600;color:#1a202c;margin-bottom:5px;}
+.modal-sub{font-size:13px;color:#718096;line-height:1.5;}
+.modal-body{margin:16px 24px;}
+.msg-preview{background:#f7f8fa;border:1px solid #e2e8f0;border-radius:6px;padding:12px 14px;margin-bottom:12px;}
+.msg-preview .msg-label{font-size:11px;font-weight:600;color:#a0aec0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.msg-preview .msg-text{font-size:13px;color:#2d3748;line-height:1.5;}
+.msg-preview .msg-dock{font-weight:700;color:#EE4D2D;}
+.phone-row{display:flex;align-items:center;gap:8px;font-size:13px;color:#4a5568;}
+.phone-row .ph-label{font-weight:600;}
+.phone-row .ph-val{color:#2d3748;font-weight:500;}
+.modal-footer{padding:14px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid #f0f0f0;margin-top:16px;}
+.btn-confirm{background:#EE4D2D;color:#fff;border:none;border-radius:4px;padding:9px 24px;font-size:13px;cursor:pointer;font-weight:500;}
+.btn-cancel{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:4px;padding:9px 18px;font-size:13px;cursor:pointer;}
+
+/* SUCCESS TOAST */
+.toast{
+  position:absolute;top:24px;right:24px;
+  background:#276749;color:#fff;
+  border-radius:6px;padding:12px 18px;
+  font-size:13px;font-weight:500;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+  display:none;align-items:center;gap:8px;
+  z-index:2000;
+}
+.toast.show{display:flex;}
+
+/* HINT */
+.hint-bar{background:#1a1f36;color:#aab4c8;font-size:12px;padding:7px 24px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.hint-bar .dot{width:7px;height:7px;border-radius:50%;background:#EE4D2D;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="scene-wrap">
+<div id="scene">
+
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-logo">
+      <span class="sp">Shopee<span class="xp">Xpress</span></span><span class="sb-uattag">UAT</span>
+      <div style="font-size:11px;color:#5a6380;margin-top:3px;">Hub_SP_Mauá ▾</div>
+    </div>
+    <div style="padding:8px 20px;font-size:11px;color:#8892b0;border-bottom:1px solid rgba(255,255,255,.06);">📍 Hub SP Mauá</div>
+    <div style="flex:1;">
+      <div class="sb-sec">Menu</div>
+      <div class="sb-item">▦ Dashboard</div>
+      <div class="sb-item">📦 Order Management</div>
+      <div class="sb-item">🚛 LineHaul</div>
+      <div class="sb-item act">🏢 Station Management</div>
+      <div class="sb-item sub">Zone Management</div>
+      <div class="sb-item sub">Queue &amp; Dock Configurations</div>
+      <div class="sb-item sub act">Queue List</div>
+      <div class="sb-item sub">Dock Management</div>
+      <div class="sb-item">⚙ Operation Support</div>
+      <div class="sb-item">💰 Finance</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <div class="topbar">
+      <div class="bread">
+        Station Management <span class="bread-sep">›</span>
+        <span class="cur">Queue List</span>
+      </div>
+      <div class="topbar-r">
+        <button class="btn-outline">Export ▾</button>
+        <button class="btn-outline">Log</button>
+        <button class="btn-red">+ Add Manually</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- FILTERS -->
+      <div class="filters">
+        <div class="filter-row">
+          <div class="fi"><span class="fi-l">Queue Number</span><input placeholder="Please Input"/></div>
+          <div class="fi"><span class="fi-l">Vehicle Number</span><input placeholder="Please Input"/></div>
+          <div class="fi"><span class="fi-l">Driver Name</span><input placeholder="Please Input"/></div>
+          <div class="fi"><span class="fi-l">Driver ID / Driver Name</span><input placeholder="Please Input"/></div>
+          <div class="fi"><span class="fi-l">Arrival Type</span><select><option>Please Select</option></select></div>
+        </div>
+        <div class="filter-row">
+          <div class="fi"><span class="fi-l">Front Tag</span><input placeholder="Please Select"/></div>
+          <div class="fi"><span class="fi-l">Assigned Dock</span><input placeholder="Please Select"/></div>
+          <div class="fi"><span class="fi-l">Task ID</span><input placeholder="Please Input"/></div>
+          <div class="fi"><span class="fi-l">Task Status</span><select><option>Please Select</option></select></div>
+          <button class="btn-red" style="height:32px;padding:0 18px;">Search</button>
+          <button class="btn-outline" style="height:32px;">Reset</button>
+        </div>
+      </div>
+
+      <!-- TABLE BOX -->
+      <div class="tbox">
+        <div class="ttabs">
+          <div class="ttab act">Inbound Queue List <span class="cnt red">4</span></div>
+          <div class="ttab">Outbound Queue List <span class="cnt">1</span></div>
+        </div>
+
+        <div class="chips">
+          <span style="font-size:12px;color:#4a5568;font-weight:500;">● Pending</span>
+          <span class="chip pending">2</span>
+          <span style="font-size:12px;color:#4a5568;font-weight:500;">● Dock Assigned</span>
+          <span class="chip assigned">1</span>
+          <span style="font-size:12px;color:#4a5568;font-weight:500;">● Occupied</span>
+          <span class="chip done">2</span>
+          <span style="margin-left:auto;font-size:12px;color:#718096;display:flex;align-items:center;gap:8px;">
+            <span>⚙ Configuration ▾</span>
+            <span>Export ▾</span>
+            <span>Log</span>
+          </span>
+        </div>
+
+        <div class="act-bar">
+          <button class="btn-sm">🔄 Refresh</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Queue Number</th>
+              <th>Vehicle Number</th>
+              <th>Waiting Time</th>
+              <th>Task ID</th>
+              <th>Task Status</th>
+              <th>Status</th>
+              <th>Dock</th>
+              <th style="width:200px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- Row 1 — Occupied + Task Done → Inform Driver (end process) -->
+            <tr class="highlighted">
+              <td><strong>IB001</strong></td>
+              <td>VH 12345A</td>
+              <td style="color:#e53e3e;font-weight:500;">01:12:34</td>
+              <td style="color:#3182ce;font-weight:500;">AT-00482</td>
+              <td><span class="task-done">Done</span></td>
+              <td><span class="s-occupied">Occupied</span></td>
+              <td>Dock 3</td>
+              <td>
+                <div class="action-group">
+                  <button class="btn-inform" onclick="openModal('end')">Inform Driver</button>
+                  <button class="btn-sm">View</button>
+                  <button class="btn-sm">More ▾</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2 — Dock Assigned → Inform Driver (proceed to dock) -->
+            <tr class="highlighted2">
+              <td><strong>IB002</strong></td>
+              <td>ABC 1234</td>
+              <td>00:18:45</td>
+              <td style="color:#a0aec0;">—</td>
+              <td><span class="task-pend">—</span></td>
+              <td><span class="s-dock-assigned">Dock Assigned</span></td>
+              <td>Dock 1</td>
+              <td>
+                <div class="action-group">
+                  <button class="btn-inform" onclick="openModal('dock')">Inform Driver</button>
+                  <button class="btn-sm">View</button>
+                  <button class="btn-sm">More ▾</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 3 — Occupied + Ongoing -->
+            <tr>
+              <td><strong>IB003</strong></td>
+              <td>LDL 5671</td>
+              <td>00:28:10</td>
+              <td style="color:#3182ce;font-weight:500;">LH-00219</td>
+              <td><span class="task-prog">Ongoing · 68%</span></td>
+              <td><span class="s-occupied">Occupied</span></td>
+              <td>Dock 2</td>
+              <td>
+                <div class="action-group">
+                  <button class="btn-sm">View</button>
+                  <button class="btn-sm">Reset</button>
+                  <button class="btn-sm">More ▾</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 4 — Pending -->
+            <tr>
+              <td><strong>IB004</strong></td>
+              <td>SGD 8836</td>
+              <td>00:08:22</td>
+              <td style="color:#a0aec0;">—</td>
+              <td><span class="task-pend">—</span></td>
+              <td><span class="s-pending">Pending</span></td>
+              <td style="color:#a0aec0;">—</td>
+              <td>
+                <div class="action-group">
+                  <button class="btn-sm">View</button>
+                  <button class="btn-sm">More ▾</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 5 — Pending -->
+            <tr>
+              <td><strong>IB005</strong></td>
+              <td>MNP 4421</td>
+              <td>00:03:50</td>
+              <td style="color:#a0aec0;">—</td>
+              <td><span class="task-pend">—</span></td>
+              <td><span class="s-pending">Pending</span></td>
+              <td style="color:#a0aec0;">—</td>
+              <td>
+                <div class="action-group">
+                  <button class="btn-sm">View</button>
+                  <button class="btn-sm">More ▾</button>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <div class="pg-info">Total 5</div>
+          <div class="pg-btns">
+            <div class="pg-btn">◀</div>
+            <div class="pg-btn act">1</div>
+            <div class="pg-btn">▶</div>
+            <span style="margin-left:8px;font-size:12px;">24 / Page ▾</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <div class="hint-bar">
+      <div class="dot"></div>
+      <strong>IB001</strong> (Occupied · Task Done): click <strong>Inform Driver</strong> → end process message "task complete, proceed to dock" &nbsp;|&nbsp; <strong>IB002</strong> (Dock Assigned): click <strong>Inform Driver</strong> → "your dock is ready, proceed to Dock 1"
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- ═══ CONFIRMATION MODAL ═══ -->
+  <div class="ovl" id="modal-ovl" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-hdr">
+        <div class="modal-icon">🔔</div>
+        <div>
+          <div class="modal-title">Inform Driver</div>
+          <div class="modal-sub">Are you sure you want to re-send the end process notification to this driver?</div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="msg-preview">
+          <div class="msg-label">Notification message</div>
+          <div class="msg-text" id="modal-msg-text">—</div>
+        </div>
+        <div class="phone-row">
+          <span class="ph-label">Driver:</span>
+          <span class="ph-val" id="modal-driver">—</span>
+        </div>
+        <div class="phone-row" style="margin-top:6px;">
+          <span class="ph-label">Phone number:</span>
+          <span class="ph-val">+55 11 9 ●●●● ●●●●</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-confirm" onclick="confirmSend()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS TOAST -->
+  <div class="toast" id="toast">✓ Notification re-sent successfully to IB001</div>
+
+</div><!-- /scene -->
+</div><!-- /scene-wrap -->
+
+<script>
+function scaleScene(){
+  const scene=document.getElementById('scene');
+  const wrap=document.querySelector('.scene-wrap');
+  const scale=Math.min((window.innerWidth-40)/1920,(window.innerHeight-40)/1080);
+  scene.style.transform=`scale(${scale})`;
+  wrap.style.width=Math.round(1920*scale)+'px';
+  wrap.style.height=Math.round(1080*scale)+'px';
+}
+window.addEventListener('resize',scaleScene);
+scaleScene();
+
+const msgs = {
+  end:  { driver:'Kevin Jakarta · IB001', msg:'Your unloading/loading has been completed. Please proceed to dock <span class="msg-dock">Dock 3</span>.', toast:'Notification re-sent to IB001 · Dock 3' },
+  dock: { driver:'Carlos Silva · IB002',  msg:'Your dock is ready. Please proceed to <span class="msg-dock">Dock 1</span>.', toast:'Notification sent to IB002 · Dock 1' }
+};
+function openModal(type){
+  const d = msgs[type];
+  document.getElementById('modal-msg-text').innerHTML = d.msg;
+  document.getElementById('modal-driver').textContent = d.driver;
+  document.getElementById('modal-ovl').dataset.toast = d.toast;
+  document.getElementById('modal-ovl').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modal-ovl').classList.remove('open');
+}
+function confirmSend(){
+  const t = document.getElementById('modal-ovl').dataset.toast;
+  closeModal();
+  const toast=document.getElementById('toast');
+  toast.textContent = '✓ ' + t;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>

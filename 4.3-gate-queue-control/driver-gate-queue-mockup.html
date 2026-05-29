@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.3.1 – Driver App · Gate Queue Control</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f0f2f5;font-family:'Segoe UI',Arial,sans-serif;padding:28px 16px 48px;}
+
+.page-header{text-align:center;margin-bottom:22px;}
+.page-header h2{font-size:14px;font-weight:700;color:#1a202c;margin-bottom:3px;}
+.page-header p{font-size:12px;color:#718096;}
+
+/* ── TABS ── */
+.state-tabs{display:flex;justify-content:center;gap:8px;margin-bottom:32px;flex-wrap:wrap;}
+.state-tab{padding:8px 18px;border-radius:20px;border:1.5px solid #cbd5e0;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#718096;transition:all .16s;}
+.state-tab:hover{border-color:#EE4D2D;color:#EE4D2D;}
+.state-tab.active{background:#EE4D2D;border-color:#EE4D2D;color:#fff;}
+.state-tab.t-hold.active{background:#b7791f;border-color:#b7791f;}
+
+/* ── PHONE — 320 × 693 (9:19.5) ── */
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;}
+.phone{
+  width:320px;height:693px;
+  border-radius:36px;
+  box-shadow:0 0 0 9px #1c1c1e,0 20px 60px rgba(0,0,0,.35);
+  overflow:hidden;background:#fff;
+  display:flex;flex-direction:column;position:relative;
+}
+
+/* Android status bar */
+.sb{
+  background:#1c1c1e;height:44px;flex-shrink:0;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 22px 8px;color:#fff;font-size:10px;font-weight:600;
+}
+.sb-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:108px;height:28px;background:#1c1c1e;border-radius:0 0 16px 16px;}
+
+/* App nav — white like real app */
+.app-nav{
+  background:#fff;height:50px;flex-shrink:0;
+  display:flex;align-items:center;padding:0 16px;gap:10px;
+  border-bottom:1px solid #ebebeb;
+}
+.app-nav .back{font-size:22px;color:#333;line-height:1;}
+.app-nav .nav-title{font-size:16px;font-weight:600;color:#1a202c;}
+
+/* Screen — fills remaining height */
+.screen{flex:1;background:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+
+/* Each state fills screen */
+.state-screen{display:flex;flex-direction:column;height:100%;}
+.state-screen.hidden{display:none!important;}
+
+/* Last update time */
+.lut{text-align:center;padding:10px 16px 0;font-size:11px;color:#bdbdbd;flex-shrink:0;}
+
+/* ── STATUS BANNER — matching existing app colors exactly ── */
+.banner{
+  margin:8px 14px 0;border-radius:8px;padding:9px 12px;
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:500;line-height:1.35;flex-shrink:0;
+}
+.banner .ic{font-size:15px;flex-shrink:0;}
+/* Existing app: blue for waiting */
+.banner.blue  {background:#EBF5FF;color:#1565C0;}
+/* Existing app: amber/yellow for on-hold */
+.banner.amber {background:#FFF9C4;color:#9A6700;}
+
+/* ── QUEUE NUMBER CARD ── */
+.qcard{
+  margin:14px 14px 0;
+  background:#fff;border:1px solid #e8e8e8;border-radius:10px;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+  display:flex;align-items:center;justify-content:center;
+  padding:18px 16px 14px;flex-shrink:0;
+}
+.qcard-block{display:flex;flex-direction:column;align-items:center;flex:1;}
+.qcard-divider{width:1px;height:52px;background:#e8e8e8;margin:0 4px;}
+.qn-val{font-size:38px;font-weight:800;line-height:1;letter-spacing:-1px;}
+.qn-val.navy {color:#1A237E;}
+.qn-val.amber{color:#E65100;}
+.qn-val.muted{color:#bdbdbd;}
+.qn-lbl{font-size:11px;color:#9e9e9e;margin-top:5px;}
+
+/* ── FIELDS ── */
+.fields{padding:10px 16px 0;flex-shrink:0;}
+.frow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f5;}
+.frow:last-child{border-bottom:none;}
+.fl{font-size:12px;color:#9e9e9e;}
+.fv{font-size:12.5px;color:#212121;font-weight:600;text-align:right;}
+
+/* SPACER */
+.spacer{flex:1;}
+
+/* ── BARCODE ── */
+.bc-wrap{padding:14px 16px 20px;text-align:center;flex-shrink:0;}
+.bc{height:54px;background:repeating-linear-gradient(90deg,#111 0,#111 2px,#fff 2px,#fff 4px,#111 4px,#111 6px,#fff 6px,#fff 9px,#111 9px,#111 11px,#fff 11px,#fff 14px,#111 14px,#111 15px,#fff 15px,#fff 18px,#111 18px,#111 21px,#fff 21px,#fff 23px,#111 23px,#111 24px,#fff 24px,#fff 27px,#111 27px,#111 30px,#fff 30px,#fff 32px);border-radius:2px;width:100%;}
+.bc-caption{font-size:10px;color:#9e9e9e;margin-top:6px;line-height:1.4;}
+
+/* ═══════════════════════════════════════
+   STATE 2 — FULL-SCREEN IN-APP NOTIFICATION
+═══════════════════════════════════════ */
+.notif-screen{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:space-between;
+  padding:36px 24px 40px;background:#fff;
+}
+.notif-icon-wrap{
+  width:80px;height:80px;border-radius:50%;
+  background:#EBF5FF;
+  display:flex;align-items:center;justify-content:center;
+  font-size:38px;margin-bottom:0;
+}
+.notif-content{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.notif-title{font-size:20px;font-weight:800;color:#1a202c;line-height:1.2;}
+.notif-sub{font-size:13px;color:#4a5568;line-height:1.5;}
+.notif-qnum{
+  margin-top:8px;background:#F7F8FA;border:1px solid #e2e8f0;
+  border-radius:8px;padding:10px 20px;text-align:center;
+}
+.notif-qnum-val{font-size:28px;font-weight:800;color:#1A237E;letter-spacing:-1px;}
+.notif-qnum-lbl{font-size:10px;color:#9e9e9e;margin-top:2px;}
+.notif-status{font-size:11px;color:#9e9e9e;}
+.notif-status span{font-weight:600;color:#1565C0;}
+.notif-btn{
+  width:100%;background:#EE4D2D;color:#fff;
+  border:none;border-radius:10px;
+  height:52px;font-size:15px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.notif-btn:active{opacity:.85;}
+
+/* ═══════════════════════════════════════
+   STATE 3 — ON-HOLD NOTIFICATION OVERLAY
+═══════════════════════════════════════ */
+.onhold-notif{
+  position:absolute;top:0;left:0;right:0;
+  background:#fff;
+  border-bottom-left-radius:16px;border-bottom-right-radius:16px;
+  box-shadow:0 4px 20px rgba(0,0,0,.18);
+  overflow:hidden;
+  z-index:20;
+  transform:translateY(-100%);
+  transition:transform .4s cubic-bezier(.22,.61,.36,1);
+}
+.onhold-notif.show{transform:translateY(0);}
+.onh-top{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;
+}
+.onh-icon{width:22px;height:22px;background:#EE4D2D;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.onh-app{font-size:11.5px;font-weight:700;color:#1a202c;}
+.onh-time{font-size:10px;color:#9e9e9e;margin-left:auto;}
+.onh-body{padding:8px 14px 12px;}
+.onh-title{font-size:13px;font-weight:700;color:#1a202c;margin-bottom:3px;}
+.onh-msg{font-size:12px;color:#4a5568;line-height:1.45;}
+
+/* ═══════════════════════════════════════
+   DESCRIPTION PANEL
+═══════════════════════════════════════ */
+.desc-panel{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;max-width:320px;width:100%;}
+.dp-title{font-size:12.5px;font-weight:700;color:#1a202c;margin-bottom:8px;}
+.dp-item{font-size:12px;color:#4a5568;line-height:1.6;padding-left:14px;position:relative;margin-bottom:2px;}
+.dp-item::before{content:"·";position:absolute;left:2px;color:#EE4D2D;font-weight:700;}
+
+/* ═══════════════════════════════════════
+   COMPARE — 3 MINI PHONES (164 × 356)
+═══════════════════════════════════════ */
+.compare-section{margin-top:48px;}
+.compare-title{text-align:center;font-size:11.5px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.6px;margin-bottom:20px;}
+.compare-row{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;}
+.ci{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;}
+.ci-label{font-size:11px;font-weight:600;color:#fff;padding:3px 14px;border-radius:20px;white-space:nowrap;}
+.ci-label.blue  {background:#1565C0;}
+.ci-label.notif {background:#EE4D2D;}
+.ci-label.amber {background:#b7791f;}
+
+.mp{width:164px;height:356px;border-radius:20px;box-shadow:0 0 0 5px #1c1c1e,0 8px 24px rgba(0,0,0,.22);overflow:hidden;background:#fff;transition:transform .15s;display:flex;flex-direction:column;}
+.mp:hover{transform:translateY(-4px);}
+.mp-sb{background:#1c1c1e;height:24px;flex-shrink:0;}
+.mp-nav{background:#fff;height:28px;flex-shrink:0;border-bottom:1px solid #ebebeb;display:flex;align-items:center;padding:0 9px;gap:5px;}
+.mp-nav .mp-back{font-size:12px;color:#333;}
+.mp-nav .mp-title{font-size:8.5px;font-weight:600;color:#1a202c;}
+.mp-screen{flex:1;background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.mp-lut{text-align:center;padding:5px 7px 0;font-size:6px;color:#bdbdbd;flex-shrink:0;}
+.mp-banner{flex-shrink:0;margin:4px 7px 0;border-radius:5px;padding:5px 7px;display:flex;gap:4px;font-size:6.5px;font-weight:600;line-height:1.3;align-items:flex-start;}
+.mp-banner .ic{font-size:9px;flex-shrink:0;}
+.mp-banner.blue {background:#EBF5FF;color:#1565C0;}
+.mp-banner.amber{background:#FFF9C4;color:#9A6700;}
+.mp-qcard{margin:7px 7px 0;background:#fff;border:1px solid #e8e8e8;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;padding:9px 8px 7px;flex-shrink:0;}
+.mp-qblock{display:flex;flex-direction:column;align-items:center;flex:1;}
+.mp-qdiv{width:1px;height:28px;background:#e8e8e8;margin:0 3px;}
+.mp-qv{font-size:18px;font-weight:800;line-height:1;}
+.mp-qv.navy {color:#1A237E;}
+.mp-qv.amber{color:#E65100;}
+.mp-qv.muted{color:#bdbdbd;}
+.mp-ql{font-size:5.5px;color:#9e9e9e;margin-top:3px;}
+.mp-fields{flex-shrink:0;padding:5px 7px 0;}
+.mp-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f5f5;}
+.mp-row span:first-child{font-size:6px;color:#9e9e9e;}
+.mp-row span:last-child{font-size:6px;color:#212121;font-weight:600;}
+.mp-spacer{flex:1;}
+.mp-bc-wrap{flex-shrink:0;padding:6px 7px 10px;}
+.mp-bc{height:24px;background:repeating-linear-gradient(90deg,#111 0,#111 2px,#fff 2px,#fff 4px,#111 4px,#111 6px,#fff 6px,#fff 9px,#111 9px,#111 11px,#fff 11px,#fff 14px,#111 14px,#111 16px,#fff 16px,#fff 19px,#111 19px,#111 21px,#fff 21px,#fff 24px);border-radius:1px;}
+.mp-bc-cap{font-size:5px;color:#9e9e9e;text-align:center;margin-top:2px;}
+
+/* Mini notification screen for state 2 */
+.mp-notif-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14px 12px 16px;background:#fff;}
+.mp-notif-icon{width:40px;height:40px;border-radius:50%;background:#EBF5FF;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.mp-notif-content{text-align:center;}
+.mp-notif-title{font-size:10px;font-weight:800;color:#1a202c;margin-bottom:4px;}
+.mp-notif-sub{font-size:6.5px;color:#4a5568;line-height:1.4;}
+.mp-notif-qn{margin-top:6px;background:#F7F8FA;border:1px solid #e2e8f0;border-radius:5px;padding:5px 12px;text-align:center;}
+.mp-notif-qnv{font-size:15px;font-weight:800;color:#1A237E;}
+.mp-notif-qnl{font-size:5.5px;color:#9e9e9e;margin-top:1px;}
+.mp-notif-st{font-size:5.5px;color:#9e9e9e;}
+.mp-notif-st span{font-weight:600;color:#1565C0;}
+.mp-notif-btn{width:100%;background:#EE4D2D;color:#fff;border:none;border-radius:6px;height:26px;font-size:8px;font-weight:700;cursor:pointer;}
+
+/* Mini on-hold notification overlay */
+.mp-onh{position:absolute;top:0;left:0;right:0;background:#fff;border-bottom-left-radius:10px;border-bottom-right-radius:10px;box-shadow:0 3px 12px rgba(0,0,0,.18);z-index:10;overflow:hidden;}
+.mp-onh-top{display:flex;align-items:center;gap:4px;padding:5px 7px;border-bottom:1px solid #f0f0f0;}
+.mp-onh-icon{width:14px;height:14px;background:#EE4D2D;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff;}
+.mp-onh-app{font-size:6px;font-weight:700;color:#1a202c;}
+.mp-onh-time{font-size:5.5px;color:#9e9e9e;margin-left:auto;}
+.mp-onh-body{padding:4px 7px 6px;}
+.mp-onh-title{font-size:7px;font-weight:700;color:#1a202c;margin-bottom:2px;}
+.mp-onh-msg{font-size:6px;color:#4a5568;line-height:1.4;}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h2>4.3.1 Gate Queue Control — Driver App · Queue Status</h2>
+  <p>New queue states for gate access control · Path: Driver App &gt; Queue Status</p>
+</div>
+
+<!-- TABS -->
+<div class="state-tabs">
+  <button class="state-tab active" onclick="go(1)">1 · Waiting for gate call</button>
+  <button class="state-tab"        onclick="go(2)">2 · Notification received</button>
+  <button class="state-tab t-hold" onclick="go(3)">3 · On Hold</button>
+</div>
+
+<!-- PHONE + DESCRIPTION -->
+<div style="display:flex;justify-content:center;gap:36px;align-items:flex-start;flex-wrap:wrap;">
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="sb-notch"></div>
+      <div class="sb"><span>09:47</span><span style="letter-spacing:2px;">▌▌▌ ● ■</span></div>
+
+      <!-- ON-HOLD NOTIFICATION OVERLAY (state 3) -->
+      <div class="onhold-notif" id="onh-overlay">
+        <div class="onh-top">
+          <div class="onh-icon">S</div>
+          <span class="onh-app">Queue Status</span>
+          <span class="onh-time">now</span>
+        </div>
+        <div class="onh-body">
+          <div class="onh-title">⚠️ Gate Queue — On Hold</div>
+          <div class="onh-msg">You did not confirm your trip to the gate. Please contact your PIC.</div>
+        </div>
+      </div>
+
+      <!-- APP HEADER -->
+      <div class="app-nav">
+        <span class="back">←</span>
+        <span class="nav-title">Queue Status</span>
+      </div>
+
+      <!-- SCREEN -->
+      <div class="screen">
+
+        <!-- STATE 1: WAITING FOR GATE CALL -->
+        <div class="state-screen" id="s1">
+          <div class="lut">Last Update Time: 28/05/2026 12:00:00</div>
+          <div class="banner blue">
+            <span class="ic">🚚</span>
+            <span>Waiting Time: 40 min, 3 trucks ahead.</span>
+          </div>
+          <div class="qcard">
+            <div class="qcard-block">
+              <div class="qn-val navy">EXT-042</div>
+              <div class="qn-lbl">Queue Number</div>
+            </div>
+            <div class="qcard-divider"></div>
+            <div class="qcard-block">
+              <div class="qn-val navy">3</div>
+              <div class="qn-lbl">Trucks Ahead</div>
+            </div>
+          </div>
+          <div class="fields">
+            <div class="frow"><span class="fl">Assigned Dock</span><span class="fv">-</span></div>
+            <div class="frow"><span class="fl">Arrival Type</span><span class="fv">LH-Inbound</span></div>
+            <div class="frow"><span class="fl">Vehicle Number</span><span class="fv">VH 12345A</span></div>
+            <div class="frow"><span class="fl">Current Station</span><span class="fv">DDR Sorting Center</span></div>
+          </div>
+          <div class="spacer"></div>
+          <div class="bc-wrap">
+            <div class="bc"></div>
+            <div class="bc-caption">Show your driver barcode [112358] to station operator at the loading bay.</div>
+          </div>
+        </div>
+
+        <!-- STATE 2: FULL-SCREEN IN-APP NOTIFICATION -->
+        <div class="state-screen hidden" id="s2">
+          <div class="lut">Last Update Time: 28/05/2026 12:05:00</div>
+          <div class="notif-screen">
+            <div class="notif-icon-wrap">🚛</div>
+            <div class="notif-content">
+              <div class="notif-title">Proceed to the Gate Area</div>
+              <div class="notif-sub">It's your turn to proceed to the gate.<br>Please make your way now.</div>
+              <div class="notif-qnum">
+                <div class="notif-qnum-val">EXT-042</div>
+                <div class="notif-qnum-lbl">Queue Number</div>
+              </div>
+              <div class="notif-status">Queue Status: <span>Pending</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
+              <button class="notif-btn" onclick="go(1)">✓ &nbsp;I have read this — Confirm</button>
+              <button style="width:100%;background:none;border:none;color:#9e9e9e;font-size:13px;font-weight:500;cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:3px;" onclick="go(1)">Leave queue</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATE 3: ON HOLD -->
+        <div class="state-screen hidden" id="s3">
+          <div class="lut">Last Update Time: 28/05/2026 12:18:00</div>
+          <div class="banner amber">
+            <span class="ic">⚠️</span>
+            <span>The queue has been on-hold.</span>
+          </div>
+          <div class="qcard">
+            <div class="qcard-block">
+              <div class="qn-val amber">EXT-042</div>
+              <div class="qn-lbl">Queue Number</div>
+            </div>
+            <div class="qcard-divider"></div>
+            <div class="qcard-block">
+              <div class="qn-val muted">-</div>
+              <div class="qn-lbl">Trucks Ahead</div>
+            </div>
+          </div>
+          <div class="fields">
+            <div class="frow"><span class="fl">Assigned Dock</span><span class="fv">-</span></div>
+            <div class="frow"><span class="fl">Arrival Type</span><span class="fv">LH-Inbound</span></div>
+            <div class="frow"><span class="fl">Vehicle Number</span><span class="fv">VH 12345A</span></div>
+            <div class="frow"><span class="fl">Current Station</span><span class="fv">DDR Sorting Center</span></div>
+          </div>
+          <div class="spacer"></div>
+          <div class="bc-wrap">
+            <div class="bc"></div>
+            <div class="bc-caption">Show your driver barcode [112358] to station operator at the loading bay.</div>
+          </div>
+        </div>
+
+      </div><!-- /screen -->
+    </div><!-- /phone -->
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="desc-panel" id="desc-panel">
+    <div class="dp-title" id="dp-title"></div>
+    <div id="dp-body"></div>
+  </div>
+
+</div>
+
+<!-- COMPARE VIEW -->
+<div class="compare-section">
+  <div class="compare-title">All states · side-by-side view</div>
+  <div class="compare-row">
+
+    <!-- MINI 1 -->
+    <div class="ci" onclick="go(1)">
+      <div class="ci-label blue">1 · Waiting for gate call</div>
+      <div class="mp">
+        <div class="mp-sb"></div>
+        <div class="mp-nav"><span class="mp-back">←</span><span class="mp-title">Queue Status</span></div>
+        <div class="mp-screen">
+          <div class="mp-lut">Last Update Time: 28/05/2026 12:00:00</div>
+          <div class="mp-banner blue"><span class="ic">🚚</span><span>Waiting Time: 40 min, 3 trucks ahead.</span></div>
+          <div class="mp-qcard">
+            <div class="mp-qblock"><div class="mp-qv navy">EXT-042</div><div class="mp-ql">Queue Number</div></div>
+            <div class="mp-qdiv"></div>
+            <div class="mp-qblock"><div class="mp-qv navy">3</div><div class="mp-ql">Trucks Ahead</div></div>
+          </div>
+          <div class="mp-fields">
+            <div class="mp-row"><span>Assigned Dock</span><span>-</span></div>
+            <div class="mp-row"><span>Arrival Type</span><span>LH-Inbound</span></div>
+            <div class="mp-row"><span>Vehicle Number</span><span>VH 12345A</span></div>
+            <div class="mp-row"><span>Current Station</span><span>DDR Sorting Center</span></div>
+          </div>
+          <div class="mp-spacer"></div>
+          <div class="mp-bc-wrap"><div class="mp-bc"></div><div class="mp-bc-cap">Show your driver barcode [112358] to station operator at the loading bay.</div></div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#718096;">Queue Status = Pending</div>
+    </div>
+
+    <!-- MINI 2 -->
+    <div class="ci" onclick="go(2)">
+      <div class="ci-label notif">2 · Notification received</div>
+      <div class="mp">
+        <div class="mp-sb"></div>
+        <div class="mp-nav"><span class="mp-back">←</span><span class="mp-title">Queue Status</span></div>
+        <div class="mp-screen">
+          <div class="mp-lut">Last Update Time: 28/05/2026 12:05:00</div>
+          <div class="mp-notif-screen">
+            <div class="mp-notif-icon">🚛</div>
+            <div class="mp-notif-content">
+              <div class="mp-notif-title">Proceed to the Gate Area</div>
+              <div class="mp-notif-sub">It's your turn to proceed to the gate. Please make your way now.</div>
+              <div class="mp-notif-qn">
+                <div class="mp-notif-qnv">EXT-042</div>
+                <div class="mp-notif-qnl">Queue Number</div>
+              </div>
+              <div class="mp-notif-st">Queue Status: <span>Pending</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
+              <button class="mp-notif-btn">✓ I have read this — Confirm</button>
+              <div style="text-align:center;font-size:6px;color:#9e9e9e;text-decoration:underline;cursor:pointer;padding:2px 0;">Leave queue</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#718096;">Queue Status = Pending</div>
+    </div>
+
+    <!-- MINI 3 -->
+    <div class="ci" onclick="go(3)">
+      <div class="ci-label amber">3 · On Hold</div>
+      <div class="mp">
+        <div class="mp-sb"></div>
+        <div class="mp-nav"><span class="mp-back">←</span><span class="mp-title">Queue Status</span></div>
+        <div class="mp-screen">
+          <!-- Notification overlay pinned to top -->
+          <div class="mp-onh">
+            <div class="mp-onh-top">
+              <div class="mp-onh-icon">S</div>
+              <span class="mp-onh-app">Queue Status</span>
+              <span class="mp-onh-time">now</span>
+            </div>
+            <div class="mp-onh-body">
+              <div class="mp-onh-title">⚠️ Gate Queue — On Hold</div>
+              <div class="mp-onh-msg">You did not confirm your trip to the gate. Please contact your PIC.</div>
+            </div>
+          </div>
+          <div class="mp-lut" style="margin-top:68px;">Last Update Time: 28/05/2026 12:18:00</div>
+          <div class="mp-banner amber"><span class="ic">⚠️</span><span>The queue has been on-hold.</span></div>
+          <div class="mp-qcard">
+            <div class="mp-qblock"><div class="mp-qv amber">EXT-042</div><div class="mp-ql">Queue Number</div></div>
+            <div class="mp-qdiv"></div>
+            <div class="mp-qblock"><div class="mp-qv muted">-</div><div class="mp-ql">Trucks Ahead</div></div>
+          </div>
+          <div class="mp-fields">
+            <div class="mp-row"><span>Arrival Type</span><span>LH-Inbound</span></div>
+            <div class="mp-row"><span>Vehicle Number</span><span>VH 12345A</span></div>
+            <div class="mp-row"><span>Current Station</span><span>DDR SC</span></div>
+          </div>
+          <div class="mp-spacer"></div>
+          <div class="mp-bc-wrap"><div class="mp-bc"></div><div class="mp-bc-cap">Show your driver barcode [112358] to station operator at the loading bay.</div></div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#718096;">Queue Status = On Hold</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const descs = {
+  1:{title:'State 1 · Waiting for gate call',items:['Driver is in the external parking lot waiting for their turn','Blue banner matches existing app style for waiting states','Assigned Dock is empty — no dock assigned at this stage','System continuously checks gate capacity','When capacity is available → in-app notification is triggered']},
+  2:{title:'State 2 · Notification received (full screen)',items:['Full-screen in-app notification takes over the Queue Status screen','No estimated time shown — just the call to proceed','Driver must tap "I have read this — Confirm" to reserve the slot','Meters reserved ONLY after read-confirmation is tapped','Queue Status remains = Pending until confirmation','Confirmation Timeout runs in background — no action = re-notify']},
+  3:{title:'State 3 · On Hold',items:['On-hold notification banner slides from top of screen','Same "on-hold" amber banner and colors as existing app','Trucks Ahead shows "-" — position suspended','Driver must contact their PIC to resume the queue','Meters released back to the gate capacity pool']}
+};
+function go(n){
+  document.querySelectorAll('.state-tab').forEach((t,i)=>t.classList.toggle('active',i+1===n));
+  [1,2,3].forEach(i=>document.getElementById('s'+i).classList.toggle('hidden',i!==n));
+  const ov=document.getElementById('onh-overlay');
+  if(n===3){setTimeout(()=>ov.classList.add('show'),120);}
+  else{ov.classList.remove('show');}
+  const d=descs[n];
+  document.getElementById('dp-title').textContent=d.title;
+  document.getElementById('dp-body').innerHTML=d.items.map(x=>`<div class="dp-item">${x}</div>`).join('');
+}
+go(1);
+</script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.3.1 – Notification Flow</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f0f2f5;display:flex;flex-direction:column;align-items:center;padding:24px 16px;font-family:'Segoe UI',Arial,sans-serif;}
+h2{font-size:14px;font-weight:600;color:#2d3748;margin-bottom:16px;}
+.wrap{background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,.10);padding:24px;overflow:auto;max-width:1140px;width:100%;}
+svg{display:block;margin:0 auto;}
+</style>
+</head>
+<body>
+<h2>4.3.1 Phased Notifications — Gate Queue Control Flow</h2>
+<div class="wrap">
+<svg viewBox="0 0 1100 800" xmlns="http://www.w3.org/2000/svg" width="1100" height="800"
+     font-family="'Segoe UI', Arial, sans-serif">
+
+<defs>
+  <marker id="a"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#718096"/></marker>
+  <marker id="ag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#38a169"/></marker>
+  <marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#e53e3e"/></marker>
+  <marker id="ab" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#3182ce"/></marker>
+</defs>
+
+<!-- ═══════════════════════════════════════
+     MAIN FLOW  (center x = 480)
+═══════════════════════════════════════ -->
+
+<!-- 1. TRIGGER -->
+<rect x="358" y="30" width="244" height="36" rx="4" fill="#E8EAF6" stroke="#5C6BC0" stroke-width="1.5"/>
+<text x="480" y="52" text-anchor="middle" font-size="12" font-weight="600" fill="#3949AB">Gate capacity condition met</text>
+
+<line x1="480" y1="66" x2="480" y2="84" stroke="#718096" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- 2. SEND PUSH NOTIFICATION -->
+<rect x="330" y="86" width="300" height="52" rx="4" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/>
+<text x="480" y="108" text-anchor="middle" font-size="12" font-weight="600" fill="#1565C0">Send push notification to driver</text>
+<text x="480" y="126" text-anchor="middle" font-size="10" fill="#1976D2">"Dirija-se à portaria · X min para chegar"</text>
+
+<line x1="480" y1="138" x2="480" y2="157" stroke="#718096" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- D1 — Driver confirms within Confirmation Timeout?
+     center(480,207)  left(342,207)  right(618,207)  top(480,157)  bottom(480,257) -->
+<polygon points="480,157 618,207 480,257 342,207" fill="#FFF8E1" stroke="#F9A825" stroke-width="1.5"/>
+<text x="480" y="200" text-anchor="middle" font-size="11" font-weight="600" fill="#E65100">Driver confirms within</text>
+<text x="480" y="215" text-anchor="middle" font-size="11" font-weight="600" fill="#E65100">Confirmation Timeout?</text>
+
+<!-- YES ↓ -->
+<text x="493" y="272" font-size="10" font-weight="700" fill="#38a169">YES</text>
+<line x1="480" y1="257" x2="480" y2="282" stroke="#38a169" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- NO → (to D3) -->
+<text x="622" y="202" font-size="10" font-weight="700" fill="#e53e3e">NO</text>
+<line x1="618" y1="207" x2="722" y2="207" stroke="#e53e3e" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<!-- 3. RESERVE METERS -->
+<rect x="336" y="284" width="288" height="40" rx="4" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/>
+<text x="480" y="300" text-anchor="middle" font-size="12" font-weight="600" fill="#1565C0">Reserve next_vehicle_length meters</text>
+<text x="480" y="315" text-anchor="middle" font-size="10" fill="#1976D2">committed after driver read-confirmation</text>
+
+<line x1="480" y1="324" x2="480" y2="342" stroke="#718096" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- 4. DRIVER TRAVELS -->
+<rect x="358" y="344" width="244" height="36" rx="4" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/>
+<text x="480" y="366" text-anchor="middle" font-size="12" font-weight="600" fill="#1565C0">Driver travels to gate</text>
+
+<line x1="480" y1="380" x2="480" y2="397" stroke="#718096" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- D2 — Enters Gate Area Geofence within Max Travel Time?
+     center(480,449)  left(326,449)  right(634,449)  top(480,399)  bottom(480,499) -->
+<polygon points="480,399 634,449 480,499 326,449" fill="#FFF8E1" stroke="#F9A825" stroke-width="1.5"/>
+<text x="480" y="442" text-anchor="middle" font-size="11" font-weight="600" fill="#E65100">Enters Gate Area Geofence</text>
+<text x="480" y="457" text-anchor="middle" font-size="11" font-weight="600" fill="#E65100">within Max Travel Time?</text>
+
+<!-- YES ↓ -->
+<text x="493" y="514" font-size="10" font-weight="700" fill="#38a169">YES</text>
+<line x1="480" y1="499" x2="480" y2="520" stroke="#38a169" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- NO → (to Travel Timeout) -->
+<text x="638" y="444" font-size="10" font-weight="700" fill="#e53e3e">NO</text>
+<line x1="634" y1="449" x2="720" y2="449" stroke="#e53e3e" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<!-- 5. DRIVER INSIDE GATE AREA -->
+<rect x="358" y="522" width="244" height="36" rx="4" fill="#E8F5E9" stroke="#43A047" stroke-width="1.5"/>
+<text x="480" y="544" text-anchor="middle" font-size="12" font-weight="600" fill="#1B5E20">Driver inside Gate Area</text>
+
+<line x1="480" y1="558" x2="480" y2="574" stroke="#718096" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- 6. VEHICLE EXITS GEOFENCE -->
+<rect x="330" y="576" width="300" height="36" rx="4" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/>
+<text x="480" y="598" text-anchor="middle" font-size="12" font-weight="600" fill="#1565C0">Vehicle exits Gate Area Geofence</text>
+
+<line x1="480" y1="612" x2="480" y2="628" stroke="#718096" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- 7. RELEASE METERS + TRIGGER NEXT CHECK -->
+<rect x="310" y="630" width="340" height="46" rx="4" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1.5"/>
+<text x="480" y="649" text-anchor="middle" font-size="12" font-weight="600" fill="#1565C0">Release reserved meters</text>
+<text x="480" y="665" text-anchor="middle" font-size="10" fill="#1976D2">trigger next gate capacity check</text>
+
+<!-- ── LEFT LOOP: Release → Trigger ── -->
+<path d="M310,653 L14,653 L14,48 L358,48"
+      fill="none" stroke="#3182ce" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ab)"/>
+
+<!-- ═══════════════════════════════════════
+     RIGHT BRANCH 1 — NO CONFIRMATION
+═══════════════════════════════════════ -->
+
+<!-- D3 — Retry limit reached?
+     center(812,207)  left(724,207)  right(900,207)  top(812,157)  bottom(812,257) -->
+<polygon points="812,157 900,207 812,257 724,207" fill="#FFF8E1" stroke="#F9A825" stroke-width="1.5"/>
+<text x="812" y="200" text-anchor="middle" font-size="10.5" font-weight="600" fill="#E65100">Retry limit</text>
+<text x="812" y="215" text-anchor="middle" font-size="10.5" font-weight="600" fill="#E65100">reached?</text>
+
+<!-- YES ↓ → On Hold -->
+<text x="822" y="271" font-size="10" font-weight="700" fill="#e53e3e">YES</text>
+<line x1="812" y1="257" x2="812" y2="282" stroke="#e53e3e" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<!-- ON HOLD BOX -->
+<rect x="718" y="284" width="188" height="50" rx="4" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+<text x="812" y="304" text-anchor="middle" font-size="12" font-weight="600" fill="#B71C1C">Driver → On Hold</text>
+<text x="812" y="320" text-anchor="middle" font-size="10" fill="#C62828">Release reserved meters immediately</text>
+
+<!-- Manual ops note -->
+<rect x="718" y="344" width="188" height="28" rx="3" fill="#f7fafc" stroke="#e2e8f0" stroke-width="1"/>
+<text x="812" y="362" text-anchor="middle" font-size="10" fill="#718096">Manual ops intervention required</text>
+
+<!-- On Hold dashed return → Release right edge (x=650) -->
+<path d="M906,309 L962,309 L962,653 L650,653"
+      fill="none" stroke="#3182ce" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ab)"/>
+
+<!-- NO ↑ — re-notify path
+     D3 top(812,157) → up to y=17 → left to x=630 → down into Send Push top-right (630,86) -->
+<text x="820" y="148" font-size="10" font-weight="700" fill="#38a169">NO</text>
+<path d="M812,157 L812,17 L630,17 L630,86"
+      fill="none" stroke="#38a169" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- Re-notify label floating on the path at top -->
+<rect x="634" y="6" width="170" height="20" rx="3" fill="#E8F5E9" stroke="#43A047" stroke-width="1"/>
+<text x="719" y="20" text-anchor="middle" font-size="9.5" font-weight="600" fill="#276749">Re-send push · Attempt N+1</text>
+
+<!-- ═══════════════════════════════════════
+     RIGHT BRANCH 2 — TRAVEL TIMEOUT
+═══════════════════════════════════════ -->
+
+<!-- Travel Timeout box -->
+<rect x="722" y="429" width="218" height="48" rx="4" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+<text x="831" y="449" text-anchor="middle" font-size="12" font-weight="600" fill="#B71C1C">Travel Timeout</text>
+<text x="831" y="465" text-anchor="middle" font-size="10" fill="#C62828">Release reserved meters</text>
+
+<!-- Travel Timeout dashed return → Release right edge -->
+<path d="M940,453 L978,453 L978,653 L650,653"
+      fill="none" stroke="#3182ce" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ab)"/>
+
+<!-- ═══════════════════════════════════════
+     PARAMETER ANNOTATIONS
+═══════════════════════════════════════ -->
+
+<!-- Confirmation Timeout (left of D1) -->
+<rect x="26" y="170" width="156" height="38" rx="3" fill="#FFF3CD" stroke="#F59E0B" stroke-width="1" stroke-dasharray="3,2"/>
+<text x="104" y="185" text-anchor="middle" font-size="9" fill="#92400E">Configured: Confirmation</text>
+<text x="104" y="199" text-anchor="middle" font-size="9" fill="#92400E">Timeout (min)</text>
+<line x1="182" y1="189" x2="342" y2="207" stroke="#F59E0B" stroke-width="1" stroke-dasharray="3,2"/>
+
+<!-- Max Travel Time (left of D2) -->
+<rect x="26" y="413" width="148" height="38" rx="3" fill="#FFF3CD" stroke="#F59E0B" stroke-width="1" stroke-dasharray="3,2"/>
+<text x="100" y="428" text-anchor="middle" font-size="9" fill="#92400E">Configured: Max</text>
+<text x="100" y="442" text-anchor="middle" font-size="9" fill="#92400E">Travel Time (min)</text>
+<line x1="174" y1="432" x2="326" y2="449" stroke="#F59E0B" stroke-width="1" stroke-dasharray="3,2"/>
+
+<!-- Retry Limit (right of D3) -->
+<rect x="912" y="170" width="152" height="38" rx="3" fill="#FFF3CD" stroke="#F59E0B" stroke-width="1" stroke-dasharray="3,2"/>
+<text x="988" y="185" text-anchor="middle" font-size="9" fill="#92400E">Configured: Retry</text>
+<text x="988" y="199" text-anchor="middle" font-size="9" fill="#92400E">Limit (attempts)</text>
+<line x1="912" y1="189" x2="900" y2="200" stroke="#F59E0B" stroke-width="1" stroke-dasharray="3,2"/>
+
+<!-- ═══════════════════════════════════════
+     LEGEND
+═══════════════════════════════════════ -->
+<rect x="14" y="716" width="580" height="70" rx="4" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+<text x="30" y="734" font-size="10" font-weight="700" fill="#4a5568">LEGEND</text>
+
+<rect x="30"  y="742" width="52" height="16" rx="3" fill="#E8EAF6" stroke="#5C6BC0" stroke-width="1"/>
+<text x="88"  y="754" font-size="10" fill="#4a5568"> Trigger / condition</text>
+
+<rect x="176" y="742" width="52" height="16" rx="3" fill="#E3F2FD" stroke="#1E88E5" stroke-width="1"/>
+<text x="234" y="754" font-size="10" fill="#4a5568"> System action</text>
+
+<rect x="316" y="742" width="52" height="16" rx="3" fill="#E8F5E9" stroke="#43A047" stroke-width="1"/>
+<text x="374" y="754" font-size="10" fill="#4a5568"> Status</text>
+
+<rect x="406" y="742" width="52" height="16" rx="3" fill="#FFEBEE" stroke="#E53935" stroke-width="1"/>
+<text x="464" y="754" font-size="10" fill="#4a5568"> Exception / On Hold</text>
+
+<polygon points="36,778 56,768 76,778 56,788" fill="#FFF8E1" stroke="#F9A825" stroke-width="1"/>
+<text x="82" y="782" font-size="10" fill="#4a5568"> Decision</text>
+
+<rect x="152" y="771" width="52" height="16" rx="3" fill="#FFF3CD" stroke="#F59E0B" stroke-width="1" stroke-dasharray="3,2"/>
+<text x="210" y="783" font-size="10" fill="#4a5568"> Config param</text>
+
+<line x1="310" y1="779" x2="366" y2="779" stroke="#3182ce" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ab)"/>
+<text x="372" y="783" font-size="10" fill="#4a5568"> Loop back to trigger</text>
+
+</svg>
+</div>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YMS Improvements v4 — Mockups</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; color: #222; }
+    header { background: #1a1f36; padding: 24px 40px; display: flex; align-items: center; gap: 12px; }
+    .logo { color: white; font-size: 18px; font-weight: 700; }
+    .logo span { color: #EE4D2D; }
+    header p { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 2px; }
+    .container { max-width: 960px; margin: 32px auto; padding: 0 24px; }
+    h2 { font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.8px; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e8e8e8; }
+    h2:first-of-type { margin-top: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .card { background: white; border: 1px solid #e8e8e8; border-radius: 6px; padding: 16px; text-decoration: none; color: inherit; display: block; transition: box-shadow 0.15s; }
+    .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.1); border-color: #EE4D2D; }
+    .card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #EE4D2D; margin-bottom: 6px; }
+    .card-title { font-size: 13px; font-weight: 600; color: #222; margin-bottom: 4px; }
+    .card-desc { font-size: 11.5px; color: #888; line-height: 1.5; }
+    .tag { display: inline-block; background: #f0f0f0; color: #555; border-radius: 3px; padding: 1px 6px; font-size: 10px; margin-top: 8px; margin-right: 4px; }
+    .tag.interactive { background: #E6F7FF; color: #096dd9; }
+    .tag.animated { background: #F6FFED; color: #389e0d; }
+    .tag.flow { background: #FFF7E6; color: #d46b08; }
+    footer { text-align: center; padding: 32px; color: #bbb; font-size: 12px; }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo">Shopee<span>Xpress</span> — YMS Improvements v4</div>
+    <p>Mockups and flows for the FRF review</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <h2>4.1 — Automatic Assignment</h2>
+  <div class="grid">
+    <a class="card" href="4.1-automatic-assignment/automatic-dock-assign-fixed.html">
+      <div class="card-label">4.1</div>
+      <div class="card-title">Automatic Dock Assignment</div>
+      <div class="card-desc">SPX Admin mockup for dock attribute configuration with cargo composition rules.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.1-automatic-assignment/assignment-priority-flow.html">
+      <div class="card-label">4.1</div>
+      <div class="card-title">Assignment Priority Flow</div>
+      <div class="card-desc">Diagram showing dock vs. dock group assignment priority logic.</div>
+      <span class="tag flow">Flow</span>
+    </a>
+    <a class="card" href="4.1-automatic-assignment/4114-examples-table.html">
+      <div class="card-label">4.1.1.4</div>
+      <div class="card-title">Use Case Examples — Full</div>
+      <div class="card-desc">Complete examples table for cargo composition matching logic.</div>
+    </a>
+    <a class="card" href="4.1-automatic-assignment/4122-examples-table.html">
+      <div class="card-label">4.1.2.2</div>
+      <div class="card-title">Dock Group Examples — Full</div>
+      <div class="card-desc">Use case examples for dock group floor logic.</div>
+    </a>
+  </div>
+
+  <h2>4.2 — Entry Site Configuration</h2>
+  <div class="grid">
+    <a class="card" href="4.2-entry-site-config/entry-site-config-animated.html">
+      <div class="card-label">4.2.3 — FINAL</div>
+      <div class="card-title">Entry Site Config — Animated</div>
+      <div class="card-desc">Auto-plays demo of the Vehicle Capacity Control tab in SPX Admin.</div>
+      <span class="tag animated">Animated</span>
+    </a>
+    <a class="card" href="4.2-entry-site-config/entry-site-config-interactive.html">
+      <div class="card-label">4.2.3 — FINAL</div>
+      <div class="card-title">Entry Site Config — Interactive</div>
+      <div class="card-desc">Interactive mockup of the Vehicle Capacity Control tab.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.2-entry-site-config/entry-site-geofence-interactive.html">
+      <div class="card-label">4.2.2</div>
+      <div class="card-title">Geofence Configuration</div>
+      <div class="card-desc">Entry site geofence setup mockup.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.2-entry-site-config/zone-management-interactive.html">
+      <div class="card-label">4.2.2</div>
+      <div class="card-title">Zone Management — Station Geofence Tag</div>
+      <div class="card-desc">Zone Management with Station Geofence tag flow.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.2-entry-site-config/entry-site-assignment-flow.html">
+      <div class="card-label">4.2.3</div>
+      <div class="card-title">Entry Site Assignment Flow</div>
+      <div class="card-desc">Sequential check flow for entry site assignment on geofence entry.</div>
+      <span class="tag flow">Flow</span>
+    </a>
+    <a class="card" href="4.2-entry-site-config/vacancy-cascade-flow.html">
+      <div class="card-label">4.2.3</div>
+      <div class="card-title">Vacancy Cascade Flow</div>
+      <div class="card-desc">Logic for cascading vehicles toward lower-numbered sites when vacancy opens.</div>
+      <span class="tag flow">Flow</span>
+    </a>
+    <a class="card" href="4.2-entry-site-config/sta-check-flow.html">
+      <div class="card-label">4.2.3</div>
+      <div class="card-title">STA Check Flow</div>
+      <div class="card-desc">Early arrival STA check and monitoring flow.</div>
+      <span class="tag flow">Flow</span>
+    </a>
+    <a class="card" href="4.2-entry-site-config/early-arrival-monitoring-flow.html">
+      <div class="card-label">4.2.3</div>
+      <div class="card-title">Early Arrival Monitoring Flow</div>
+      <div class="card-desc">Geofence monitoring loop for early-arriving LH drivers.</div>
+      <span class="tag flow">Flow</span>
+    </a>
+  </div>
+
+  <h2>4.3.1 — Gate Queue Control</h2>
+  <div class="grid">
+    <a class="card" href="4.3-gate-queue-control/gate-queue-control-mockup.html">
+      <div class="card-label">4.3.1</div>
+      <div class="card-title">Gate Queue Control — SPX Admin</div>
+      <div class="card-desc">Vehicle Capacity Control tab with Gate Queue Control section and Zone Management.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.3-gate-queue-control/notification-flow-4.3.html">
+      <div class="card-label">4.3.1</div>
+      <div class="card-title">Phased Notification Flow</div>
+      <div class="card-desc">SVG flow diagram for the gate capacity notification sequence.</div>
+      <span class="tag flow">Flow</span>
+    </a>
+    <a class="card" href="4.3-gate-queue-control/driver-gate-queue-mockup.html">
+      <div class="card-label">4.3.1</div>
+      <div class="card-title">Driver App — Gate Queue Status</div>
+      <div class="card-desc">Driver App Queue Status in 3 states: Waiting, Notification, On Hold.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.3-gate-queue-control/zone-management-portaria-tag.html">
+      <div class="card-label">4.3.1</div>
+      <div class="card-title">Zone Management — Portaria Tag</div>
+      <div class="card-desc">Zone Management with Portaria tag (same pattern as Station tag).</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+  </div>
+
+  <h2>4.3.2 — End Process Notifications</h2>
+  <div class="grid">
+    <a class="card" href="4.3.2-end-process-notifications/end-process-notifications-flow.html">
+      <div class="card-label">4.3.2</div>
+      <div class="card-title">End Process Flow — Before & After</div>
+      <div class="card-desc">Before/after comparison and full 4-notification flow diagram.</div>
+      <span class="tag flow">Flow</span>
+    </a>
+    <a class="card" href="4.3.2-end-process-notifications/process-notifications-config-mockup.html">
+      <div class="card-label">4.3.2</div>
+      <div class="card-title">Process Notifications Config — SPX Admin</div>
+      <div class="card-desc">Configuration tab for the 4 end-process notifications per task type.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.3.2-end-process-notifications/queue-list-inform-driver-mockup.html">
+      <div class="card-label">4.3.2</div>
+      <div class="card-title">Queue List — Inform Driver Button</div>
+      <div class="card-desc">Queue List with Inform Driver button and confirmation modal.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+  </div>
+
+  <h2>4.4 — Queue List Visibility & Cage Popup</h2>
+  <div class="grid">
+    <a class="card" href="4.4-cage-popup/queue-list-corridor-cage-mockup.html">
+      <div class="card-label">4.4.2</div>
+      <div class="card-title">Queue List — Corridor/Cage on Freeze</div>
+      <div class="card-desc">Queue List showing Corridor/Cage column populated for drivers in Queue Freeze status.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.4-cage-popup/dock-management-freeze-mockup.html">
+      <div class="card-label">4.4.2</div>
+      <div class="card-title">Dock Management — Blocked Badge</div>
+      <div class="card-desc">Dock Management sub-table showing "Blocked" badge for frozen drivers.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="4.4-cage-popup/at-list-and-detail-mockup.html">
+      <div class="card-label">4.4.2</div>
+      <div class="card-title">AT List + Detail — Dock on Freeze</div>
+      <div class="card-desc">Interactive: Assignment Task list with Dock column → click View to see AT detail with Dock field.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+  </div>
+
+  <h2>Other</h2>
+  <div class="grid">
+    <a class="card" href="frf-v4-process-flow.html">
+      <div class="card-label">Overview</div>
+      <div class="card-title">FRF v4 — Process Flow</div>
+      <div class="card-desc">Where each FRF improvement applies in the current YMS process flow.</div>
+      <span class="tag flow">Flow</span>
+    </a>
+    <a class="card" href="dock-group/yms-dock-group-interactive.html">
+      <div class="card-label">Dock Group (paused)</div>
+      <div class="card-title">Dock Group — Interactive</div>
+      <div class="card-desc">Dock group feature mockup — pending ops alignment.</div>
+      <span class="tag interactive">Interactive</span>
+    </a>
+    <a class="card" href="driver-experience/driver-experience-4234-pt.html">
+      <div class="card-label">4.2.3.4</div>
+      <div class="card-title">Driver Experience (PT)</div>
+      <div class="card-desc">Driver experience flow for entry site assignment — Portuguese.</div>
+    </a>
+  </div>
+
+</div>
+<footer>YMS Improvements v4 · Shopee BR · camila.braz@shopee.com</footer>
+</body>
+</html>

@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YMS – Vehicle Capacity Control</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:#e8eaf0;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:16px;font-family:'Segoe UI',Arial,sans-serif;}
+.scene-wrap{overflow:hidden;position:relative;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.18);}
+#scene{width:1200px;height:920px;transform-origin:top left;position:relative;background:#f0f2f5;overflow:hidden;display:flex;flex-direction:column;}
+.layout{display:flex;flex:1;overflow:hidden;}
+
+.sb{width:196px;background:#1a1f36;flex-shrink:0;}
+.sb-logo{padding:14px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sb-logo .sp{color:#fff;font-size:17px;font-weight:700;}
+.sb-logo .xp{color:#EE4D2D;}
+.sb-live{background:#EE4D2D;color:#fff;font-size:9px;padding:1px 4px;border-radius:2px;margin-left:3px;}
+.sb-sub{color:#5a6380;font-size:10px;margin-top:2px;}
+.sb-sec{font-size:9px;color:#4a5568;padding:10px 14px 3px;text-transform:uppercase;letter-spacing:.5px;}
+.sb-item{padding:8px 14px;font-size:12px;color:#8892b0;border-left:2px solid transparent;cursor:pointer;}
+.sb-item.act{color:#fff;background:rgba(238,77,45,.15);border-left-color:#EE4D2D;}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;font-size:11px;color:#718096;flex-shrink:0;gap:6px;}
+.topbar a{color:#EE4D2D;text-decoration:none;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.page-tabs{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 20px;flex-shrink:0;}
+.ptab{padding:11px 16px;font-size:12px;color:#718096;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;}
+.ptab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+.content{flex:1;padding:13px 18px;overflow-y:auto;}
+
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.page-title{font-size:15px;font-weight:600;color:#1a202c;}
+.hdr-actions{display:flex;gap:8px;}
+.btn-edit{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:5px 16px;font-size:12px;cursor:pointer;font-weight:500;}
+.btn-save{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:5px 16px;font-size:12px;cursor:pointer;font-weight:500;display:none;}
+.btn-cancel{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:3px;padding:5px 12px;font-size:12px;cursor:pointer;display:none;}
+
+.box{background:#fff;border-radius:4px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.box-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f0f0f0;}
+.box-hdr-bar{width:3px;height:13px;background:#EE4D2D;border-radius:2px;flex-shrink:0;}
+.box-hdr-title{font-size:12px;font-weight:600;color:#1a202c;flex:1;}
+.box-hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.box-tag{font-size:10px;color:#a0aec0;background:#f7fafc;border:1px solid #e2e8f0;border-radius:3px;padding:2px 7px;}
+
+.tgl{width:32px;height:17px;background:#e2e8f0;border-radius:9px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;display:inline-block;user-select:none;}
+.tgl.on{background:#48bb78;}
+.tgl::after{content:'';width:13px;height:13px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+.tgl.on::after{left:17px;}
+.tgl.dis{opacity:.4;pointer-events:none;}
+.tgl-label{font-size:10px;font-weight:600;color:#48bb78;}
+.tgl-label.off{color:#a0aec0;}
+
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;font-size:11px;color:#4a5568;}
+.set-row+.set-row{border-top:1px solid #f5f5f5;}
+.set-lbl{flex:1;}
+.set-lbl small{display:block;font-size:10px;color:#a0aec0;margin-top:1px;max-width:500px;}
+.set-r{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.set-val{font-size:12px;font-weight:600;color:#2d3748;}
+.set-inp{border:1px solid #e2e8f0;border-radius:3px;padding:4px 6px;font-size:12px;width:56px;text-align:center;}
+.set-inp:focus{outline:none;border-color:#EE4D2D;}
+
+.sta-field{display:flex;flex-direction:column;gap:2px;}
+.sta-field label{font-size:9px;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.sta-vdisp{font-size:13px;font-weight:600;color:#2d3748;}
+.sta-inp{border:1px solid #e2e8f0;border-radius:3px;padding:4px 8px;font-size:12px;width:60px;text-align:center;}
+.sta-inp:focus{outline:none;border-color:#EE4D2D;}
+.btn-sm{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:3px;padding:3px 10px;font-size:10px;cursor:pointer;}
+.btn-sm:hover{background:#f7fafc;}
+.btn-sm-red{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:3px 10px;font-size:10px;cursor:pointer;}
+
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 14px 14px;}
+.metric-card{background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:10px 13px;}
+.metric-lbl{font-size:9px;color:#718096;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
+.metric-val{font-size:20px;font-weight:700;color:#1a202c;display:flex;align-items:baseline;gap:4px;}
+.metric-unit{font-size:11px;font-weight:400;color:#718096;}
+.metric-input{width:68px;border:1px solid #cbd5e0;border-radius:3px;padding:2px 7px;font-size:15px;font-weight:700;color:#1a202c;background:#fff;display:none;}
+.edit-mode .metric-input{display:block;}
+.edit-mode .metric-num{display:none;}
+
+.geo-row{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-top:1px solid #f0f0f0;}
+.geo-row-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#718096;}
+.geo-chip-lg{display:inline-flex;align-items:center;gap:5px;background:#f0fff4;color:#276749;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px;border:1px solid #9ae6b4;}
+.geo-none-lg{display:inline-flex;align-items:center;gap:5px;background:#fff5f5;color:#c53030;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px;border:1px solid #fed7d7;}
+.btn-geo{background:#fff;color:#3182ce;border:1px solid #bee3f8;border-radius:3px;padding:4px 10px;font-size:10px;cursor:pointer;margin-left:10px;}
+.btn-geo:hover{background:#ebf4ff;}
+
+.gate-body{transition:opacity .2s;}
+
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;margin-top:4px;}
+.sec-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#1a202c;}
+.sec-title::before{content:'';display:inline-block;width:3px;height:12px;background:#EE4D2D;border-radius:2px;}
+.sec-actions{display:flex;align-items:center;gap:6px;}
+.btn-act{background:#fff;color:#2d3748;border:1px solid #e2e8f0;border-radius:3px;padding:3px 9px;font-size:10px;cursor:pointer;}
+
+.filter-wrap{display:flex;align-items:center;gap:7px;padding:8px 0;flex-wrap:wrap;}
+.fi{display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:3px;height:26px;overflow:hidden;background:#fff;}
+.fi-l{padding:0 7px;font-size:10px;color:#4a5568;border-right:1px solid #e2e8f0;white-space:nowrap;height:100%;display:flex;align-items:center;background:#f7fafc;}
+.fi select{border:none;outline:none;padding:0 5px;font-size:10px;color:#2d3748;background:transparent;height:100%;width:88px;}
+.btn-srch{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:0 12px;height:26px;font-size:11px;cursor:pointer;font-weight:500;}
+.btn-rst{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:3px;padding:0 8px;height:26px;font-size:11px;cursor:pointer;}
+
+.tbl-wrap{background:#fff;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.07);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:7px 10px;border-bottom:1px solid #e2e8f0;white-space:nowrap;font-size:10px;}
+td{padding:7px 10px;border-bottom:1px solid #f5f5f5;color:#2d3748;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafcff;}
+.badge-on{background:#e6f7ee;color:#276749;font-size:9px;padding:1px 6px;border-radius:6px;font-weight:500;}
+.badge-off{background:#f0f0f0;color:#718096;font-size:9px;padding:1px 6px;border-radius:6px;font-weight:500;}
+.dot-on{color:#48bb78;font-size:10px;}
+.dot-off{color:#a0aec0;font-size:10px;}
+.geo-chip{display:inline-flex;align-items:center;background:#f0fff4;color:#276749;font-size:9px;padding:2px 6px;border-radius:6px;border:1px solid #9ae6b4;}
+.geo-none{display:inline-flex;align-items:center;background:#fff5f5;color:#c53030;font-size:9px;padding:2px 6px;border-radius:6px;border:1px solid #fed7d7;}
+.pool-chip{display:inline-block;background:#fff0ed;color:#c53030;font-size:9px;padding:1px 5px;border-radius:6px;border:1px solid #feb2b2;margin:1px;}
+.v-chip{display:inline-block;background:#e6f3ff;color:#2b6cb0;font-size:9px;padding:1px 5px;border-radius:6px;border:1px solid #bee3f8;margin:1px;}
+.type-int{display:inline-block;background:#ede9fe;color:#5b21b6;font-size:9px;padding:1px 6px;border-radius:6px;border:1px solid #c4b5fd;font-weight:500;}
+.type-ext{display:inline-block;background:#fff7ed;color:#c2410c;font-size:9px;padding:1px 6px;border-radius:6px;border:1px solid #fed7aa;font-weight:500;}
+.btn-ed{color:#3182ce;font-size:11px;background:none;border:none;cursor:pointer;}
+.btn-ed:hover{text-decoration:underline;}
+
+/* Overlays */
+.ovl{position:absolute;inset:0;background:rgba(0,0,0,0.48);display:flex;align-items:flex-start;justify-content:center;padding-top:22px;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
+.ovl.show{opacity:1;pointer-events:all;}
+
+/* Edit modal */
+.modal{width:556px;background:#fff;border-radius:6px;box-shadow:0 16px 48px rgba(0,0,0,0.3);display:flex;flex-direction:column;overflow:hidden;transform:scale(0.96);transition:transform .2s;max-height:820px;}
+.ovl.show .modal{transform:scale(1);}
+.mhdr{padding:11px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.mtit{font-size:13px;font-weight:600;color:#1a202c;}
+.mcls{background:#f7fafc;border:1px solid #e2e8f0;border-radius:50%;width:22px;height:22px;cursor:pointer;color:#718096;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.mcls:hover{background:#fee2dc;color:#e53e3e;}
+.mbdy{flex:1;overflow-y:auto;padding:13px 16px;}
+.mftr{padding:10px 16px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;}
+.btn-cnl{background:#fff;border:1px solid #e2e8f0;color:#4a5568;border-radius:3px;padding:5px 16px;font-size:11px;cursor:pointer;}
+.btn-cfm{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:5px 18px;font-size:11px;font-weight:500;cursor:pointer;}
+
+.msec{margin-bottom:14px;}
+.msec-title{font-size:11px;font-weight:600;color:#2d3748;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:5px;}
+.msec-title::before{content:'';display:inline-block;width:2px;height:11px;background:#EE4D2D;border-radius:2px;}
+.mrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:12px;}
+.mlbl{font-size:11px;color:#4a5568;font-weight:500;}
+.mlbl small{display:block;font-size:10px;color:#a0aec0;font-weight:400;margin-top:1px;}
+.msel{border:1px solid #e2e8f0;border-radius:3px;padding:5px 8px;font-size:12px;color:#2d3748;background:#fff;width:160px;}
+.msel:focus{outline:none;border-color:#EE4D2D;}
+.minp{border:1px solid #e2e8f0;border-radius:3px;padding:5px 8px;font-size:12px;width:80px;text-align:center;color:#2d3748;}
+.minp:focus{outline:none;border-color:#EE4D2D;}
+.alert-warn{background:#FFF8F0;border:1px solid #F6AD55;border-radius:4px;padding:8px 11px;font-size:11px;color:#744210;display:flex;gap:7px;margin-bottom:10px;}
+.alert-ok{background:#f0fff4;border:1px solid #9ae6b4;border-radius:4px;padding:8px 11px;font-size:11px;color:#276749;display:flex;gap:7px;margin-bottom:10px;}
+.geo-box{background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.geo-box-name{font-size:12px;font-weight:600;color:#2d3748;}
+.geo-box-meta{font-size:10px;color:#718096;margin-top:2px;}
+.btn-ghost{background:none;color:#3182ce;border:1px solid #bee3f8;border-radius:3px;padding:4px 10px;font-size:10px;cursor:pointer;}
+.btn-ghost:hover{background:#ebf4ff;}
+
+.pool-block{background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:10px 12px;margin-bottom:7px;}
+.pool-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.pool-num{font-size:10px;font-weight:600;color:#EE4D2D;background:#fff0ed;border:1px solid #feb2b2;padding:1px 6px;border-radius:6px;}
+.pool-rm{background:none;border:none;color:#e53e3e;cursor:pointer;font-size:16px;line-height:1;padding:0;}
+.pool-fields{display:flex;gap:10px;align-items:flex-start;}
+.pool-vagas{display:flex;flex-direction:column;gap:3px;}
+.pool-vagas label{font-size:9px;color:#718096;}
+.pool-vagas input{width:64px;border:1px solid #e2e8f0;border-radius:3px;padding:5px 6px;font-size:11px;text-align:center;}
+.pool-vagas input:focus{outline:none;border-color:#EE4D2D;}
+.pool-types{flex:1;display:flex;flex-direction:column;gap:3px;}
+.pool-types label{font-size:9px;color:#718096;}
+.pool-select{border:1px solid #e2e8f0;border-radius:3px;padding:5px 8px;font-size:10px;color:#4a5568;background:#fff;width:100%;}
+.pool-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.pchip{display:inline-flex;align-items:center;gap:3px;background:#fff0ed;color:#c53030;font-size:10px;padding:2px 7px;border-radius:8px;border:1px solid #feb2b2;cursor:pointer;}
+.pchip:hover{background:#fed7cc;}
+.btn-addpool{background:#fff;border:1px dashed #e2e8f0;color:#4a5568;border-radius:4px;padding:7px;font-size:11px;cursor:pointer;width:100%;text-align:center;margin-top:3px;}
+.btn-addpool:hover{border-color:#EE4D2D;color:#EE4D2D;}
+
+/* Zone Management screen */
+#zm-screen{display:none;position:absolute;inset:0;z-index:200;background:#f0f2f5;flex-direction:column;}
+#zm-screen.open{display:flex;}
+.zm-topbar{height:44px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0;}
+.zm-back{display:flex;align-items:center;gap:5px;background:none;border:none;color:#3182ce;font-size:12px;cursor:pointer;font-weight:500;}
+.zm-back::before{content:'←';font-size:14px;}
+.zm-title{font-size:13px;font-weight:600;color:#1a202c;}
+.zm-layout{display:flex;flex:1;overflow:hidden;}
+.zm-sb{width:280px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;flex-shrink:0;}
+.zm-sb-hdr{padding:12px 14px;border-bottom:1px solid #e2e8f0;}
+.zm-sb-hdr h3{font-size:12px;font-weight:600;color:#1a202c;margin-bottom:3px;}
+.zm-sb-hdr p{font-size:10px;color:#718096;}
+.zm-info{background:#ebf4ff;border:1px solid #bee3f8;border-radius:3px;padding:7px 10px;font-size:10px;color:#2b6cb0;margin:8px 12px 0;}
+.zm-list{flex:1;overflow-y:auto;padding:10px;}
+.zm-item{border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.zm-item:hover{border-color:#3182ce;background:#ebf4ff;}
+.zm-item.sel{border-color:#3182ce;background:#ebf4ff;box-shadow:0 0 0 2px #bee3f8;}
+.zm-item.used{cursor:default;opacity:.55;}
+.zm-item.used:hover{border-color:#e2e8f0;background:#fff;}
+.zm-item-name{font-size:11px;font-weight:600;color:#2d3748;}
+.zm-item-meta{font-size:10px;color:#718096;margin-top:2px;}
+.zm-tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-top:3px;font-weight:500;}
+.zm-tag-linked{background:#bee3f8;color:#2b6cb0;border:1px solid #90cdf4;}
+.zm-tag-avail{background:#f0f0f0;color:#718096;border:1px solid #e2e8f0;}
+.zm-tag-gate{background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd;}
+.zm-map{flex:1;position:relative;overflow:hidden;background:linear-gradient(135deg,#dde3ea 0%,#e8edf2 100%);}
+.zm-footer{padding:11px 16px;border-top:1px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.zm-sel-label{font-size:11px;color:#718096;}
+.poly-stn{fill:rgba(72,187,120,0.08);stroke:#48bb78;stroke-width:2;stroke-dasharray:6,3;}
+.poly-zone{fill:rgba(49,130,206,0.1);stroke:#3182ce;stroke-width:1.5;cursor:pointer;transition:fill .15s;}
+.poly-zone:hover{fill:rgba(49,130,206,0.22);}
+.poly-zone.poly-sel{fill:rgba(49,130,206,0.3);stroke:#2b6cb0;stroke-width:2.5;}
+.poly-zone.poly-used{fill:rgba(160,174,192,0.12);stroke:#a0aec0;stroke-width:1.5;cursor:default;}
+.poly-zone.poly-used:hover{fill:rgba(160,174,192,0.12);}
+.poly-zone.poly-gate{fill:rgba(139,92,246,0.12);stroke:#7c3aed;stroke-width:1.5;cursor:pointer;}
+.poly-zone.poly-gate:hover{fill:rgba(139,92,246,0.24);}
+.poly-zone.poly-gate.poly-sel{fill:rgba(139,92,246,0.3);stroke:#5b21b6;stroke-width:2.5;}
+.geo-lbl{font-size:11px;fill:#2d3748;font-weight:600;font-family:sans-serif;pointer-events:none;}
+.geo-lbl-sm{font-size:9px;fill:#718096;font-family:sans-serif;pointer-events:none;}
+
+/* Toast */
+.toast{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#276749;color:#fff;border-radius:5px;padding:8px 18px;font-size:12px;font-weight:500;z-index:3000;box-shadow:0 4px 12px rgba(0,0,0,0.2);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="scene-wrap" id="swrap">
+<div id="scene">
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-logo">
+    <div><span class="sp">Shopee<span class="xp">Xpress</span></span><span class="sb-live">LIVE</span></div>
+    <div class="sb-sub">LM Hub_SP_Mauá</div>
+  </div>
+  <div class="sb-sec">Menu</div>
+  <div class="sb-item">▦ Dashboard</div>
+  <div class="sb-item act">🏢 Station Management</div>
+  <div class="sb-item">📍 Zone Management</div>
+  <div class="sb-item">🚛 LineHaul</div>
+  <div class="sb-item">🛠 Operation Support</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <a href="#">Station Management</a> <span>›</span> <span>Queue &amp; Dock Configurations</span>
+    <div class="topbar-right"><span>🔔</span><span>English ▾</span><span style="font-weight:500;">camila.braz ▾</span></div>
+  </div>
+  <div class="page-tabs">
+    <div class="ptab">Queue Prioritisation</div>
+    <div class="ptab">Automatic Assignment Logic</div>
+    <div class="ptab">Geofencing Registration</div>
+    <div class="ptab act">Vehicle Capacity Control</div>
+  </div>
+  <div class="content">
+
+    <div class="page-hdr">
+      <div class="page-title">Vehicle Capacity Control</div>
+    </div>
+
+    <!-- STA THRESHOLD -->
+    <div class="box">
+      <div class="box-hdr">
+        <div class="box-hdr-bar"></div>
+        <div class="box-hdr-title">STA Threshold</div>
+        <span class="box-tag">Applies to: LH Inbound · LH Outbound</span>
+      </div>
+      <div class="set-row">
+        <div class="set-lbl">Enable STA Threshold<small>Block drivers that arrive before the scheduled time window. When OFF, no early arrival restriction applies.</small></div>
+        <div class="set-r">
+          <span class="set-val" id="sta-enabled-val">OFF</span>
+          <div class="tgl" id="tgl-sta" onclick="toggleSTA()"></div>
+        </div>
+      </div>
+      <div id="sta-detail" style="display:none;">
+        <div class="set-row" style="border-top:1px solid #f5f5f5;align-items:flex-start;padding-top:10px;padding-bottom:10px;">
+          <div class="set-lbl">Arrival Time Threshold<small>Minutes before STA/STD the driver is released into the queue</small></div>
+          <div style="display:flex;align-items:center;gap:22px;flex-shrink:0;">
+            <div class="sta-field">
+              <label>LH Inbound</label>
+              <div id="sta-inb-disp" style="display:flex;align-items:center;gap:5px;"><span class="sta-vdisp"><span id="sta-inb-v">30</span> min</span></div>
+              <div id="sta-inb-edit" style="display:none;align-items:center;gap:5px;">
+                <input class="sta-inp" id="sta-inb-inp" type="number" min="0" value="30">
+                <span style="font-size:11px;color:#718096;">min</span>
+              </div>
+            </div>
+            <div class="sta-field">
+              <label>LH Outbound</label>
+              <div id="sta-out-disp" style="display:flex;align-items:center;gap:5px;"><span class="sta-vdisp"><span id="sta-out-v">30</span> min</span></div>
+              <div id="sta-out-edit" style="display:none;align-items:center;gap:5px;">
+                <input class="sta-inp" id="sta-out-inp" type="number" min="0" value="30">
+                <span style="font-size:11px;color:#718096;">min</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <button class="btn-sm"     id="sta-edit-btn"   onclick="enterSTA()">Edit</button>
+              <button class="btn-sm"     id="sta-cnl-btn"    onclick="exitSTA(false)" style="display:none;">Cancel</button>
+              <button class="btn-sm-red" id="sta-save-btn"   onclick="exitSTA(true)"  style="display:none;">Save</button>
+            </div>
+          </div>
+        </div>
+        <div class="set-row" style="border-top:1px solid #f5f5f5;">
+          <div class="set-lbl">Show Release Time to Driver<small>When ON, blocked drivers see exact release time on Driver App.</small></div>
+          <div class="set-r">
+            <span class="set-val" id="sta-rel-val">OFF</span>
+            <div class="tgl" id="tgl-sta-rel" onclick="toggleSTARel()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QSDC -->
+    <div class="box">
+      <div class="box-hdr">
+        <div class="box-hdr-bar"></div>
+        <div class="box-hdr-title">Queue Sequence Display Control</div>
+      </div>
+      <div class="set-row">
+        <div class="set-lbl">Hide Queue Sequence From Driver After Certain Sequence<small>Drivers above the threshold will not see their queue position number</small></div>
+        <div class="set-r">
+          <span class="set-val" id="qsdc-val">YES</span>
+          <div class="tgl on" id="tgl-qsdc" onclick="toggleQSDC()"></div>
+        </div>
+      </div>
+      <div class="set-row" id="qsdc-thr-row">
+        <div class="set-lbl">Default Value for Hidden Sequence (From Xth Onwards)<small>From this position onwards, drivers won't see their sequence number</small></div>
+        <div class="set-r">
+          <input class="set-inp" id="qsdc-thr" type="number" min="1" value="3">
+          <span style="font-size:10px;color:#718096;">th onwards</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY SITE FILTERS -->
+    <div class="filter-wrap">
+      <div class="fi"><span class="fi-l">Site</span>
+        <select id="f-site"><option value="">All Sites</option><option value="1st">1st Site</option><option value="2nd">2nd Site</option><option value="3rd">3rd Site</option><option value="4th">4th Site</option><option value="5th">5th Site</option></select></div>
+      <div class="fi"><span class="fi-l">Type</span>
+        <select id="f-type"><option value="">All Types</option><option value="Internal">Internal</option><option value="External">External</option></select></div>
+      <div class="fi"><span class="fi-l">Status</span>
+        <select id="f-status"><option value="">All</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+      <div class="fi"><span class="fi-l">Block Early</span>
+        <select id="f-block"><option value="">All</option><option value="on">ON</option><option value="off">OFF</option></select></div>
+      <button class="btn-srch" onclick="applyFilters()">Search</button>
+      <button class="btn-rst"  onclick="resetFilters()">Reset</button>
+    </div>
+
+    <!-- ENTRY SITE TABLE -->
+    <div class="sec-hdr">
+      <div class="sec-title">Entry Site Configuration</div>
+      <div class="sec-actions">
+        <button class="btn-act">Batch Action ▼</button>
+        <button class="btn-act">Export</button>
+        <button class="btn-act">Log</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Site</th><th>Site Type</th><th>Status</th><th>Geofence</th>
+            <th>Entry Cap. Limit</th><th>Block Early</th><th>Queue Freezing</th>
+            <th>Vehicle Type Pools</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="site-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- GATE QUEUE CONTROL -->
+    <div class="box" style="margin-top:14px;">
+      <div class="box-hdr">
+        <div class="box-hdr-bar"></div>
+        <div class="box-hdr-title">Gate Queue Control</div>
+        <div class="box-hdr-right">
+          <span class="tgl-label" id="tglLbl">ON</span>
+          <div class="tgl on" id="tgl-gate" onclick="toggleGate()"></div>
+          <div id="gate-view-btns">
+            <button class="btn-sm" style="margin-left:8px;" onclick="startGateEdit()">Edit</button>
+          </div>
+          <div id="gate-edit-btns" style="display:none;margin-left:8px;display:none;gap:6px;">
+            <button class="btn-sm"     onclick="cancelGateEdit()">Cancel</button>
+            <button class="btn-sm-red" onclick="saveGateEdit()">Save</button>
+          </div>
+        </div>
+      </div>
+      <div id="gateBody" class="gate-body">
+        <!-- Prereq warning when no geofence -->
+        <div id="gate-prereq" style="display:none;margin:10px 14px 0;padding:8px 11px;background:#FFF8F0;border:1px solid #F6AD55;border-radius:4px;font-size:11px;color:#744210;align-items:center;gap:7px;">
+          <span>⚠</span><span>Required fields missing.</span>
+        </div>
+        <div class="geo-row" id="gate-geo-row" style="border-radius:4px;transition:background .2s;">
+          <span class="geo-row-lbl">Gate Area Geofence <span style="color:#e53e3e;font-size:10px;">*required</span></span>
+          <div style="display:flex;align-items:center;">
+            <span id="gate-geo-display"></span>
+            <button class="btn-geo" onclick="openZonePicker('gate')">Change</button>
+          </div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric-card">
+            <div class="metric-lbl">Gate Queue Capacity</div>
+            <div class="metric-val"><span class="metric-num" id="v-cap">80</span><input class="metric-input" id="i-cap" type="number" value="80" min="0"><span class="metric-unit">m</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-lbl">Confirmation Timeout</div>
+            <div class="metric-val"><span class="metric-num" id="v-ctm">5</span><input class="metric-input" id="i-ctm" type="number" value="5" min="1"><span class="metric-unit">min</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-lbl">Max Travel Time</div>
+            <div class="metric-val"><span class="metric-num" id="v-mtt">20</span><input class="metric-input" id="i-mtt" type="number" value="20" min="1"><span class="metric-unit">min</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-lbl">Retry Limit</div>
+            <div class="metric-val"><span class="metric-num" id="v-rl">3</span><input class="metric-input" id="i-rl" type="number" value="3" min="1"><span class="metric-unit">attempts</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ── EDIT MODAL ── -->
+<div class="ovl" id="ovl-edit">
+  <div class="modal">
+    <div class="mhdr">
+      <span class="mtit" id="modal-title">Edit Site</span>
+      <button class="mcls" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mbdy" id="modal-body"></div>
+    <div class="mftr">
+      <button class="btn-cnl" onclick="closeModal()">Cancel</button>
+      <button class="btn-cfm" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ZONE MANAGEMENT SCREEN ── -->
+<div id="zm-screen">
+  <div class="zm-topbar">
+    <button class="zm-back" onclick="closeZM()">Back to Vehicle Capacity Control</button>
+    <span style="color:#cbd5e0;margin:0 6px;">|</span>
+    <span class="zm-title" id="zm-title">Zone Management – Link Geofence</span>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn-sm" style="font-size:10px;">✏ Draw new geofence</button>
+      <button class="btn-sm-red" id="zm-link-btn" style="display:none;font-size:10px;" onclick="linkGeo()">Link</button>
+    </div>
+  </div>
+  <div class="zm-layout">
+    <div class="zm-sb">
+      <div class="zm-sb-hdr">
+        <h3 id="zm-sb-title">Select a geofence zone</h3>
+        <p>Click a zone on the map or in the list below. It must be within the Station Geofence boundary.</p>
+      </div>
+      <div class="zm-info">ℹ Zone must be contained within <strong>Zone_STN_001</strong> (Station Geofence).</div>
+      <div class="zm-list" id="zm-list"></div>
+    </div>
+    <div class="zm-map">
+      <svg width="100%" height="100%" viewBox="0 0 740 680" style="position:absolute;inset:0;">
+        <!-- Station boundary -->
+        <polygon points="45,45 695,38 700,635 40,640" class="poly-stn"/>
+        <text x="370" y="30" class="geo-lbl" text-anchor="middle" fill="#276749" font-size="11">Station Geofence – Zone_STN_001</text>
+
+        <!-- Zone_ENT_1st — linked: 1st Site (Internal) -->
+        <polygon id="pz-1st" points="65,70 255,65 260,220 60,228" class="poly-zone poly-used"/>
+        <text x="160" y="150" class="geo-lbl" text-anchor="middle">Zone_ENT_1st</text>
+        <text x="160" y="165" class="geo-lbl-sm" text-anchor="middle">Linked: 1st Site</text>
+
+        <!-- Zone_ENT_4th — linked: 4th Site (External) -->
+        <polygon id="pz-4th" points="400,70 590,65 595,220 395,228" class="poly-zone poly-used"/>
+        <text x="494" y="150" class="geo-lbl" text-anchor="middle">Zone_ENT_4th</text>
+        <text x="494" y="165" class="geo-lbl-sm" text-anchor="middle">Linked: 4th Site</text>
+
+        <!-- Zone_ENT_5th — linked: 5th Site (External) -->
+        <polygon id="pz-5th" points="400,250 590,245 595,400 395,408" class="poly-zone poly-used"/>
+        <text x="494" y="330" class="geo-lbl" text-anchor="middle">Zone_ENT_5th</text>
+        <text x="494" y="345" class="geo-lbl-sm" text-anchor="middle">Linked: 5th Site</text>
+
+        <!-- Zone_GATE_Portaria — gate area near entrance -->
+        <polygon id="pz-gate" points="65,440 255,435 260,590 60,598" class="poly-zone poly-gate" onclick="selectZone('gate')"/>
+        <text x="160" y="517" class="geo-lbl" text-anchor="middle" id="pz-gate-lbl">Zone_GATE_Portaria</text>
+        <text x="160" y="532" class="geo-lbl-sm" text-anchor="middle" id="pz-gate-meta">Gate Area</text>
+
+        <!-- Zone_SPARE_001 — available -->
+        <polygon id="pz-spare1" points="65,250 255,245 260,408 60,416" class="poly-zone" onclick="selectZone('spare1')"/>
+        <text x="160" y="334" class="geo-lbl" text-anchor="middle">Zone_SPARE_001</text>
+        <text x="160" y="349" class="geo-lbl-sm" text-anchor="middle">Available</text>
+
+        <!-- Zone_SPARE_002 — available -->
+        <polygon id="pz-spare2" points="270,250 380,245 385,408 265,416" class="poly-zone" onclick="selectZone('spare2')"/>
+        <text x="325" y="334" class="geo-lbl" text-anchor="middle">Zone_SPARE_002</text>
+        <text x="325" y="349" class="geo-lbl-sm" text-anchor="middle">Available</text>
+      </svg>
+    </div>
+  </div>
+  <div class="zm-footer">
+    <span class="zm-sel-label" id="zm-sel-lbl">No zone selected. Click a zone on the map or in the list.</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-sm" onclick="closeZM()">Cancel</button>
+      <button class="btn-sm-red" id="zm-link-btn2" style="display:none;font-size:10px;" onclick="linkGeo()">Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+</div><!-- /scene -->
+</div><!-- /scene-wrap -->
+
+<script>
+// ── DATA ────────────────────────────────────────────
+const sites = [
+  { id:'1st', name:'1st Site', label:'VAGAS INTERNAS',      type:'Internal', status:true,  geo:'Zone_ENT_1st', cap:50, blockEarly:true,  queueFreeze:true,  pools:[{id:'A',vagas:30,types:['TRUCK','CARRETA']},{id:'B',vagas:20,types:['MOTO']}] },
+  { id:'2nd', name:'2nd Site', label:'PÁTIO INTERMEDIÁRIO', type:'Internal', status:false, geo:null,           cap:null,blockEarly:false, queueFreeze:false, pools:[] },
+  { id:'3rd', name:'3rd Site', label:'',                    type:null,       status:false, geo:null,           cap:null,blockEarly:false, queueFreeze:false, pools:[] },
+  { id:'4th', name:'4th Site', label:'VAGAS EXTERNAS',      type:'External', status:true,  geo:'Zone_ENT_4th', cap:30, blockEarly:true,  queueFreeze:false, pools:[{id:'A',vagas:30,types:['VAN','BITREM']}] },
+  { id:'5th', name:'5th Site', label:'BOLSÃO EXTERNO',      type:'External', status:true,  geo:'Zone_ENT_5th', cap:80, blockEarly:false, queueFreeze:false, pools:[{id:'A',vagas:80,types:['TRUCK','CARRETA','BITREM']}] }
+];
+const gate = { on:true, geo:'Zone_GATE_Portaria', cap:80, ctm:5, mtt:20, rl:3 };
+const availZones = ['Zone_GATE_Portaria','Zone_ENT_1st','Zone_ENT_2nd','Zone_ENT_3rd','Zone_ENT_4th','Zone_ENT_5th','Zone_PATIO_INT','Zone_BOLSAO_EXT','Zone_ACESSO_LH'];
+const vehTypes   = ['TRUCK','CARRETA','BITREM','TOCO','VAN','VUC','MOTO'];
+
+// ── STATE ────────────────────────────────────────────
+let editing = false;
+let currentSiteId = null;
+let zoneCtx = null;
+let editSite = null;
+
+// ── INIT ─────────────────────────────────────────────
+window.onload = () => { renderTable(sites); renderGateGeo(); };
+
+// ── TABLE ────────────────────────────────────────────
+function renderTable(data) {
+  const tb = document.getElementById('site-tbody');
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#a0aec0;padding:20px 0;">No results found</td></tr>`; return; }
+  tb.innerHTML = data.map(s => {
+    const tBadge = s.type==='Internal' ? `<span class="type-int">Internal</span>` : s.type==='External' ? `<span class="type-ext">External</span>` : `<span style="color:#a0aec0;font-size:10px;">—</span>`;
+    const sBadge = s.status ? `<span class="badge-on">Active</span>` : `<span class="badge-off">Inactive</span>`;
+    const gCell  = s.geo ? `<span class="geo-chip">📍 ${s.geo}</span>` : `<span class="geo-none">⚠ Not linked</span>`;
+    const cCell  = s.cap ? `<strong>${s.cap}</strong> vehicles` : '—';
+    const bCell  = s.blockEarly ? `<span class="dot-on">● ON</span>` : `<span class="dot-off">● OFF</span>`;
+    const fCell  = s.type==='External' ? '—' : s.queueFreeze ? `<span class="dot-on">● ON</span>` : `<span class="dot-off">● OFF</span>`;
+    const pHtml  = !s.pools.length ? `<span style="color:#a0aec0;font-size:10px;">Not configured</span>`
+      : s.pools.map(p=>`<div style="margin-bottom:2px;"><span class="pool-chip">Pool ${p.id} · ${p.vagas}v</span> ${p.types.map(t=>`<span class="v-chip">${t}</span>`).join('')}</div>`).join('');
+    const lbl = s.label ? `<br><small style="color:#718096;font-size:9px;">${s.label}</small>` : '';
+    return `<tr><td><strong>${s.name}</strong>${lbl}</td><td>${tBadge}</td><td>${sBadge}</td><td>${gCell}</td><td>${cCell}</td><td>${bCell}</td><td>${fCell}</td><td>${pHtml}</td><td><button class="btn-ed" onclick="openModal('${s.id}')">Edit</button></td></tr>`;
+  }).join('');
+}
+
+function applyFilters() {
+  const fs = document.getElementById('f-site').value;
+  const ft = document.getElementById('f-type').value;
+  const fst= document.getElementById('f-status').value;
+  const fb = document.getElementById('f-block').value;
+  renderTable(sites.filter(s => {
+    if (fs  && s.id!==fs)                        return false;
+    if (ft  && s.type!==ft)                      return false;
+    if (fst==='active'   && !s.status)           return false;
+    if (fst==='inactive' && s.status)            return false;
+    if (fb==='on'  && !s.blockEarly)             return false;
+    if (fb==='off' && s.blockEarly)              return false;
+    return true;
+  }));
+}
+function resetFilters() {
+  ['f-site','f-type','f-status','f-block'].forEach(id=>document.getElementById(id).value='');
+  renderTable(sites);
+}
+
+// ── STA ──────────────────────────────────────────────
+let staOn=false, staRelOn=false;
+function toggleSTA() {
+  staOn=!staOn;
+  document.getElementById('tgl-sta').classList.toggle('on',staOn);
+  document.getElementById('sta-enabled-val').textContent=staOn?'ON':'OFF';
+  document.getElementById('sta-detail').style.display=staOn?'block':'none';
+}
+function toggleSTARel() {
+  staRelOn=!staRelOn;
+  document.getElementById('tgl-sta-rel').classList.toggle('on',staRelOn);
+  document.getElementById('sta-rel-val').textContent=staRelOn?'ON':'OFF';
+}
+function enterSTA() {
+  document.getElementById('sta-inb-disp').style.display='none'; document.getElementById('sta-inb-edit').style.display='flex';
+  document.getElementById('sta-out-disp').style.display='none'; document.getElementById('sta-out-edit').style.display='flex';
+  document.getElementById('sta-edit-btn').style.display='none';
+  document.getElementById('sta-cnl-btn').style.display='inline-block';
+  document.getElementById('sta-save-btn').style.display='inline-block';
+}
+function exitSTA(save) {
+  if (save) {
+    document.getElementById('sta-inb-v').textContent=document.getElementById('sta-inb-inp').value||30;
+    document.getElementById('sta-out-v').textContent=document.getElementById('sta-out-inp').value||30;
+    showToast('STA Threshold saved');
+  }
+  document.getElementById('sta-inb-disp').style.display='flex'; document.getElementById('sta-inb-edit').style.display='none';
+  document.getElementById('sta-out-disp').style.display='flex'; document.getElementById('sta-out-edit').style.display='none';
+  document.getElementById('sta-edit-btn').style.display='inline-block';
+  document.getElementById('sta-cnl-btn').style.display='none';
+  document.getElementById('sta-save-btn').style.display='none';
+}
+
+// ── QSDC ─────────────────────────────────────────────
+let qsdcOn=true;
+function toggleQSDC() {
+  qsdcOn=!qsdcOn;
+  document.getElementById('tgl-qsdc').classList.toggle('on',qsdcOn);
+  document.getElementById('qsdc-val').textContent=qsdcOn?'YES':'NO';
+  document.getElementById('qsdc-thr-row').style.display=qsdcOn?'flex':'none';
+}
+
+// ── GATE EDIT MODE (inline) ────────────────────────────
+function startGateEdit() {
+  editing=true;
+  document.getElementById('gate-view-btns').style.display='none';
+  document.getElementById('gate-edit-btns').style.display='flex';
+  document.getElementById('scene').classList.add('edit-mode');
+}
+function cancelGateEdit() {
+  editing=false;
+  document.getElementById('gate-view-btns').style.display='';
+  document.getElementById('gate-edit-btns').style.display='none';
+  document.getElementById('scene').classList.remove('edit-mode');
+  document.getElementById('i-cap').value=gate.cap;
+  document.getElementById('i-ctm').value=gate.ctm;
+  document.getElementById('i-mtt').value=gate.mtt;
+  document.getElementById('i-rl').value=gate.rl;
+}
+function saveGateEdit() {
+  // Validate all required fields
+  const errors = [];
+  if (!gate.geo) errors.push('geo');
+  if (!parseInt(document.getElementById('i-cap').value)) errors.push('cap');
+  if (!parseInt(document.getElementById('i-ctm').value)) errors.push('ctm');
+  if (!parseInt(document.getElementById('i-mtt').value)) errors.push('mtt');
+  if (!parseInt(document.getElementById('i-rl').value))  errors.push('rl');
+
+  // Clear previous error styles
+  document.getElementById('gate-prereq').style.display='none';
+  ['i-cap','i-ctm','i-mtt','i-rl'].forEach(id=>{
+    document.getElementById(id).style.borderColor='';
+  });
+  document.getElementById('gate-geo-row').style.background='';
+
+  if (errors.length) {
+    // Show error banner
+    const prereq = document.getElementById('gate-prereq');
+    prereq.style.display='flex';
+    prereq.querySelector('span:last-child').innerHTML =
+      '<strong>Required fields missing:</strong> ' +
+      (errors.includes('geo') ? 'Gate Area Geofence, ' : '') +
+      errors.filter(e=>e!=='geo').map(e=>({cap:'Gate Queue Capacity',ctm:'Confirmation Timeout',mtt:'Max Travel Time',rl:'Retry Limit'}[e])).join(', ');
+    // Highlight missing fields
+    if (errors.includes('geo')) document.getElementById('gate-geo-row').style.background='#fff5f5';
+    errors.filter(e=>e!=='geo').forEach(e=>{ document.getElementById('i-'+e).style.borderColor='#e53e3e'; });
+    return;
+  }
+
+  gate.cap=parseInt(document.getElementById('i-cap').value);
+  gate.ctm=parseInt(document.getElementById('i-ctm').value);
+  gate.mtt=parseInt(document.getElementById('i-mtt').value);
+  gate.rl =parseInt(document.getElementById('i-rl').value);
+  document.getElementById('v-cap').textContent=gate.cap;
+  document.getElementById('v-ctm').textContent=gate.ctm;
+  document.getElementById('v-mtt').textContent=gate.mtt;
+  document.getElementById('v-rl').textContent =gate.rl;
+  cancelGateEdit(); showToast('Gate Queue Control saved');
+}
+function toggleGate() {
+  gate.on=!gate.on;
+  const tgl=document.getElementById('tgl-gate'), lbl=document.getElementById('tglLbl');
+  tgl.classList.toggle('on',gate.on);
+  lbl.textContent=gate.on?'ON':'OFF';
+  lbl.className='tgl-label'+(gate.on?'':' off');
+}
+function renderGateGeo() {
+  const el=document.getElementById('gate-geo-display');
+  el.className=gate.geo?'geo-chip-lg':'geo-none-lg';
+  el.textContent=gate.geo?'📍 '+gate.geo:'⚠ Not linked';
+}
+
+// ── SITE MODAL ────────────────────────────────────────
+function openModal(id) {
+  currentSiteId=id;
+  const s=sites.find(x=>x.id===id);
+  editSite=JSON.parse(JSON.stringify(s));
+  document.getElementById('modal-title').textContent=`Edit – ${s.name}${s.label?' ('+s.label+')':''}`;
+  renderModalBody();
+  document.getElementById('ovl-edit').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('ovl-edit').classList.remove('show');
+  currentSiteId=null; editSite=null;
+}
+function renderModalBody() {
+  const s=editSite, hasGeo=!!s.geo, isExt=s.type==='External';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="msec">
+      <div class="msec-title">Geofence</div>
+      <div class="geo-box">
+        <div><div class="geo-box-name">${hasGeo?s.geo:'No geofence linked'}</div>${hasGeo?'<div class="geo-box-meta">Entry site geofence zone</div>':''}</div>
+        <button class="btn-ghost" onclick="openZonePicker('${s.id}')">${hasGeo?'Change':'Link Geofence'}</button>
+      </div>
+      ${hasGeo
+        ?`<div class="alert-ok"><span>✓</span><span>Geofence linked. Site can be activated.</span></div>`
+        :`<div class="alert-warn"><span>⚠</span><span><strong>A geofence is required to activate this site.</strong></span></div>`}
+    </div>
+    <div class="msec">
+      <div class="msec-title">General</div>
+      <div class="mrow">
+        <div class="mlbl">Site Type<small>Determines gate check behavior</small></div>
+        <select class="msel" id="m-type" onchange="onTypeChange()">
+          <option value="" ${!s.type?'selected':''}>— Not set —</option>
+          <option value="Internal" ${s.type==='Internal'?'selected':''}>Internal</option>
+          <option value="External" ${s.type==='External'?'selected':''}>External</option>
+        </select>
+      </div>
+      <div class="mrow">
+        <div class="mlbl">Status<small>Requires geofence to activate</small></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="m-status-val" style="font-size:11px;font-weight:600;color:${s.status?'#276749':'#718096'}">${s.status?'Active':'Inactive'}</span>
+          <div class="tgl ${s.status?'on':''} ${!hasGeo?'dis':''}" id="m-tgl-status" onclick="toggleMStatus()"></div>
+        </div>
+      </div>
+      <div class="mrow">
+        <div class="mlbl">Entry Capacity Limit (vehicles)</div>
+        <input class="minp" id="m-cap" type="number" min="0" value="${s.cap||''}" placeholder="—" oninput="editSite.cap=parseInt(this.value)||null">
+      </div>
+      <div class="mrow">
+        <div class="mlbl">Block Early Vehicles<small>Block drivers arriving before STA window</small></div>
+        <div class="tgl ${s.blockEarly?'on':''}" id="m-tgl-block" onclick="toggleMField('blockEarly','m-tgl-block')"></div>
+      </div>
+      <div class="mrow" id="m-freeze-row" style="${isExt?'display:none':''}">
+        <div class="mlbl">Queue Freezing<small>Only applies to internal sites</small></div>
+        <div class="tgl ${s.queueFreeze?'on':''}" id="m-tgl-freeze" onclick="toggleMField('queueFreeze','m-tgl-freeze')"></div>
+      </div>
+    </div>
+    <div class="msec">
+      <div class="msec-title">Vehicle Type Pools</div>
+      <div id="pool-list">${renderPools(s.pools)}</div>
+      <button class="btn-addpool" onclick="addPool()">+ Add Pool</button>
+    </div>`;
+}
+function onTypeChange() {
+  editSite.type=document.getElementById('m-type').value||null;
+  const fr=document.getElementById('m-freeze-row');
+  if(fr) fr.style.display=editSite.type==='External'?'none':'';
+}
+function toggleMStatus() {
+  if(!editSite.geo) return;
+  editSite.status=!editSite.status;
+  document.getElementById('m-tgl-status').classList.toggle('on',editSite.status);
+  const lbl=document.getElementById('m-status-val');
+  lbl.textContent=editSite.status?'Active':'Inactive';
+  lbl.style.color=editSite.status?'#276749':'#718096';
+}
+function toggleMField(field,tglId) {
+  editSite[field]=!editSite[field];
+  document.getElementById(tglId).classList.toggle('on',editSite[field]);
+}
+function saveModal() {
+  const idx=sites.findIndex(x=>x.id===currentSiteId);
+  if(idx>=0) sites[idx]=JSON.parse(JSON.stringify(editSite));
+  renderTable(sites); closeModal(); showToast(`${editSite.name} saved`);
+}
+
+// ── POOLS ─────────────────────────────────────────────
+function renderPools(pools) {
+  if(!pools.length) return `<p style="font-size:11px;color:#a0aec0;text-align:center;padding:8px;">No pools configured</p>`;
+  return pools.map((p,i)=>`
+    <div class="pool-block">
+      <div class="pool-hdr"><span class="pool-num">Pool ${p.id}</span><button class="pool-rm" onclick="removePool(${i})">×</button></div>
+      <div class="pool-fields">
+        <div class="pool-vagas"><label>Vacancies</label><input type="number" min="0" value="${p.vagas}" oninput="editSite.pools[${i}].vagas=parseInt(this.value)||0"></div>
+        <div class="pool-types">
+          <label>Vehicle Types</label>
+          <select class="pool-select" onchange="addVehType(${i},this.value);this.value=''">
+            <option value="">+ Add type…</option>
+            ${vehTypes.map(t=>`<option value="${t}">${t}</option>`).join('')}
+          </select>
+          <div class="pool-chips" id="pchips-${i}">${p.types.map((t,ti)=>`<span class="pchip" onclick="removeVehType(${i},${ti})">${t} ✕</span>`).join('')}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function addPool() {
+  const ids='ABCDEF'; editSite.pools.push({id:ids[editSite.pools.length]||'P'+(editSite.pools.length+1),vagas:0,types:[]});
+  document.getElementById('pool-list').innerHTML=renderPools(editSite.pools);
+}
+function removePool(i) {
+  editSite.pools.splice(i,1); document.getElementById('pool-list').innerHTML=renderPools(editSite.pools);
+}
+function addVehType(pi,t) {
+  if(!t||editSite.pools[pi].types.includes(t)) return;
+  editSite.pools[pi].types.push(t);
+  document.getElementById('pchips-'+pi).innerHTML=editSite.pools[pi].types.map((t,ti)=>`<span class="pchip" onclick="removeVehType(${pi},${ti})">${t} ✕</span>`).join('');
+}
+function removeVehType(pi,ti) {
+  editSite.pools[pi].types.splice(ti,1);
+  document.getElementById('pchips-'+pi).innerHTML=editSite.pools[pi].types.map((t,ti)=>`<span class="pchip" onclick="removeVehType(${pi},${ti})">${t} ✕</span>`).join('');
+}
+
+// ── ZONE MANAGEMENT SCREEN ────────────────────────────
+// Zone definitions for the ZM screen
+const zmZones = [
+  { key:'gate',   name:'Zone_GATE_Portaria', meta:'Gate area · near entrance',        tag:'gate',   linked:null },
+  { key:'spare1', name:'Zone_SPARE_001',     meta:'Available · 2nd Site area',         tag:'avail',  linked:null },
+  { key:'spare2', name:'Zone_SPARE_002',     meta:'Available · internal patio area',   tag:'avail',  linked:null },
+  { key:'1st',    name:'Zone_ENT_1st',       meta:'Linked: 1st Site (Internal)',        tag:'linked', linked:'1st Site' },
+  { key:'4th',    name:'Zone_ENT_4th',       meta:'Linked: 4th Site (External)',        tag:'linked', linked:'4th Site' },
+  { key:'5th',    name:'Zone_ENT_5th',       meta:'Linked: 5th Site (External)',        tag:'linked', linked:'5th Site' },
+];
+let zmSelectedKey = null;
+let zmFromModal   = false; // was ZM opened from within the edit modal?
+
+function openZonePicker(ctx) {
+  zoneCtx      = ctx;
+  zmSelectedKey = null;
+  zmFromModal   = (ctx !== 'gate') && !!editSite;
+
+  // Configure context-specific labels
+  const isGate = ctx === 'gate';
+  document.getElementById('zm-title').textContent   = isGate
+    ? 'Zone Management – Gate Area Geofence'
+    : `Zone Management – Link Geofence (${(sites.find(s=>s.id===ctx)||{}).name||ctx})`;
+  document.getElementById('zm-sb-title').textContent = isGate
+    ? 'Select or draw the gate area zone'
+    : 'Select a geofence for this entry site';
+
+  // Pre-select current zone if already linked
+  const curGeo = isGate ? gate.geo : (editSite||{}).geo;
+  const match  = zmZones.find(z => z.name === curGeo);
+  if (match) {
+    zmSelectedKey = match.key;
+    highlightMap(match.key);
+  }
+
+  renderZMList();
+  updateZMFooter();
+  document.getElementById('zm-screen').classList.add('open');
+  // hide the edit modal while ZM is open (it's underneath anyway, but keep state)
+}
+
+function closeZM() {
+  document.getElementById('zm-screen').classList.remove('open');
+  // if came from modal, modal is still open (z-index lower but still rendered)
+  zmSelectedKey = null; zoneCtx = null;
+}
+
+function renderZMList() {
+  const isGate = zoneCtx === 'gate';
+  document.getElementById('zm-list').innerHTML = zmZones.map(z => {
+    const isUsed   = z.linked && !(isGate ? false : zoneCtx === z.key);
+    const isSel    = z.key === zmSelectedKey;
+    const tagClass = z.tag === 'linked' ? 'zm-tag-linked' : z.tag === 'gate' ? 'zm-tag-gate' : 'zm-tag-avail';
+    const tagLabel = z.tag === 'linked' ? `Linked: ${z.linked}` : z.tag === 'gate' ? 'Gate Area' : 'Available';
+    return `<div class="zm-item ${isUsed?'used':''} ${isSel?'sel':''}" onclick="${isUsed?'':'selectZoneZM(\''+z.key+'\')'}">
+      <div class="zm-item-name">📍 ${z.name}</div>
+      <div class="zm-item-meta">${z.meta}</div>
+      <span class="zm-tag ${tagClass}">${tagLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectZoneZM(key) {
+  const z = zmZones.find(x => x.key === key);
+  if (!z || z.linked) return;
+  zmSelectedKey = key;
+  highlightMap(key);
+  renderZMList();
+  updateZMFooter();
+}
+
+function highlightMap(key) {
+  // Reset all
+  zmZones.forEach(z => {
+    const el = document.getElementById('pz-'+z.key);
+    if (!el) return;
+    el.classList.remove('poly-sel');
+  });
+  if (!key) return;
+  const el = document.getElementById('pz-'+key);
+  if (el) el.classList.add('poly-sel');
+}
+
+function updateZMFooter() {
+  const isGate   = zoneCtx === 'gate';
+  const hasSelect= !!zmSelectedKey;
+  const z        = zmZones.find(x => x.key === zmSelectedKey);
+  const linkLabel= isGate ? 'Link as Gate Area (Portaria)' : 'Link to Site';
+
+  document.getElementById('zm-sel-lbl').textContent = hasSelect
+    ? `Selected: ${z.name} — ready to ${isGate ? 'link as Gate Area' : 'link to site'}`
+    : 'No zone selected. Click a zone on the map or in the list.';
+
+  ['zm-link-btn','zm-link-btn2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.display = hasSelect ? 'inline-block' : 'none';
+    el.textContent   = linkLabel;
+  });
+}
+
+// Called from SVG onclick
+function selectZone(key) { selectZoneZM(key); }
+
+function linkGeo() {
+  if (!zmSelectedKey) return;
+  const z = zmZones.find(x => x.key === zmSelectedKey);
+  if (!z) return;
+
+  if (zoneCtx === 'gate') {
+    gate.geo = z.name;
+    renderGateGeo();
+    showToast('Gate geofence linked: ' + z.name);
+  } else if (editSite) {
+    const capEl = document.getElementById('m-cap');
+    if (capEl) editSite.cap = parseInt(capEl.value) || null;
+    editSite.geo = z.name;
+    // modal will re-render after ZM closes
+  }
+  closeZM();
+  // If came from modal, re-render the modal body with updated geo
+  if (zmFromModal && editSite) {
+    renderModalBody();
+    showToast('Geofence linked: ' + z.name);
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── SCALE ─────────────────────────────────────────────
+function scaleScene() {
+  const vw=window.innerWidth-48, s=Math.min(1,vw/1200);
+  document.getElementById('scene').style.transform=`scale(${s})`;
+  document.querySelector('.scene-wrap').style.width =(1200*s)+'px';
+  document.querySelector('.scene-wrap').style.height=(920*s)+'px';
+}
+scaleScene(); window.addEventListener('resize',scaleScene);
+</script>
+</body>
+</html>

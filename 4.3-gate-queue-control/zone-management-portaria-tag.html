@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Zone Management – Portaria Tag</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#e8eaf0;display:flex;align-items:flex-start;justify-content:center;padding:20px;font-family:'Segoe UI',Arial,sans-serif;}
+.scene-wrap{border-radius:10px;box-shadow:0 6px 32px rgba(0,0,0,0.22);overflow:hidden;}
+#scene{width:1920px;height:1080px;transform-origin:top left;background:#f0f2f5;display:flex;flex-direction:column;position:relative;}
+
+/* VIEWS */
+.view{display:none;flex-direction:column;height:100%;}
+.view.active{display:flex;}
+
+/* TOPBAR */
+.topbar{height:56px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 28px;gap:14px;flex-shrink:0;}
+.spx-logo{background:#EE4D2D;color:#fff;font-size:13px;font-weight:700;padding:5px 10px;border-radius:4px;line-height:1.3;text-align:center;}
+.spx-logo small{display:block;font-size:9px;font-weight:400;opacity:0.85;}
+.bread{font-size:15px;color:#718096;display:flex;align-items:center;gap:8px;}
+.bread .cur{color:#1a202c;font-weight:500;}
+.bread-sep{color:#cbd5e0;}
+.lnk{color:#3182ce;font-size:15px;cursor:pointer;text-decoration:none;background:none;border:none;padding:0;}
+.lnk:hover{text-decoration:underline;}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.btn-red{background:#EE4D2D;color:#fff;border:none;border-radius:4px;padding:9px 20px;font-size:14px;cursor:pointer;font-weight:500;}
+.btn-outline{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:4px;padding:9px 16px;font-size:14px;cursor:pointer;}
+.status-badge{background:#e6f7ee;color:#276749;font-size:13px;padding:3px 12px;border-radius:4px;font-weight:500;}
+.version-badge{background:#f0f0f0;color:#4a5568;font-size:13px;padding:3px 10px;border-radius:4px;}
+.pub-time{font-size:13px;color:#a0aec0;}
+
+/* SIDEBAR */
+.sb{width:240px;background:#1a1f36;flex-shrink:0;display:flex;flex-direction:column;}
+.sb-logo{padding:20px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sb-logo .sp{color:#fff;font-size:24px;font-weight:700;}
+.sb-logo .xp{color:#EE4D2D;}
+.sb-uattag{background:#EE4D2D;color:#fff;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:5px;}
+.sb-sec{font-size:10px;color:#4a5568;padding:14px 20px 5px;text-transform:uppercase;letter-spacing:0.7px;}
+.sb-item{padding:12px 20px;font-size:14px;color:#8892b0;border-left:3px solid transparent;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.sb-item:hover{background:rgba(255,255,255,0.04);}
+.sb-item.act{color:#fff;background:rgba(238,77,45,0.15);border-left-color:#EE4D2D;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.content{flex:1;padding:24px 32px;overflow-y:auto;}
+.box{background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.tabs{display:flex;border-bottom:1px solid #e2e8f0;padding:0 22px;}
+.tab{padding:16px 20px;font-size:14px;color:#718096;border-bottom:2px solid transparent;cursor:pointer;}
+.tab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+.tab .cnt{background:#eee;color:#555;font-size:11px;padding:1px 7px;border-radius:10px;margin-left:5px;}
+.filter-area{padding:16px 22px;border-bottom:1px solid #f0f0f0;}
+.frow{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.frow:last-child{margin-bottom:0;}
+.fi{display:flex;align-items:stretch;border:1px solid #e2e8f0;border-radius:4px;height:36px;overflow:hidden;}
+.fi-l{padding:0 12px;font-size:13px;color:#4a5568;border-right:1px solid #e2e8f0;white-space:nowrap;display:flex;align-items:center;background:#f7fafc;font-weight:500;}
+.fi input{border:none;outline:none;padding:0 10px;font-size:13px;color:#a0aec0;background:#fff;height:100%;min-width:150px;}
+.act-bar{padding:14px 22px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f0f0f0;}
+.sep{color:#d0d0d0;margin:0 5px;}
+
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:13px 16px;border-bottom:1px solid #e2e8f0;white-space:nowrap;}
+td{padding:13px 16px;border-bottom:1px solid #f5f5f5;color:#2d3748;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafcff;}
+
+.pagination{padding:14px 22px;display:flex;align-items:center;justify-content:flex-end;gap:8px;border-top:1px solid #f0f0f0;font-size:14px;color:#718096;}
+.pg-btn{border:1px solid #e2e8f0;background:#fff;border-radius:3px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
+.pg-btn.act{background:#EE4D2D;color:#fff;border-color:#EE4D2D;}
+
+/* BADGES */
+.badge-stn{display:inline-flex;align-items:center;gap:3px;background:#FFF3E0;color:#E65100;font-size:11px;padding:2px 9px;border-radius:10px;margin-left:8px;font-weight:500;border:1px solid #FFCC80;}
+.badge-portaria{display:inline-flex;align-items:center;gap:3px;background:#FFEBEE;color:#C62828;font-size:11px;padding:2px 9px;border-radius:10px;margin-left:8px;font-weight:500;border:1px solid #EF9A9A;}
+.badge-p1{display:inline-flex;background:#e6f3ff;color:#2b6cb0;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;border:1px solid #bee3f8;width:fit-content;}
+.badge-p2{display:inline-flex;background:#e6ffed;color:#276749;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;border:1px solid #9ae6b4;width:fit-content;}
+.badge-p3{display:inline-flex;background:#f3e6ff;color:#6b2fa0;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;border:1px solid #d6bcfa;width:fit-content;}
+
+/* DROPDOWN */
+.dd-wrap{position:relative;display:inline-block;}
+.dropdown{display:none;position:absolute;right:0;top:24px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,0.14);z-index:500;min-width:230px;overflow:hidden;}
+.dropdown.open{display:block;}
+.dd-item{padding:12px 16px;font-size:14px;cursor:pointer;color:#2d3748;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f5f5f5;}
+.dd-item:last-child{border-bottom:none;}
+.dd-item:hover{background:#f7fafc;}
+.dd-item.highlight{background:#fff5f3;color:#EE4D2D;font-weight:500;}
+.dd-item.highlight:hover{background:#ffe8e3;}
+.dd-item.highlight-portaria{background:#FFF5F5;color:#C62828;font-weight:500;}
+.dd-item.highlight-portaria:hover{background:#FFEBEE;}
+.dd-item.highlight-stn{background:#FFF8F0;color:#E65100;font-weight:500;}
+.dd-item.highlight-stn:hover{background:#FFF3E0;}
+.dd-item.danger{color:#e53e3e;}
+.dd-divider{height:1px;background:#f0f0f0;}
+
+/* MAP VIEW */
+.left-icons{width:54px;background:#1a1f36;display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:6px;flex-shrink:0;}
+.ico-btn{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;color:#8892b0;}
+.ico-btn.act{background:rgba(238,77,45,0.2);color:#EE4D2D;}
+.map-area{flex:1;position:relative;overflow:hidden;background:#e8edf0;}
+.map-toolbar{position:absolute;top:14px;left:14px;display:flex;gap:8px;z-index:10;}
+.map-btn{background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:8px 14px;font-size:13px;cursor:pointer;color:#4a5568;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.map-btn.active{background:#fff5f3;border-color:#EE4D2D;color:#EE4D2D;}
+.map-controls{position:absolute;bottom:50px;right:310px;display:flex;flex-direction:column;gap:4px;z-index:10;}
+.map-ctrl{width:36px;height:36px;background:#fff;border:1px solid #e2e8f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.map-tiles{position:absolute;bottom:14px;left:14px;background:#fff;border-radius:4px;border:1px solid #e2e8f0;display:flex;overflow:hidden;z-index:10;}
+.tile-opt{padding:7px 16px;font-size:13px;cursor:pointer;color:#718096;}
+.tile-opt.act{color:#EE4D2D;font-weight:500;}
+
+/* RIGHT PANEL */
+.rp{width:300px;background:#fff;border-left:1px solid #e2e8f0;display:flex;flex-direction:column;flex-shrink:0;}
+.rp-hdr{padding:16px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;}
+.rp-title{font-size:16px;font-weight:600;color:#1a202c;}
+.rp-row{padding:12px 16px;border-bottom:1px solid #f5f5f5;display:grid;grid-template-columns:40px 1fr 70px;align-items:center;cursor:default;}
+.rp-row:hover{background:#fafcff;}
+.rp-row.stn-row{background:#fffaf5;}
+.rp-row.portaria-row{background:#fff8f8;}
+.rp-num{font-size:13px;color:#718096;}
+.rp-info{display:flex;flex-direction:column;gap:3px;}
+.rp-id{font-size:13px;color:#2d3748;}
+.rp-action{display:flex;justify-content:flex-end;position:relative;}
+
+/* OVERLAY & MODALS */
+.ovl{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;z-index:1000;}
+.ovl.open{display:flex;}
+.modal{background:#fff;border-radius:8px;box-shadow:0 16px 48px rgba(0,0,0,0.28);width:580px;overflow:hidden;}
+.modal-hdr{padding:22px 26px 0;display:flex;align-items:flex-start;gap:16px;}
+.modal-icon{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.modal-icon.err{background:#FFF0F0;}
+.modal-icon.suc{background:#F0FFF4;}
+.modal-title{font-size:18px;font-weight:600;color:#1a202c;margin-bottom:6px;}
+.modal-msg{font-size:14px;color:#718096;line-height:1.6;}
+.modal-detail{margin:16px 26px;border-radius:6px;padding:14px 16px;}
+.modal-detail.err{background:#FFF5F5;border:1px solid #FED7D7;}
+.modal-detail.suc{background:#F0FFF4;border:1px solid #9AE6B4;}
+.modal-detail p{font-size:13px;line-height:1.6;}
+.modal-detail.err p{color:#C53030;}
+.modal-detail.suc p{color:#276749;}
+.modal-detail ul{margin-top:8px;padding-left:18px;}
+.modal-detail ul li{font-size:13px;margin-bottom:4px;}
+.modal-detail.err ul li{color:#C53030;}
+.modal-footer{padding:16px 26px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid #f0f0f0;margin-top:16px;}
+.btn-ok{background:#EE4D2D;color:#fff;border:none;border-radius:4px;padding:10px 28px;font-size:14px;cursor:pointer;font-weight:500;}
+.btn-cancel{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:4px;padding:10px 20px;font-size:14px;cursor:pointer;}
+.btn-green{background:#38a169;color:#fff;border:none;border-radius:4px;padding:10px 28px;font-size:14px;cursor:pointer;font-weight:500;}
+
+/* HINT BAR */
+.hint-bar{background:#1a1f36;color:#aab4c8;font-size:13px;padding:8px 24px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.hint-bar .dot{width:8px;height:8px;border-radius:50%;background:#EE4D2D;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="scene-wrap">
+<div id="scene">
+
+<!-- ══════════════════════════════════════
+     VIEW 1: LIST
+══════════════════════════════════════ -->
+<div class="view active" id="view-list">
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <div class="sb">
+      <div class="sb-logo">
+        <span class="sp">Shopee<span class="xp">Xpress</span></span><span class="sb-uattag">UAT</span>
+        <div style="font-size:11px;color:#5a6380;margin-top:4px;">UAT_SoC_Santana ▾</div>
+      </div>
+      <div style="flex:1;">
+        <div class="sb-sec">Menu</div>
+        <div class="sb-item">▦ Dashboard</div>
+        <div class="sb-item">✉ Case Management</div>
+        <div class="sb-item">⚠ Exception Handling</div>
+        <div class="sb-item act">📍 Zone Management</div>
+        <div class="sb-item">🏢 Station Management</div>
+        <div class="sb-item">🛠 Operation Support</div>
+        <div class="sb-item">📦 Order Management</div>
+        <div class="sb-item">🚛 LineHaul</div>
+        <div class="sb-item">👥 Workforce Management</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="bread">Zone Management / <span class="cur" style="margin-left:5px;">Queue Zone Management</span></div>
+        <div class="topbar-r"><button class="btn-red">Show Key</button></div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="tabs">
+            <div class="tab act">Active</div>
+            <div class="tab">Upcoming <span class="cnt">0</span></div>
+            <div class="tab">Expired</div>
+            <div class="tab">Draft</div>
+          </div>
+          <div class="filter-area">
+            <div class="frow">
+              <div class="fi"><span class="fi-l">Zone ID</span><input placeholder="Please Input"/></div>
+              <div class="fi"><span class="fi-l">Station</span><input placeholder="Please Select"/></div>
+              <div class="fi"><span class="fi-l">Station Type</span><input placeholder="Please Select"/></div>
+            </div>
+            <div class="frow">
+              <div class="fi"><span class="fi-l">Active Time</span><input placeholder="Start Date — End Date" style="min-width:180px;"/></div>
+              <div class="fi"><span class="fi-l">Version ID</span><input placeholder="Please Input"/></div>
+              <button class="btn-red" style="padding:0 22px;height:36px;">Search</button>
+              <button class="btn-outline" style="height:36px;">Reset</button>
+            </div>
+          </div>
+          <div class="act-bar">
+            <button class="btn-red">Create</button>
+            <button class="btn-outline">Export ▾</button>
+            <button class="btn-outline">Log</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Version ID</th><th>Station</th><th>Station Type</th><th>Queue Zone Qty</th><th>Active Time</th><th>Operate Time</th><th>Operator</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>469</td>
+                <td>
+                  [5016] UAT_SoC_Santana
+                  <span class="badge-stn">◉ Station Geofence</span>
+                  <span class="badge-portaria" id="list-portaria-badge" style="display:none;">◉ Portaria</span>
+                </td>
+                <td>DC</td><td>5</td>
+                <td style="color:#718096;">2025-06-12 09:22:14</td>
+                <td style="color:#718096;">2025-06-12 09:22:14</td>
+                <td style="color:#718096;">daniel.aoki@shopee.com</td>
+                <td>
+                  <a class="lnk" onclick="showView('view-map')">View</a><span class="sep">|</span>
+                  <a class="lnk" onclick="showView('view-map')">Zone List</a><span class="sep">|</span>
+                  <div class="dd-wrap">
+                    <a class="lnk" onclick="toggleDd('dd-list1',event)">More ▾</a>
+                    <div class="dropdown" id="dd-list1">
+                      <div class="dd-item highlight-stn">◉ Tag as Station Geofence</div>
+                      <div class="dd-item highlight-portaria" onclick="tagPortaria('list')">◉ Tag as Portaria</div>
+                      <div class="dd-divider"></div>
+                      <div class="dd-item">⧉ Copy to Draft</div>
+                      <div class="dd-item">↓ Export</div>
+                      <div class="dd-item danger">🗑 Remove</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>468</td>
+                <td>[5016] UAT_SoC_Santana</td>
+                <td>DC</td><td>5</td>
+                <td style="color:#718096;">2025-06-10 08:10:33</td>
+                <td style="color:#718096;">2025-06-10 08:10:33</td>
+                <td style="color:#718096;">camila.braz@shopee.com</td>
+                <td>
+                  <a class="lnk">View</a><span class="sep">|</span>
+                  <a class="lnk">Zone List</a><span class="sep">|</span>
+                  <div class="dd-wrap">
+                    <a class="lnk" onclick="toggleDd('dd-list2',event)">More ▾</a>
+                    <div class="dropdown" id="dd-list2">
+                      <div class="dd-item highlight-stn">◉ Tag as Station Geofence</div>
+                      <div class="dd-item highlight-portaria" onclick="showErrorPortaria()">◉ Tag as Portaria</div>
+                      <div class="dd-divider"></div>
+                      <div class="dd-item">⧉ Copy to Draft</div>
+                      <div class="dd-item">↓ Export</div>
+                      <div class="dd-item danger">🗑 Remove</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>467</td>
+                <td>[5016] UAT_SoC_Santana</td>
+                <td>DC</td><td>5</td>
+                <td style="color:#718096;">2025-06-08 14:30:07</td>
+                <td style="color:#718096;">2025-06-08 14:30:07</td>
+                <td style="color:#718096;">daniel.aoki@shopee.com</td>
+                <td>
+                  <a class="lnk">View</a><span class="sep">|</span>
+                  <a class="lnk">Zone List</a><span class="sep">|</span>
+                  <a class="lnk">More ▾</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <span>◀</span><span class="pg-btn act">1</span><span>▶</span>
+            <span style="margin-left:10px;">24 / Page ▾</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hint-bar"><span class="dot"></span>Click <strong>Zone List</strong> to see the map view · <strong>More ▾</strong> on row 469: successful Portaria tag · Row 468: simulates zone outside Station boundary (error)</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW 2: MAP / ZONE LIST
+══════════════════════════════════════ -->
+<div class="view" id="view-map">
+  <div class="topbar">
+    <div class="spx-logo">Shopee<br><small>Xpress UAT</small></div>
+    <div class="bread">
+      <a class="lnk" onclick="showView('view-list')">Zone Management</a>
+      <span class="bread-sep">›</span>
+      <span class="cur">UAT_SoC_Santana</span>
+    </div>
+    <span class="status-badge">Active</span>
+    <span class="version-badge">V469</span>
+    <span class="pub-time">Published at 2026-05-28 09:22:14</span>
+    <div class="topbar-r"><button class="btn-red">Copy to Draft</button></div>
+  </div>
+
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <div class="left-icons">
+      <div class="ico-btn">⊞</div>
+      <div class="ico-btn act">📍</div>
+      <div class="ico-btn">🕐</div>
+      <div class="ico-btn">📅</div>
+      <div class="ico-btn">📋</div>
+      <div class="ico-btn">📄</div>
+      <div class="ico-btn">ℹ</div>
+      <div class="ico-btn">🗂</div>
+    </div>
+
+    <div class="map-area">
+      <div class="map-toolbar">
+        <div class="map-btn">👥 Order Heat Map</div>
+        <div class="map-btn">⚙ Vehicle Type Setting</div>
+        <div class="map-btn active">Address ▾</div>
+        <div class="map-btn">🔍</div>
+      </div>
+
+      <svg width="100%" height="100%" viewBox="0 0 1560 1024" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1560" height="1024" fill="#e8edf0"/>
+        <!-- Roads -->
+        <rect x="0" y="200" width="1560" height="38" fill="#d0d8e0" opacity="0.7"/>
+        <rect x="0" y="420" width="1560" height="52" fill="#c8d2dc" opacity="0.8"/>
+        <rect x="0" y="650" width="1560" height="38" fill="#d0d8e0" opacity="0.7"/>
+        <rect x="150" y="0" width="33" height="1024" fill="#d0d8e0" opacity="0.7"/>
+        <rect x="380" y="0" width="48" height="1024" fill="#c8d2dc" opacity="0.8"/>
+        <rect x="700" y="0" width="38" height="1024" fill="#d0d8e0" opacity="0.7"/>
+        <!-- Buildings -->
+        <rect x="200" y="250" width="170" height="160" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="440" y="250" width="250" height="160" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="200" y="485" width="170" height="155" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="440" y="485" width="250" height="155" rx="2" fill="#dde4ec" opacity="0.6"/>
+
+        <!-- STATION GEOFENCE -->
+        <polygon points="300,70 1100,70 1180,900 220,940" fill="rgba(255,152,0,0.08)" stroke="#FF9800" stroke-width="5" stroke-dasharray="14,7"/>
+        <text x="680" y="120" font-size="22" fill="#E65100" font-weight="600" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">Station Geofence</text>
+        <rect x="530" y="125" width="180" height="24" rx="12" fill="#FFF3E0" stroke="#FFCC80" stroke-width="1"/>
+        <text x="620" y="141" font-size="12" font-weight="600" fill="#E65100" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">◉ Station</text>
+
+        <!-- PARKING SITE 1 -->
+        <polygon points="340,180 610,170 625,440 330,450" fill="rgba(49,130,206,0.15)" stroke="#3182ce" stroke-width="3"/>
+        <text x="480" y="310" font-size="16" fill="#2b6cb0" font-weight="500" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">Parking Site 1</text>
+
+        <!-- PARKING SITE 2 -->
+        <polygon points="650,180 920,170 935,445 640,455" fill="rgba(39,103,73,0.13)" stroke="#276749" stroke-width="3"/>
+        <text x="780" y="310" font-size="16" fill="#276749" font-weight="500" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">Parking Site 2</text>
+
+        <!-- PARKING SITE 3 -->
+        <polygon points="340,500 620,488 638,730 330,742" fill="rgba(107,47,160,0.12)" stroke="#6b2fa0" stroke-width="3"/>
+        <text x="484" y="615" font-size="16" fill="#6b2fa0" font-weight="500" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">Parking Site 3</text>
+
+        <!-- PORTARIA ZONE — highlighted / selected -->
+        <polygon points="340,760 620,748 635,900 330,912" fill="rgba(198,40,40,0.15)" stroke="#C62828" stroke-width="3"/>
+        <!-- Corner handles -->
+        <circle cx="340" cy="760" r="6" fill="#C62828" stroke="#fff" stroke-width="2"/>
+        <circle cx="620" cy="748" r="6" fill="#C62828" stroke="#fff" stroke-width="2"/>
+        <circle cx="635" cy="900" r="6" fill="#C62828" stroke="#fff" stroke-width="2"/>
+        <circle cx="330" cy="912" r="6" fill="#C62828" stroke="#fff" stroke-width="2"/>
+        <text x="484" y="838" font-size="16" fill="#C62828" font-weight="600" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">Zone_GATE_001</text>
+        <!-- Portaria badge on map -->
+        <rect x="394" y="848" width="180" height="24" rx="12" fill="#FFEBEE" stroke="#EF9A9A" stroke-width="1" id="map-portaria-badge-rect" style="display:none;"/>
+        <text x="484" y="864" font-size="12" font-weight="600" fill="#C62828" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" id="map-portaria-badge-txt" style="display:none;">◉ Portaria</text>
+
+        <!-- Road labels -->
+        <text x="800" y="448" font-size="13" fill="#8899aa" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">R. Agop Guzelian</text>
+        <text x="295" y="380" font-size="12" fill="#8899aa" font-family="Segoe UI,Arial,sans-serif" transform="rotate(-72,295,380)">R. Armênia</text>
+      </svg>
+
+      <div class="map-controls">
+        <div class="map-ctrl">⤢</div>
+        <div class="map-ctrl">+</div>
+        <div class="map-ctrl">−</div>
+        <div class="map-ctrl">👤</div>
+      </div>
+      <div class="map-tiles">
+        <div class="tile-opt act">Map</div>
+        <div class="tile-opt">Satellite</div>
+        <div class="tile-opt">Light</div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="rp">
+      <div class="rp-hdr">
+        <span class="rp-title">QueueZone (5)</span>
+        <span style="color:#718096;cursor:pointer;font-size:18px;">🔍</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:40px 1fr 70px;padding:10px 16px;border-bottom:1px solid #e2e8f0;background:#f7fafc;">
+        <span style="font-size:12px;color:#4a5568;font-weight:600;">No.</span>
+        <span style="font-size:12px;color:#4a5568;font-weight:600;">Zone ID</span>
+        <span style="font-size:12px;color:#4a5568;font-weight:600;text-align:right;">Action</span>
+      </div>
+
+      <!-- Row 1 — Station -->
+      <div class="rp-row stn-row">
+        <div class="rp-num">1</div>
+        <div class="rp-info">
+          <span class="rp-id">🗺 Zone_STN_001</span>
+          <span class="badge-stn">◉ Station Geofence</span>
+        </div>
+        <div class="rp-action">
+          <div class="dd-wrap">
+            <a class="lnk" style="font-size:13px;" onclick="toggleDd('dd-m1',event)">More ▾</a>
+            <div class="dropdown" id="dd-m1" style="min-width:230px;right:0;">
+              <div class="dd-item highlight-stn">◉ Tag as Station Geofence</div>
+              <div class="dd-item highlight-portaria" onclick="showErrorPortaria()">◉ Tag as Portaria</div>
+              <div class="dd-divider"></div>
+              <div class="dd-item">⧉ Copy to Draft</div>
+              <div class="dd-item">↓ Export</div>
+              <div class="dd-item danger">🗑 Remove</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="rp-row">
+        <div class="rp-num">2</div>
+        <div class="rp-info">
+          <span class="rp-id">🅿 Zone_P1_001</span>
+          <span class="badge-p1">Parking Site 1</span>
+        </div>
+        <div class="rp-action">
+          <div class="dd-wrap">
+            <a class="lnk" style="font-size:13px;" onclick="toggleDd('dd-m2',event)">More ▾</a>
+            <div class="dropdown" id="dd-m2" style="min-width:230px;right:0;">
+              <div class="dd-item highlight-stn" onclick="showErrorStation()">◉ Tag as Station Geofence</div>
+              <div class="dd-item highlight-portaria" onclick="showErrorPortaria()">◉ Tag as Portaria</div>
+              <div class="dd-divider"></div>
+              <div class="dd-item">⧉ Copy to Draft</div>
+              <div class="dd-item">↓ Export</div>
+              <div class="dd-item danger">🗑 Remove</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="rp-row">
+        <div class="rp-num">3</div>
+        <div class="rp-info">
+          <span class="rp-id">🅿 Zone_P2_001</span>
+          <span class="badge-p2">Parking Site 2</span>
+        </div>
+        <div class="rp-action">
+          <div class="dd-wrap">
+            <a class="lnk" style="font-size:13px;" onclick="toggleDd('dd-m3',event)">More ▾</a>
+            <div class="dropdown" id="dd-m3" style="min-width:230px;right:0;">
+              <div class="dd-item highlight-stn" onclick="showErrorStation()">◉ Tag as Station Geofence</div>
+              <div class="dd-item highlight-portaria" onclick="showErrorPortaria()">◉ Tag as Portaria</div>
+              <div class="dd-divider"></div>
+              <div class="dd-item">⧉ Copy to Draft</div>
+              <div class="dd-item">↓ Export</div>
+              <div class="dd-item danger">🗑 Remove</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="rp-row">
+        <div class="rp-num">4</div>
+        <div class="rp-info">
+          <span class="rp-id">🅿 Zone_P3_001</span>
+          <span class="badge-p3">Parking Site 3</span>
+        </div>
+        <div class="rp-action">
+          <div class="dd-wrap">
+            <a class="lnk" style="font-size:13px;" onclick="toggleDd('dd-m4',event)">More ▾</a>
+            <div class="dropdown" id="dd-m4" style="min-width:230px;right:0;">
+              <div class="dd-item highlight-stn" onclick="showErrorStation()">◉ Tag as Station Geofence</div>
+              <div class="dd-item highlight-portaria" onclick="showErrorPortaria()">◉ Tag as Portaria</div>
+              <div class="dd-divider"></div>
+              <div class="dd-item">⧉ Copy to Draft</div>
+              <div class="dd-item">↓ Export</div>
+              <div class="dd-item danger">🗑 Remove</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 5 — GATE (Portaria) -->
+      <div class="rp-row portaria-row" id="rp-gate-row">
+        <div class="rp-num">5</div>
+        <div class="rp-info">
+          <span class="rp-id">🗺 Zone_GATE_001</span>
+          <span class="badge-portaria" id="rp-portaria-badge" style="display:none;">◉ Portaria</span>
+        </div>
+        <div class="rp-action">
+          <div class="dd-wrap">
+            <a class="lnk" style="font-size:13px;" onclick="toggleDd('dd-m5',event)">More ▾</a>
+            <div class="dropdown" id="dd-m5" style="min-width:230px;right:0;">
+              <div class="dd-item highlight-stn" onclick="showErrorStation()">◉ Tag as Station Geofence</div>
+              <div class="dd-item highlight-portaria" onclick="tagPortaria('map')">◉ Tag as Portaria</div>
+              <div class="dd-divider"></div>
+              <div class="dd-item">⧉ Copy to Draft</div>
+              <div class="dd-item">↓ Export</div>
+              <div class="dd-item danger">🗑 Remove</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /rp -->
+  </div>
+
+  <div class="hint-bar"><span class="dot"></span>Click <strong>More ▾</strong> on Zone_GATE_001 (row 5) to tag as Portaria · Other zones simulate the out-of-boundary error · <a class="lnk" style="color:#aab4c8;" onclick="showView('view-list')">← Back to list</a></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     OVERLAYS
+══════════════════════════════════════ -->
+
+<!-- SUCCESS: Portaria tagged -->
+<div class="ovl" id="ovl-suc" onclick="closeOverlay('ovl-suc')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-icon suc">✅</div>
+      <div>
+        <div class="modal-title">Portaria zone updated</div>
+        <div class="modal-msg">The selected geofence has been successfully tagged as the Portaria zone for this station.</div>
+      </div>
+    </div>
+    <div class="modal-detail suc">
+      <p>Zone_GATE_001 is now the Portaria zone for [5016] UAT_SoC_Santana. The gate area geofence is now linked to the Gate Queue Control module and will be used for vehicle capacity tracking.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-green" onclick="closeOverlay('ovl-suc')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR: Zone outside Station boundary -->
+<div class="ovl" id="ovl-err-portaria" onclick="closeOverlay('ovl-err-portaria')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-icon err">⚠️</div>
+      <div>
+        <div class="modal-title">Unable to tag as Portaria</div>
+        <div class="modal-msg">The selected geofence is not fully contained within the Station Geofence boundary.</div>
+      </div>
+    </div>
+    <div class="modal-detail err">
+      <p>The Portaria zone must be drawn entirely within the Station Geofence. The following zone exceeds the boundary:</p>
+      <ul>
+        <li>Zone_GATE_001 – extends beyond the Station Geofence boundary</li>
+      </ul>
+      <p style="margin-top:10px;">Adjust the zone boundary so it is fully contained within the Station Geofence before tagging as Portaria.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeOverlay('ovl-err-portaria')">Cancel</button>
+      <button class="btn-ok" onclick="closeOverlay('ovl-err-portaria')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR: Station tag error -->
+<div class="ovl" id="ovl-err-stn" onclick="closeOverlay('ovl-err-stn')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-icon err">⚠️</div>
+      <div>
+        <div class="modal-title">Unable to tag as Station Geofence</div>
+        <div class="modal-msg">The selected geofence does not fully encompass all other registered geofences for this station.</div>
+      </div>
+    </div>
+    <div class="modal-detail err">
+      <p>The Station Geofence must contain all other active zones. The selected zone does not cover:</p>
+      <ul>
+        <li>Zone_P1_001 – Parking Site 1</li>
+        <li>Zone_P2_001 – Parking Site 2</li>
+        <li>Zone_P3_001 – Parking Site 3</li>
+        <li>Zone_GATE_001 – Gate area</li>
+      </ul>
+      <p style="margin-top:10px;">Select a geofence that covers all registered zones, or adjust the boundary before tagging.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeOverlay('ovl-err-stn')">Cancel</button>
+      <button class="btn-ok" onclick="closeOverlay('ovl-err-stn')">OK</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /scene -->
+</div><!-- /scene-wrap -->
+
+<script>
+// Scale
+function scaleScene(){
+  const scene=document.getElementById('scene');
+  const wrap=document.querySelector('.scene-wrap');
+  const scale=Math.min((window.innerWidth-40)/1920,(window.innerHeight-40)/1080);
+  scene.style.transform=`scale(${scale})`;
+  wrap.style.width=Math.round(1920*scale)+'px';
+  wrap.style.height=Math.round(1080*scale)+'px';
+}
+window.addEventListener('resize',scaleScene);
+scaleScene();
+
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  closeAllDd();
+}
+
+function toggleDd(id,e){
+  e.stopPropagation();
+  const dd=document.getElementById(id);
+  const wasOpen=dd.classList.contains('open');
+  closeAllDd();
+  if(!wasOpen) dd.classList.add('open');
+}
+function closeAllDd(){
+  document.querySelectorAll('.dropdown.open').forEach(d=>d.classList.remove('open'));
+}
+document.addEventListener('click',closeAllDd);
+
+function closeOverlay(id){
+  document.getElementById(id).classList.remove('open');
+}
+
+function tagPortaria(src){
+  closeAllDd();
+  // Show success modal
+  document.getElementById('ovl-suc').classList.add('open');
+  // Update badges after close
+  document.getElementById('ovl-suc').addEventListener('click',function applyBadge(){
+    // Show portaria badge in right panel
+    document.getElementById('rp-portaria-badge').style.display='inline-flex';
+    // Show badge on map SVG
+    document.getElementById('map-portaria-badge-rect').style.display='block';
+    document.getElementById('map-portaria-badge-txt').style.display='block';
+    // Show in list view
+    document.getElementById('list-portaria-badge').style.display='inline-flex';
+    document.getElementById('ovl-suc').removeEventListener('click',applyBadge);
+  },{once:true});
+}
+function showErrorPortaria(){
+  closeAllDd();
+  document.getElementById('ovl-err-portaria').classList.add('open');
+}
+function showErrorStation(){
+  closeAllDd();
+  document.getElementById('ovl-err-stn').classList.add('open');
+}
+</script>
+</body>
+</html>

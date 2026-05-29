@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>4.4.2 — Cage Popup Mockup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Roboto', Arial, sans-serif; background: #f5f5f5; display: flex; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 240px; min-height: 100vh; background: #1a1f36;
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .sidebar-logo {
+      padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .logo-text { color: white; font-size: 16px; font-weight: 700; }
+    .logo-text span { color: #EE4D2D; }
+    .logo-badge {
+      display: inline-block; margin-left: 6px;
+      background: rgba(255,255,255,0.15); color: white;
+      font-size: 9px; padding: 1px 5px; border-radius: 3px; vertical-align: middle;
+    }
+    .station-selector {
+      padding: 10px 20px; color: rgba(255,255,255,0.6);
+      font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+    }
+    .station-selector span { color: white; font-size: 12.5px; font-weight: 500; }
+    .sidebar-search {
+      margin: 12px 14px;
+      background: rgba(255,255,255,0.08); border: none; border-radius: 6px;
+      padding: 8px 12px; color: rgba(255,255,255,0.5); font-size: 12px; width: calc(100% - 28px);
+      outline: none;
+    }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding-bottom: 16px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; color: rgba(255,255,255,0.6);
+      font-size: 12.5px; cursor: pointer; user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+    .nav-item.active { color: white; background: rgba(255,255,255,0.08); }
+    .nav-icon { width: 16px; text-align: center; font-size: 13px; opacity: 0.7; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* top bar */
+    .topbar {
+      background: white; border-bottom: 1px solid #e8e8e8;
+      padding: 0 24px; height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .breadcrumb { font-size: 12px; color: #999; }
+    .breadcrumb span { color: #333; font-weight: 500; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-btn {
+      background: #EE4D2D; color: white; border: none;
+      padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: pointer;
+    }
+    .topbar-user { font-size: 12px; color: #555; }
+
+    /* content */
+    .content { padding: 24px; flex: 1; }
+
+    .page-title { font-size: 18px; font-weight: 600; color: #222; margin-bottom: 20px; }
+
+    .detail-card {
+      background: white; border-radius: 6px;
+      border: 1px solid #e8e8e8; padding: 20px 24px; margin-bottom: 20px;
+    }
+    .detail-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 24px;
+    }
+    .detail-item label { font-size: 11px; color: #999; display: block; margin-bottom: 3px; }
+    .detail-item value { font-size: 13px; color: #222; font-weight: 500; }
+    .detail-item value.dash { color: #bbb; }
+
+    .section-title {
+      font-size: 13px; font-weight: 600; color: #EE4D2D;
+      display: flex; align-items: center; gap: 6px; margin-bottom: 14px;
+    }
+    .section-title::before { content: ''; width: 3px; height: 14px; background: #EE4D2D; border-radius: 2px; display: block; }
+
+    .scan-bar {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    }
+    .scan-label { font-size: 13px; font-weight: 500; color: #222; }
+    .scan-input {
+      border: 1px solid #ddd; border-radius: 4px; padding: 7px 12px;
+      font-size: 12px; width: 240px; outline: none; color: #555;
+    }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      background: #fafafa; border-bottom: 1px solid #e8e8e8;
+      padding: 10px 14px; font-size: 11.5px; color: #666;
+      font-weight: 600; text-align: left;
+    }
+    .data-table td {
+      padding: 12px 14px; font-size: 12px; color: #555;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .no-data {
+      text-align: center; padding: 48px; color: #bbb; font-size: 13px;
+    }
+    .no-data-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
+
+    /* ── COMPLETE BUTTON ── */
+    .complete-btn {
+      background: #EE4D2D; color: white; border: none;
+      padding: 8px 22px; border-radius: 4px; font-size: 13px;
+      font-weight: 500; cursor: pointer;
+    }
+    .complete-btn:hover { background: #d94429; }
+    .outline-btn {
+      background: white; color: #555; border: 1px solid #ddd;
+      padding: 8px 22px; border-radius: 4px; font-size: 13px; cursor: pointer;
+    }
+    .page-actions { display: flex; gap: 10px; margin-bottom: 20px; justify-content: flex-end; }
+
+    /* ── OVERLAY ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+    .overlay.visible { opacity: 1; pointer-events: all; }
+
+    /* ── POPUP ── */
+    .popup {
+      background: white; border-radius: 10px;
+      width: 340px; padding: 32px 28px 24px;
+      text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      transform: translateY(12px); transition: transform 0.18s ease;
+    }
+    .overlay.visible .popup { transform: translateY(0); }
+
+    .popup-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: #FFF3F0; display: flex; align-items: center;
+      justify-content: center; margin: 0 auto 16px;
+      font-size: 22px;
+    }
+    .popup-label {
+      font-size: 11.5px; color: #999; text-transform: uppercase;
+      letter-spacing: 0.8px; margin-bottom: 8px; font-weight: 600;
+    }
+    .popup-title {
+      font-size: 13.5px; font-weight: 600; color: #333;
+      margin-bottom: 20px; line-height: 1.4;
+    }
+    .popup-cage {
+      background: #FFF3F0; border: 2px solid #EE4D2D;
+      border-radius: 8px; padding: 18px 24px; margin-bottom: 24px;
+    }
+    .popup-cage-label {
+      font-size: 11px; color: #EE4D2D; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
+    }
+    .popup-cage-value {
+      font-size: 32px; font-weight: 700; color: #222; letter-spacing: 1px;
+    }
+    .popup-confirm-btn {
+      width: 100%; background: #EE4D2D; color: white;
+      border: none; padding: 12px; border-radius: 6px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .popup-confirm-btn:hover { background: #d94429; }
+
+    /* ── CONTROLS (demo) ── */
+    .demo-controls {
+      position: fixed; bottom: 20px; right: 20px;
+      background: white; border-radius: 8px; padding: 14px 18px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12); font-size: 12px; color: #555;
+      z-index: 50;
+    }
+    .demo-controls strong { display: block; margin-bottom: 8px; color: #333; }
+    .demo-controls button {
+      background: #1a1f36; color: white; border: none;
+      padding: 7px 14px; border-radius: 4px; font-size: 12px;
+      cursor: pointer; margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">Shopee<span>Xpress</span> <span class="logo-badge">UAT</span></div>
+  </div>
+  <div class="station-selector">
+    <span>LM Hub_AL_Maceió UAT</span> ▾
+  </div>
+  <input class="sidebar-search" placeholder="Search Menu" type="text"/>
+  <nav class="sidebar-nav">
+    <div class="nav-item"><span class="nav-icon">⊞</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">🏢</span> Agency</div>
+    <div class="nav-item"><span class="nav-icon">📥</span> Inbound</div>
+    <div class="nav-item"><span class="nav-icon">📤</span> Outbound</div>
+    <div class="nav-item"><span class="nav-icon">📋</span> Audit Management</div>
+    <div class="nav-item"><span class="nav-icon">↩</span> Return</div>
+    <div class="nav-item"><span class="nav-icon">🎫</span> Ticket Management</div>
+    <div class="nav-item"><span class="nav-icon">📁</span> Case Management</div>
+    <div class="nav-item"><span class="nav-icon">⚠</span> Exception Handling</div>
+    <div class="nav-item"><span class="nav-icon">🔀</span> Sorting Management</div>
+    <div class="nav-item active"><span class="nav-icon">🏛</span> Station Management</div>
+    <div class="nav-item"><span class="nav-icon">📹</span> CCTV Management</div>
+    <div class="nav-item"><span class="nav-icon">🛠</span> Operation Support</div>
+  </nav>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb">Delivery / Assignment / <span>Detail</span></div>
+    <div class="topbar-right">
+      <div class="topbar-user">camila.braz ▾</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-title">Assign Task ID: AT2026052901AP7</div>
+
+    <div class="page-actions">
+      <button class="outline-btn">Preview Label</button>
+      <button class="outline-btn">Print Label</button>
+      <button class="complete-btn" onclick="showPopup()">Complete</button>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Status</label>
+          <value>Created</value>
+        </div>
+        <div class="detail-item">
+          <label>Station Name</label>
+          <value>LM Hub_AL_Maceió UAT</value>
+        </div>
+        <div class="detail-item">
+          <label>Zipcode</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>Number of Order(s)</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>Journey Type</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>Driver</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>Operator</label>
+          <value>camila.braz@shopee.com</value>
+        </div>
+        <div class="detail-item">
+          <label>Forward</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>CIOT Status</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>CIOT Error Message</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>Agency</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>Return</label>
+          <value class="dash">-</value>
+        </div>
+        <div class="detail-item">
+          <label>Corridor/Cage</label>
+          <value class="dash">-</value>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <div class="scan-bar">
+        <div class="section-title">Add New Order:</div>
+        <input class="scan-input" placeholder="Please Scan Or Input SPX TN/TO" type="text"/>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <div class="section-title">Order Detail</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Sequence</th>
+            <th>SPX Tracking Num/TO</th>
+            <th>Location Type</th>
+            <th>Journey Type</th>
+            <th>Order Quantity</th>
+            <th>Status</th>
+            <th>Number of On-hold</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="8">
+              <div class="no-data">
+                <div class="no-data-icon">📊</div>
+                No Data
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY + POPUP -->
+<div class="overlay" id="overlay">
+  <div class="popup">
+    <div class="popup-icon">🚚</div>
+    <div class="popup-label">Next in queue · Dock 12</div>
+    <div class="popup-title">Prepare the dock for the next driver</div>
+    <div class="popup-cage">
+      <div class="popup-cage-label">Corridor / Cage</div>
+      <div class="popup-cage-value">C-07</div>
+    </div>
+    <button class="popup-confirm-btn" onclick="closePopup()">OK</button>
+  </div>
+</div>
+
+<!-- DEMO CONTROLS -->
+<div class="demo-controls">
+  <strong>Demo controls</strong>
+  <button onclick="showPopup()">Show popup</button>
+  <button onclick="closePopup()">Hide popup</button>
+</div>
+
+<script>
+  function showPopup() {
+    document.getElementById('overlay').classList.add('visible');
+  }
+  function closePopup() {
+    document.getElementById('overlay').classList.remove('visible');
+  }
+  // Close on overlay click (outside popup)
+  document.getElementById('overlay').addEventListener('click', function(e) {
+    if (e.target === this) closePopup();
+  });
+</script>
+
+</body>
+</html>

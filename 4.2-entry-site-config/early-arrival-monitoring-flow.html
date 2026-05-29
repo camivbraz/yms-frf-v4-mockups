@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.2.3.5 — Early Arrival Monitoring Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #F4F5F7;
+    padding: 32px 24px 48px;
+    min-width: 900px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 36px;
+  }
+
+  /* ── Layout ── */
+  .canvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ── Connector arrows ── */
+  .arrow-v {
+    width: 2px;
+    background: #BBBFC9;
+    height: 28px;
+    margin: 0 auto;
+  }
+  .arrow-v-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .arrow-v-label .alabel {
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin: 2px 0;
+  }
+  .yes-lbl  { background: #43A047; }
+  .no-lbl   { background: #E53935; }
+  .loop-lbl { background: #7B61FF; }
+
+  /* ── Horizontal connector row ── */
+  .hrow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .arrow-h {
+    height: 2px;
+    background: #BBBFC9;
+    width: 40px;
+    flex-shrink: 0;
+  }
+  .arrow-h-long {
+    height: 2px;
+    background: #BBBFC9;
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .arrowhead-r::after {
+    content: '';
+    border-left: 7px solid #BBBFC9;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    display: inline-block;
+    margin-top: -4px;
+    vertical-align: middle;
+  }
+  .arrowhead-d {
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid #BBBFC9;
+    margin: 0 auto;
+  }
+
+  /* ── Boxes ── */
+  .box {
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.45;
+    min-width: 160px;
+    max-width: 210px;
+    position: relative;
+  }
+
+  /* trigger / start */
+  .box-trigger {
+    background: #E8EAF6;
+    border: 2px solid #5C6BC0;
+    color: #283593;
+  }
+
+  /* system action */
+  .box-action {
+    background: #E3F2FD;
+    border: 2px solid #1E88E5;
+    color: #0D47A1;
+  }
+
+  /* decision diamond */
+  .diamond-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .diamond {
+    width: 130px;
+    height: 64px;
+    background: #FFF8E1;
+    border: 2px solid #FFA000;
+    color: #E65100;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6px 10px;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    line-height: 1.3;
+  }
+
+  /* monitoring loop box */
+  .box-loop {
+    background: #EDE7F6;
+    border: 2px dashed #7B61FF;
+    color: #4527A0;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 160px;
+    max-width: 210px;
+  }
+
+  /* outcome boxes */
+  .box-success {
+    background: #E8F5E9;
+    border: 2px solid #43A047;
+    color: #1B5E20;
+  }
+  .box-removed {
+    background: #FCE4EC;
+    border: 2px solid #E53935;
+    color: #880E4F;
+  }
+  .box-notify {
+    background: #FFF3E0;
+    border: 2px solid #FB8C00;
+    color: #E65100;
+  }
+
+  /* status pill */
+  .status-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-top: 5px;
+  }
+  .pill-pending  { background: #FFF9C4; color: #F57F17; border: 1px solid #F9A825; }
+  .pill-assigned { background: #C8E6C9; color: #1B5E20; border: 1px solid #43A047; }
+  .pill-removed  { background: #FCE4EC; color: #880E4F; border: 1px solid #E91E63; }
+
+  /* ── Monitoring loop bracket ── */
+  .loop-section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 32px;
+    border: 2px dashed #C5CAE9;
+    border-radius: 16px;
+    background: rgba(237,231,246,0.15);
+    gap: 0;
+    min-width: 340px;
+  }
+  .loop-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #7B61FF;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 12px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  /* ── Two-branch row ── */
+  .branch-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    justify-content: center;
+    width: 100%;
+  }
+  .branch-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .branch-label {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+
+  /* horizontal line spanning both branches */
+  .h-splitter {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+  }
+  .h-line { height: 2px; background: #BBBFC9; }
+  .v-down { width: 2px; background: #BBBFC9; }
+
+  /* small note */
+  .note {
+    font-size: 9px;
+    color: #999;
+    text-align: center;
+    font-style: italic;
+    margin-top: 3px;
+    max-width: 180px;
+    line-height: 1.4;
+  }
+
+  /* loop-back arrow (right side) */
+  .loopback {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .loopback-line-v {
+    width: 2px;
+    background: #7B61FF;
+  }
+  .loopback-line-h {
+    height: 2px;
+    background: #7B61FF;
+  }
+  .loopback-label {
+    font-size: 9px;
+    color: #7B61FF;
+    font-weight: 700;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    padding: 4px 2px;
+  }
+</style>
+</head>
+<body>
+
+<h1>4.2.3.5 — Early Arrival Monitoring</h1>
+<p class="subtitle">System behavior while driver waits for release time after early arrival</p>
+
+<div class="canvas">
+
+  <!-- TRIGGER -->
+  <div class="box box-trigger">
+    Driver enters geofence<br>
+    <span style="font-size:10px; font-weight:400;">STA check result: <strong>outside window</strong></span>
+    <br><span class="status-pill pill-pending">STATUS: PENDING</span>
+  </div>
+
+  <div class="arrow-v" style="height:24px;"></div>
+  <div class="arrowhead-d"></div>
+
+  <!-- START MONITORING -->
+  <div class="box box-action">
+    System starts<br><strong>Early Arrival Monitoring</strong>
+
+  </div>
+
+  <div class="arrow-v" style="height:24px;"></div>
+  <div class="arrowhead-d"></div>
+
+  <!-- ══ MONITORING LOOP ══ -->
+  <div class="loop-section">
+    <div class="loop-badge">⟳ MONITORING LOOP — checked every minute</div>
+
+    <div style="height:20px;"></div>
+
+    <!-- CHECK 1: still in geofence? -->
+    <div class="diamond-wrap">
+      <div class="diamond">Still in<br>geofence?</div>
+    </div>
+
+    <!-- Branch: YES down / NO right -->
+    <div style="width:100%; display:flex; justify-content:center; align-items:flex-start; gap:0; margin-top:0;">
+
+      <!-- NO branch — exits right -->
+      <div style="display:flex; flex-direction:column; align-items:flex-end; width:50%;">
+        <div style="display:flex; align-items:center; justify-content:flex-end; width:100%; padding-top:32px;">
+          <span class="branch-label no-lbl" style="margin-right:4px;">NO</span>
+          <div class="arrow-h-long"></div>
+          <div class="arrowhead-r"></div>
+        </div>
+      </div>
+
+      <!-- YES branch — goes down -->
+      <div style="display:flex; flex-direction:column; align-items:flex-start; width:50%;">
+        <div style="display:flex; align-items:center; padding-top:0px; padding-left:0px;">
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <span class="branch-label yes-lbl" style="margin-bottom:4px;">YES</span>
+            <div class="arrow-v" style="height:24px;"></div>
+            <div class="arrowhead-d"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CHECK 2: release time reached? (YES branch continues down) -->
+    <div style="display:flex; width:100%; align-items:flex-start; gap:0;">
+
+      <!-- YES column (left half): release time check -->
+      <div style="display:flex; flex-direction:column; align-items:center; width:50%;">
+        <div class="diamond-wrap">
+          <div class="diamond">Release<br>time reached?</div>
+        </div>
+        <div style="display:flex; width:100%; justify-content:center; align-items:flex-start; gap:0; margin-top:0;">
+
+          <!-- NO → loop back (goes right then up via outside) -->
+          <div style="display:flex; flex-direction:column; align-items:flex-end; width:50%; padding-top:32px;">
+            <div style="display:flex; align-items:center; justify-content:flex-end; width:100%;">
+              <span class="branch-label" style="background:#7B61FF; margin-right:4px; font-size:9px; padding:2px 8px; border-radius:10px; font-weight:800; color:#fff;">NOT YET</span>
+              <div style="height:2px; background:#7B61FF; width:28px;"></div>
+            </div>
+          </div>
+
+          <!-- YES → proceed down -->
+          <div style="display:flex; flex-direction:column; align-items:flex-start; width:50%;">
+            <div style="display:flex; align-items:center; padding-top:0px;">
+              <div style="display:flex; flex-direction:column; align-items:center;">
+                <span class="branch-label yes-lbl" style="margin-bottom:4px;">YES</span>
+                <div class="arrow-v" style="height:20px;"></div>
+                <div class="arrowhead-d"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Release time: verify geolocation -->
+        <div style="padding-left: 65px; width:100%;">
+          <div class="box box-action" style="min-width:140px; max-width:160px; font-size:10px;">
+            Verify driver<br>still in geofence
+          </div>
+        </div>
+
+      </div>
+
+      <!-- NO column (right half): removed from monitoring -->
+      <div style="display:flex; flex-direction:column; align-items:center; width:50%; padding-top:32px;">
+        <div class="box box-removed" style="min-width:140px; max-width:160px; font-size:10px;">
+          Removed from<br>monitoring
+          <br><span class="status-pill pill-removed">MONITORING ENDED</span>
+        </div>
+        <div class="note">Driver left geofence.<br>No notification sent.</div>
+      </div>
+
+    </div>
+
+    <div style="height:12px;"></div>
+  </div>
+  <!-- ══ END LOOP ══ -->
+
+  <!-- Loop-back label for "NOT YET" path -->
+  <div style="font-size:9px; color:#7B61FF; font-weight:700; font-style:italic; margin-top:-4px; margin-bottom:4px;">
+    ↺ wait 1 min → recheck
+  </div>
+
+  <div class="arrow-v" style="height:20px; background:#43A047;"></div>
+  <div class="arrowhead-d" style="border-top-color:#43A047;"></div>
+
+  <!-- AUTO-ASSIGN -->
+  <div class="box box-success">
+    Driver auto-assigned to queue<br>
+    <span style="font-size:10px; font-weight:400;">Entry site &amp; tag assigned</span>
+    <br><span class="status-pill pill-assigned">STATUS: ASSIGNED</span>
+  </div>
+
+  <div class="arrow-v" style="height:24px; background:#FB8C00;"></div>
+  <div class="arrowhead-d" style="border-top-color:#FB8C00;"></div>
+
+  <!-- NOTIFICATION -->
+  <div class="box box-notify">
+    Push notification sent<br>
+    <span style="font-size:10px; font-weight:400;">"Queue entry released! Check your queue status."</span>
+  </div>
+
+  <div style="margin-top:16px; padding:10px 20px; background:#E8EAF6; border-radius:10px; border:1px solid #9FA8DA; font-size:10px; color:#283593; max-width:480px; text-align:center; line-height:1.6;">
+    <strong>Key fields read during monitoring:</strong><br>
+    Driver geolocation (checked every minute) &nbsp;·&nbsp; System clock vs. Release time (STA/STD − threshold)
+  </div>
+
+</div>
+</body>
+</html>

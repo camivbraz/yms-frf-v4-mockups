@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.1.2.4 Use Case Examples</title>
+<style>
+body { font-family: Arial, sans-serif; font-size: 13px; padding: 32px; background: #fff; color: #1a1a1a; }
+h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+table { width: 100%; border-collapse: collapse; border: 1px solid #ccc; }
+th { background: #1a2744; color: #fff; font-weight: 700; padding: 10px 12px; text-align: left; border: 1px solid #2d3a5c; font-size: 13px; }
+td { padding: 10px 12px; border: 1px solid #ccc; vertical-align: top; font-size: 12.5px; line-height: 1.55; }
+.example-row td { background: #e8e8e8; font-weight: 700; font-size: 13px; padding: 8px 12px; }
+.off { color: #999; }
+.on { font-weight: 700; }
+.applied { color: #1a2744; font-weight: 700; font-size: 11.5px; margin-top: 6px; display: block; }
+.eligible { color: #276749; font-weight: 700; }
+.not-eligible { color: #c53030; font-weight: 700; }
+.driver { font-weight: 700; margin-top: 8px; }
+.driver:first-child { margin-top: 0; }
+.sep { color: #ccc; margin: 6px 0; display: block; }
+.check { color: #276749; }
+.cross { color: #c53030; }
+.section-lbl { font-weight: 700; }
+</style>
+</head>
+<body>
+<h2>4.1.2.4 Use case examples</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width:17%">Context</th>
+      <th style="width:30%">Configuration</th>
+      <th style="width:28%">Driver Data</th>
+      <th style="width:25%">Matching Result</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- EXAMPLE 1 -->
+    <tr class="example-row"><td colspan="4">Example 1 — Dock has both sections configured · Group fully ignored</td></tr>
+    <tr>
+      <td><strong>Dock:</strong> EXT.OUT14<br><strong>Type:</strong> Outbound<br><strong>Arrival:</strong> LH – Outbound<br><strong>Group:</strong> GRP-LH-OUT-01</td>
+      <td>
+        <span class="section-lbl on">Dock — Identification: ON</span><br>
+        Vehicle Type: TRUCK-EXPRESSA<br>
+        Trip Classification: LHfield<br><br>
+        <span class="section-lbl on">Dock — Cargo Composition: ON</span><br>
+        Evaluation: % Percentage · Logic: AND<br>
+        Attr 1 — TO Pack Type [Saca]: min 60%, max 100%<br><br>
+        <span class="off">Group — Identification: ON</span><br>
+        <span class="off">Vehicle Type: CARRETA, BITREM</span><br>
+        <span class="off">Group — Cargo Composition: ON</span><br>
+        <span class="off">TO Pack Type [Pallet]: min 40%, max 100%</span><br>
+        <span class="applied">→ Applied: Dock config for both sections. Group ignored.</span>
+      </td>
+      <td>
+        <span class="driver">Driver A — TRUCK-EXPRESSA · LHfield</span>
+        Saca TOs: 45 (72%)<br><br>
+        <span class="driver">Driver B — CARRETA · LHfield</span>
+        Saca TOs: 38 (65%)<br><br>
+        <span class="driver">Driver C — TRUCK-EXPRESSA · LHtrunking</span>
+        Saca TOs: 40 (68%)
+      </td>
+      <td>
+        <span class="eligible">Driver A → ELIGIBLE</span><br>
+        Vehicle Type <span class="check">✓</span> · Trip Class <span class="check">✓</span><br>
+        Saca: 72% <span class="check">✓</span> (≥ 60%)<br>
+        All rules pass → assigned.<br><br>
+        <span class="not-eligible">Driver B → NOT ELIGIBLE</span><br>
+        Vehicle Type <span class="cross">✗</span> (CARRETA not in dock config) → excluded.<br><br>
+        <span class="not-eligible">Driver C → NOT ELIGIBLE</span><br>
+        Trip Class <span class="cross">✗</span> (LHtrunking ≠ LHfield) → excluded.
+      </td>
+    </tr>
+
+    <!-- EXAMPLE 2 -->
+    <tr class="example-row"><td colspan="4">Example 2 — Dock has Identification only · Cargo Composition falls back to group</td></tr>
+    <tr>
+      <td><strong>Dock:</strong> EXT.OUT22<br><strong>Type:</strong> Outbound<br><strong>Arrival:</strong> LH – Outbound<br><strong>Group:</strong> GRP-LH-OUT-01</td>
+      <td>
+        <span class="section-lbl on">Dock — Identification: ON</span><br>
+        Vehicle Type: TRUCK-EXPRESSA, CARRETA<br>
+        LH Destination: [7203] LM Hub_SP_Sul<br><br>
+        <span class="off">Dock — Cargo Composition: OFF</span><br><br>
+        <span class="off">Group — Identification: ON</span><br>
+        <span class="off">Vehicle Type: BITREM</span><br>
+        <span class="section-lbl on">Group — Cargo Composition: ON</span><br>
+        Evaluation: % Percentage · Logic: OR<br>
+        TO Pack Type [Saca, Pallet]: min 50%, max 100%<br>
+        <span class="applied">→ Applied: Dock Identification · Group Cargo Composition (fallback).</span>
+      </td>
+      <td>
+        <span class="driver">Driver A — CARRETA</span>
+        Destination: [7203]<br>
+        Saca TOs: 35 (58%) · Pallet TOs: 10 (17%)<br>
+        Saca+Pallet: 75%<br><br>
+        <span class="driver">Driver B — TRUCK-EXPRESSA</span>
+        Destination: [8452] LM Hub_SP_Leste<br>
+        Saca TOs: 28 (55%)
+      </td>
+      <td>
+        <span class="eligible">Driver A → ELIGIBLE</span><br>
+        Vehicle Type <span class="check">✓</span> · Destination <span class="check">✓</span><br>
+        Saca+Pallet: 75% <span class="check">✓</span> (≥ 50%) → assigned.<br><br>
+        <span class="not-eligible">Driver B → NOT ELIGIBLE</span><br>
+        Destination <span class="cross">✗</span> ([8452] not in dock config) → excluded by dock Identification.
+      </td>
+    </tr>
+
+    <!-- EXAMPLE 3 -->
+    <tr class="example-row"><td colspan="4">Example 3 — Dock has Cargo Composition only · Identification falls back to group</td></tr>
+    <tr>
+      <td><strong>Dock:</strong> EXT.OUT31<br><strong>Type:</strong> Outbound<br><strong>Arrival:</strong> LH – Outbound<br><strong>Group:</strong> GRP-LH-OUT-01</td>
+      <td>
+        <span class="off">Dock — Identification: OFF</span><br><br>
+        <span class="section-lbl on">Dock — Cargo Composition: ON</span><br>
+        Evaluation: % Percentage · Logic: AND<br>
+        Attr 1 — TO Pack Type [Saca]: min 70%, max 100%<br><br>
+        <span class="section-lbl on">Group — Identification: ON</span><br>
+        Trip Classification: LHfield<br>
+        LH Destination: [7203] LM Hub_SP_Sul<br>
+        <span class="off">Group — Cargo Composition: ON</span><br>
+        <span class="off">TO Pack Type [Pallet]: min 40%, max 100%</span><br>
+        <span class="applied">→ Applied: Group Identification (fallback) · Dock Cargo Composition.</span>
+      </td>
+      <td>
+        <span class="driver">Driver A — TRUCK-EXPRESSA · LHfield</span>
+        Destination: [7203] · Saca TOs: 52 (74%)<br><br>
+        <span class="driver">Driver B — CARRETA · LHfield</span>
+        Destination: [7203] · Saca TOs: 30 (45%)<br><br>
+        <span class="driver">Driver C — TRUCK-EXPRESSA · LHdirect</span>
+        Destination: [7203] · Saca TOs: 55 (78%)
+      </td>
+      <td>
+        <span class="eligible">Driver A → ELIGIBLE</span><br>
+        Trip Class <span class="check">✓</span> · Destination <span class="check">✓</span><br>
+        Saca: 74% <span class="check">✓</span> (≥ 70%) → assigned.<br><br>
+        <span class="not-eligible">Driver B → NOT ELIGIBLE</span><br>
+        Identification <span class="check">✓</span> (group passes)<br>
+        Saca: 45% <span class="cross">✗</span> (not ≥ 70%) → excluded by dock Cargo Comp.<br><br>
+        <span class="not-eligible">Driver C → NOT ELIGIBLE</span><br>
+        Trip Class <span class="cross">✗</span> (LHdirect ≠ LHfield) → excluded by group Identification.
+      </td>
+    </tr>
+
+    <!-- EXAMPLE 4 -->
+    <tr class="example-row"><td colspan="4">Example 4 — Dock has no config · Full group config applied as fallback</td></tr>
+    <tr>
+      <td><strong>Dock:</strong> EXT.OUT44<br><strong>Type:</strong> Outbound<br><strong>Arrival:</strong> LH – Outbound<br><strong>Group:</strong> GRP-LH-OUT-01</td>
+      <td>
+        <span class="off">Dock — Identification: OFF</span><br>
+        <span class="off">Dock — Cargo Composition: OFF</span><br><br>
+        <span class="section-lbl on">Group — Identification: ON</span><br>
+        Vehicle Type: CARRETA<br>
+        Trip Classification: LHdirect<br><br>
+        <span class="section-lbl on">Group — Cargo Composition: ON</span><br>
+        Evaluation: % Percentage · Logic: AND<br>
+        Attr 1 — Size Type [Bulky]: min 30%, max 100%<br>
+        <span class="applied">→ Applied: Group config for both sections (full fallback).</span>
+      </td>
+      <td>
+        <span class="driver">Driver A — CARRETA · LHdirect</span>
+        Bulky Orders: 140 (38%)<br><br>
+        <span class="driver">Driver B — CARRETA · LHfield</span>
+        Bulky Orders: 200 (52%)<br><br>
+        <span class="driver">Driver C — TRUCK-EXPRESSA · LHdirect</span>
+        Bulky Orders: 160 (44%)
+      </td>
+      <td>
+        <span class="eligible">Driver A → ELIGIBLE</span><br>
+        Vehicle Type <span class="check">✓</span> · Trip Class <span class="check">✓</span><br>
+        Bulky: 38% <span class="check">✓</span> (≥ 30%) → assigned.<br><br>
+        <span class="not-eligible">Driver B → NOT ELIGIBLE</span><br>
+        Trip Class <span class="cross">✗</span> (LHfield ≠ LHdirect) → excluded by group Identification.<br><br>
+        <span class="not-eligible">Driver C → NOT ELIGIBLE</span><br>
+        Vehicle Type <span class="cross">✗</span> (TRUCK-EXPRESSA not in group) → excluded by group Identification.
+      </td>
+    </tr>
+
+    <!-- EXAMPLE 5 -->
+    <tr class="example-row"><td colspan="4">Example 5 — No group match + no dock config · No restriction</td></tr>
+    <tr>
+      <td><strong>Dock:</strong> EXT.OUT51<br><strong>Type:</strong> Outbound<br><strong>Arrival:</strong> FM – Outbound<br><strong>Group:</strong> none matched</td>
+      <td>
+        <span class="off">Dock — Identification: OFF</span><br>
+        <span class="off">Dock — Cargo Composition: OFF</span><br><br>
+        <span class="off">Driver does not match any dock group.</span><br>
+        <span class="applied">→ Applied: No restriction.</span>
+      </td>
+      <td>
+        <span class="driver">Driver A — VAN</span>
+        Saca TOs: 10 (20%)<br><br>
+        <span class="driver">Driver B — TRUCK-EXPRESSA</span>
+        Pallet TOs: 30 (60%)
+      </td>
+      <td>
+        <span class="eligible">Driver A → ELIGIBLE</span><br>
+        No restriction applied → assigned.<br><br>
+        <span class="eligible">Driver B → ELIGIBLE</span><br>
+        No restriction applied → assigned.
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+</body>
+</html>

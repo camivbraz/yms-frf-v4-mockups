@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.2.3.6 — Entry Site Assignment Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #F4F5F7;
+    padding: 20px 24px 32px;
+    min-width: 860px;
+  }
+
+  h1 { text-align: center; font-size: 13px; font-weight: 700; color: #333; margin-bottom: 3px; }
+  .subtitle { text-align: center; font-size: 10px; color: #999; margin-bottom: 20px; }
+
+  .canvas { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  .arrow-v { width: 2px; background: #BBBFC9; margin: 0 auto; }
+  .arrowhead-d {
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid #BBBFC9;
+    margin: 0 auto;
+  }
+  .arrowhead-d.green  { border-top-color: #43A047; }
+  .arrowhead-d.orange { border-top-color: #FB8C00; }
+
+  .box {
+    border-radius: 8px;
+    padding: 7px 14px;
+    text-align: center;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    min-width: 150px;
+    max-width: 210px;
+  }
+  .box-trigger { background: #E8EAF6; border: 2px solid #5C6BC0; color: #283593; }
+  .box-action  { background: #E3F2FD; border: 2px solid #1E88E5; color: #0D47A1; }
+  .box-success { background: #E8F5E9; border: 2px solid #43A047; color: #1B5E20; }
+  .box-wait    { background: #FCE4EC; border: 2px solid #E53935; color: #880E4F; }
+  .box-notify  { background: #FFF3E0; border: 2px solid #FB8C00; color: #E65100; }
+
+  .diamond-outer { display: flex; flex-direction: column; align-items: center; }
+  .diamond {
+    width: 124px; height: 60px;
+    background: #FFF8E1;
+    border: 2px solid #FFA000;
+    color: #E65100;
+    font-size: 9.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 4px 12px;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    line-height: 1.3;
+  }
+
+  .lbl {
+    display: inline-block;
+    padding: 1px 7px; border-radius: 8px;
+    font-size: 8.5px; font-weight: 800; color: #fff; letter-spacing: 0.3px;
+  }
+  .lbl-yes  { background: #43A047; }
+  .lbl-no   { background: #E53935; }
+
+  .pill {
+    display: inline-block;
+    padding: 1px 8px; border-radius: 20px;
+    font-size: 8px; font-weight: 800; letter-spacing: 0.4px; margin-top: 4px;
+  }
+  .pill-assigned { background: #C8E6C9; color: #1B5E20; border: 1px solid #43A047; }
+  .pill-wait     { background: #FCE4EC; color: #880E4F; border: 1px solid #E91E63; }
+
+  .loop-section {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 18px 32px 14px;
+    border: 2px dashed #C5CAE9; border-radius: 14px;
+    background: rgba(232,234,246,0.15);
+    min-width: 520px; gap: 0;
+  }
+  .loop-badge {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: #5C6BC0; color: #fff;
+    font-size: 8.5px; font-weight: 800; padding: 2px 12px;
+    border-radius: 8px; letter-spacing: 0.5px; white-space: nowrap;
+  }
+
+  .h-line     { height: 2px; background: #BBBFC9; }
+  .arrowhead-r {
+    width: 0; height: 0;
+    border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+    border-left: 6px solid #BBBFC9;
+  }
+
+  .loopback-note { font-size: 8.5px; color: #5C6BC0; font-weight: 700; font-style: italic; margin-top: 1px; }
+
+  .info-card {
+    margin-top: 14px; padding: 8px 16px;
+    background: #E8EAF6; border-radius: 8px; border: 1px solid #9FA8DA;
+    font-size: 9.5px; color: #283593; max-width: 540px;
+    text-align: center; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<h1>4.2.3.6 — Entry Site Assignment</h1>
+<p class="subtitle">Logic for assigning an entry site and tag once driver is cleared for queue</p>
+
+<div class="canvas">
+
+  <!-- TRIGGER -->
+  <div class="box box-trigger">
+    Driver cleared for queue entry<br>
+    <span style="font-size:9.5px;font-weight:400;">Arrived within STA window <em>or</em> released from Early Arrival Monitoring</span>
+    <br><span class="pill pill-assigned">STATUS: ASSIGNED</span>
+  </div>
+
+  <div class="arrow-v" style="height:14px;"></div>
+  <div class="arrowhead-d"></div>
+
+  <!-- RETRIEVE CONFIG -->
+  <div class="box box-action">
+    Retrieve entry site configuration<br>
+    <span style="font-size:9.5px;font-weight:400;">Station Config → Entry Sites (ordered 5 → 1)</span>
+  </div>
+
+  <div class="arrow-v" style="height:14px;"></div>
+  <div class="arrowhead-d"></div>
+
+  <!-- ══ SITE EVALUATION LOOP ══ -->
+  <div class="loop-section">
+    <div class="loop-badge">SITE EVALUATION — iterated from Site 5 to Site 1</div>
+
+    <div style="height:14px;"></div>
+
+    <!-- CHECK 1: vehicle type match? -->
+    <div class="diamond-outer">
+      <div class="diamond">Vehicle type<br>matches site pool?</div>
+    </div>
+
+    <div style="display:flex; width:100%; align-items:flex-start; justify-content:center; gap:0;">
+
+      <!-- NO → right -->
+      <div style="display:flex; flex-direction:column; align-items:flex-end; width:48%; padding-top:26px;">
+        <div style="display:flex; align-items:center; justify-content:flex-end; width:100%;">
+          <span class="lbl lbl-no" style="margin-right:5px;">NO</span>
+          <div class="h-line" style="width:36px;"></div>
+          <div class="arrowhead-r"></div>
+        </div>
+      </div>
+
+      <!-- YES → down -->
+      <div style="display:flex; flex-direction:column; align-items:flex-start; width:48%;">
+        <div style="display:flex; flex-direction:column; align-items:center;">
+          <span class="lbl lbl-yes" style="margin-bottom:3px;">YES</span>
+          <div class="arrow-v" style="height:14px;"></div>
+          <div class="arrowhead-d"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECK 2 + NO col -->
+    <div style="display:flex; width:100%; align-items:flex-start; gap:0;">
+
+      <!-- YES col: vacancy check -->
+      <div style="display:flex; flex-direction:column; align-items:center; width:48%;">
+        <div class="diamond-outer">
+          <div class="diamond">Vacancy<br>available?<br><span style="font-size:8.5px;font-weight:400;">(quota &gt; 0)</span></div>
+        </div>
+
+        <div style="display:flex; width:100%; align-items:flex-start; justify-content:center; gap:0;">
+          <!-- NO → right -->
+          <div style="display:flex; flex-direction:column; align-items:flex-end; width:50%; padding-top:26px;">
+            <div style="display:flex; align-items:center; justify-content:flex-end; width:100%;">
+              <span class="lbl lbl-no" style="margin-right:5px;">NO</span>
+              <div class="h-line" style="width:28px;"></div>
+              <div class="arrowhead-r"></div>
+            </div>
+          </div>
+          <!-- YES → down -->
+          <div style="display:flex; flex-direction:column; align-items:flex-start; width:50%;">
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <span class="lbl lbl-yes" style="margin-bottom:3px;">YES</span>
+              <div class="arrow-v" style="height:14px; background:#43A047;"></div>
+              <div class="arrowhead-d green"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ASSIGN TAG -->
+        <div style="padding-left:62px; width:100%;">
+          <div class="box box-success" style="min-width:130px; max-width:150px; font-size:9.5px;">
+            Assign entry tag<br>for this site
+          </div>
+        </div>
+      </div>
+
+      <!-- NO col: any more sites? -->
+      <div style="display:flex; flex-direction:column; align-items:center; width:48%; padding-top:6px;">
+        <div class="arrow-v" style="height:30px;"></div>
+        <div class="arrowhead-d"></div>
+        <div class="diamond-outer">
+          <div class="diamond">Any more<br>sites?</div>
+        </div>
+        <div style="display:flex; width:100%; justify-content:center; gap:0;">
+          <!-- YES → loop back -->
+          <div style="display:flex; flex-direction:column; align-items:flex-end; width:50%; padding-top:26px;">
+            <div style="display:flex; align-items:center; justify-content:flex-end; width:100%;">
+              <span class="lbl" style="background:#5C6BC0; margin-right:5px;">YES</span>
+              <div style="height:2px; background:#5C6BC0; width:20px;"></div>
+            </div>
+            <div class="loopback-note">↺ next site</div>
+          </div>
+          <!-- NO → down -->
+          <div style="display:flex; flex-direction:column; align-items:flex-start; width:50%;">
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <span class="lbl lbl-no" style="margin-bottom:3px;">NO</span>
+              <div class="arrow-v" style="height:14px;"></div>
+              <div class="arrowhead-d"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No eligible site -->
+        <div style="padding-left:44px; width:100%;">
+          <div class="box box-wait" style="min-width:130px; max-width:150px; font-size:9.5px;">
+            No eligible site found<br>
+            <span class="pill pill-wait" style="font-size:7.5px;">→ 4.2.3.7</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="height:8px;"></div>
+  </div>
+  <!-- ══ END LOOP ══ -->
+
+  <div style="height:12px;"></div>
+
+  <div class="arrow-v" style="height:14px; background:#43A047;"></div>
+  <div class="arrowhead-d green"></div>
+
+  <div class="box box-action">
+    Entry tag assigned to driver<br>
+    <span style="font-size:9.5px;font-weight:400;">Queue status updated · Tag visible in Driver App</span>
+  </div>
+
+  <div class="arrow-v" style="height:14px; background:#FB8C00;"></div>
+  <div class="arrowhead-d orange"></div>
+
+  <div class="box box-notify">
+    Driver App updated<br>
+    <span style="font-size:9.5px;font-weight:400;">Queue number · Assigned dock group · Entry tag · Barcode</span>
+  </div>
+
+  <div class="arrow-v" style="height:14px;"></div>
+  <div class="arrowhead-d"></div>
+
+  <div class="box box-action">
+    Driver waits at assigned entry site<br>
+    <span style="font-size:9.5px;font-weight:400;">Queue position advances as vehicles ahead are called</span>
+  </div>
+
+  <div class="arrow-v" style="height:14px; background:#43A047;"></div>
+  <div class="arrowhead-d green"></div>
+
+  <div class="box box-success">
+    Driver called to dock<br>
+    <span style="font-size:9.5px;font-weight:400;">Push notification sent · Driver App shows dock number</span>
+    <br><span class="pill pill-assigned">STATUS: ASSIGNED / OCCUPIED</span>
+  </div>
+
+  <div class="info-card">
+    <strong>Key rules:</strong>&nbsp;
+    Sites evaluated: Site 5 (furthest) → Site 1 (closest to dock) &nbsp;·&nbsp;
+    A vehicle type can only belong to one pool per site &nbsp;·&nbsp;
+    Total vacancies ≤ site capacity &nbsp;·&nbsp;
+    No eligible site → driver waits in geofence (4.2.3.7)
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YMS FRF v4 — Process Flow</title>
+  <style>
+    body { margin: 0; padding: 28px; background: #f0f2f5; font-family: Arial, sans-serif; }
+    .page { background: white; padding: 28px; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); display: inline-block; }
+    .page-title { font-style: italic; font-weight: bold; font-size: 15px; color: #222; margin: 0 0 18px 0; }
+    .caption { font-size: 11px; color: #888; text-align: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <p class="page-title">New process proposal — YMS FRF v4</p>
+  <svg width="1620" height="660" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto">
+        <polygon points="0 0, 8 3.5, 0 7" fill="#333"/>
+      </marker>
+      <marker id="arr-gray" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto">
+        <polygon points="0 0, 8 3.5, 0 7" fill="#888"/>
+      </marker>
+    </defs>
+
+    <!-- ============================================================
+         IMPROVEMENT DASHED BOXES
+    ============================================================ -->
+
+    <!-- 4.2 Entry Site Configuration -->
+    <rect x="72" y="110" width="400" height="370"
+          fill="rgba(21,101,192,0.04)" stroke="#1565C0"
+          stroke-width="2" stroke-dasharray="8,4" rx="8"/>
+    <text x="84" y="130" font-family="Arial" font-size="11" font-weight="bold" fill="#1565C0">4.2 Entry site configuration</text>
+
+    <!-- 4.1 Automatic Assignment -->
+    <rect x="490" y="225" width="150" height="130"
+          fill="rgba(21,101,192,0.04)" stroke="#1565C0"
+          stroke-width="2" stroke-dasharray="8,4" rx="8"/>
+    <text x="500" y="243" font-family="Arial" font-size="11" font-weight="bold" fill="#1565C0">4.1 Automatic</text>
+    <text x="500" y="257" font-family="Arial" font-size="11" font-weight="bold" fill="#1565C0">assignment</text>
+
+    <!-- 4.3.1 Gate Queue Control -->
+    <rect x="720" y="110" width="340" height="370"
+          fill="rgba(21,101,192,0.04)" stroke="#1565C0"
+          stroke-width="2" stroke-dasharray="8,4" rx="8"/>
+    <text x="732" y="130" font-family="Arial" font-size="11" font-weight="bold" fill="#1565C0">4.3.1 Gate queue control</text>
+
+    <!-- 4.3.2 End Process Notifications -->
+    <rect x="1120" y="185" width="160" height="200"
+          fill="rgba(21,101,192,0.04)" stroke="#1565C0"
+          stroke-width="2" stroke-dasharray="8,4" rx="8"/>
+    <text x="1130" y="203" font-family="Arial" font-size="11" font-weight="bold" fill="#1565C0">4.3.2 End process</text>
+    <text x="1130" y="217" font-family="Arial" font-size="11" font-weight="bold" fill="#1565C0">notifications</text>
+
+    <!-- 4.4.2 Cage Popup -->
+    <rect x="1330" y="225" width="200" height="130"
+          fill="rgba(192,57,43,0.05)" stroke="#C0392B"
+          stroke-width="2" stroke-dasharray="8,4" rx="8"/>
+    <text x="1342" y="243" font-family="Arial" font-size="11" font-weight="bold" fill="#C0392B">4.4.2 Cage popup</text>
+    <text x="1342" y="257" font-family="Arial" font-size="11" font-weight="bold" fill="#C0392B">(operator)</text>
+
+    <!-- ============================================================
+         MAIN FLOW — y=300 center
+    ============================================================ -->
+
+    <!-- START -->
+    <circle cx="38" cy="300" r="14" fill="#222"/>
+    <line x1="52" y1="300" x2="84" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- NODE 1: Enters Geofence -->
+    <!-- box x=88..228, center=158 -->
+    <rect x="88" y="272" width="140" height="56" fill="white" stroke="#555" stroke-width="1.5" rx="5"/>
+    <text x="158" y="293" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Enters Station</text>
+    <text x="158" y="307" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Geofence</text>
+    <text x="158" y="321" font-family="Arial" font-size="9" text-anchor="middle" fill="#888">Auto queue registration</text>
+
+    <!-- Arrow Node1 → STA Diamond -->
+    <line x1="228" y1="300" x2="262" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- STA CHECK DIAMOND (LH only) -->
+    <!-- center x=290, y=300. Diamond 50×50 -->
+    <polygon points="290,274 316,300 290,326 264,300" fill="white" stroke="#555" stroke-width="1.5"/>
+    <text x="290" y="297" font-family="Arial" font-size="8.5" text-anchor="middle" fill="#333">STA</text>
+    <text x="290" y="308" font-family="Arial" font-size="8.5" text-anchor="middle" fill="#333">check</text>
+    <!-- label "LH only" -->
+    <text x="290" y="340" font-family="Arial" font-size="8" text-anchor="middle" fill="#888">LH only</text>
+
+    <!-- Branch UP from STA — "Too early" -->
+    <line x1="290" y1="274" x2="290" y2="210" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+    <rect x="224" y="155" width="132" height="52" fill="#FFF8E1" stroke="#F9A825" stroke-width="1.2" rx="4"/>
+    <text x="290" y="174" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">Early Arrival</text>
+    <text x="290" y="188" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">Monitoring</text>
+    <text x="290" y="200" font-family="Arial" font-size="8" text-anchor="middle" fill="#888">waits until STA window</text>
+    <!-- label "Too early" -->
+    <text x="302" y="248" font-family="Arial" font-size="8" fill="#888">Too early</text>
+
+    <!-- "On time" label -->
+    <text x="330" y="294" font-family="Arial" font-size="8" fill="#888">OK</text>
+
+    <!-- Arrow STA → Entry Site -->
+    <line x1="316" y1="300" x2="352" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- NODE 2: Entry Site Assigned -->
+    <!-- box x=356..476, center=416 -->
+    <rect x="356" y="272" width="120" height="56" fill="white" stroke="#555" stroke-width="1.5" rx="5"/>
+    <text x="416" y="293" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Entry Site</text>
+    <text x="416" y="307" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Assigned</text>
+    <text x="416" y="321" font-family="Arial" font-size="9" text-anchor="middle" fill="#888">Entry tag · vacancy check</text>
+
+    <!-- Arrow Node2 → Node3 Queue Reg -->
+    <line x1="476" y1="300" x2="502" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- NODE 3: Queue Registration -->
+    <!-- box x=506..626, center=566 (but this is crossing from 4.2 to 4.1 area) -->
+    <!-- Actually let me put Queue Reg outside both boxes, between them -->
+    <!-- Wait — Queue Reg is NOT an improvement. Let me put it between 4.2 and 4.1 boxes -->
+    <!-- 4.2 ends at x=472, 4.1 starts at x=490. Queue Reg at x=506..626 is inside 4.1? No, 4.1 is x=490..640 -->
+    <!-- Let me adjust: Queue Reg box x=506..626, outside improvement boxes (or just between them) -->
+    <rect x="506" y="272" width="120" height="56" fill="white" stroke="#555" stroke-width="1.5" rx="5"/>
+    <text x="566" y="293" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Queue</text>
+    <text x="566" y="307" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Registration</text>
+    <text x="566" y="321" font-family="Arial" font-size="9" text-anchor="middle" fill="#888">Status: Pending</text>
+
+    <!-- Arrow Node3 → Dock Assign Diamond -->
+    <line x1="626" y1="300" x2="656" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- DOCK ASSIGNMENT DIAMOND -->
+    <!-- center x=680, y=300 -->
+    <polygon points="680,273 708,300 680,327 652,300" fill="white" stroke="#555" stroke-width="1.5"/>
+    <text x="680" y="297" font-family="Arial" font-size="8.5" text-anchor="middle" fill="#333">Auto</text>
+    <text x="680" y="308" font-family="Arial" font-size="8.5" text-anchor="middle" fill="#333">assign</text>
+
+    <!-- Branch DOWN — No match -->
+    <line x1="680" y1="327" x2="680" y2="388" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+    <rect x="616" y="392" width="128" height="42" fill="#FFF3E0" stroke="#E65100" stroke-width="1.2" rx="4"/>
+    <text x="680" y="409" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">Wait in Queue</text>
+    <text x="680" y="423" font-family="Arial" font-size="8" text-anchor="middle" fill="#888">re-evaluated on change</text>
+    <text x="694" y="342" font-family="Arial" font-size="8" fill="#888">No match</text>
+
+    <!-- "Match" label -->
+    <text x="722" y="294" font-family="Arial" font-size="8" fill="#888">Match</text>
+
+    <!-- Arrow Dock Assign → Queue Assigned -->
+    <!-- 4.1 box ends at x=640, so Queue Assigned is outside. Actually let me put it just after the diamond -->
+    <line x1="708" y1="300" x2="736" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- NODE 4: Queue Assigned -->
+    <!-- Hmm, this would be inside 4.3.1 box (x=720..1060). Let me make it a small transition note -->
+    <!-- Actually let me skip "Queue Assigned" as a separate box and go straight to Gate Check -->
+    <!-- Let me add label on arrow: "Status: Assigned" -->
+    <text x="740" y="290" font-family="Arial" font-size="8" fill="#888" text-anchor="middle">Status:</text>
+    <text x="740" y="301" font-family="Arial" font-size="8" fill="#888" text-anchor="middle">Assigned</text>
+
+    <line x1="762" y1="300" x2="784" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- GATE CAPACITY CHECK DIAMOND -->
+    <!-- center x=812, y=300. Inside 4.3.1 box -->
+    <polygon points="812,272 842,300 812,328 782,300" fill="white" stroke="#555" stroke-width="1.5"/>
+    <text x="812" y="296" font-family="Arial" font-size="8" text-anchor="middle" fill="#333">Gate</text>
+    <text x="812" y="307" font-family="Arial" font-size="8" text-anchor="middle" fill="#333">capacity</text>
+    <text x="812" y="318" font-family="Arial" font-size="8" text-anchor="middle" fill="#333">check</text>
+
+    <!-- Branch DOWN — No space -->
+    <line x1="812" y1="328" x2="812" y2="388" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+    <rect x="746" y="392" width="132" height="42" fill="#FFF3E0" stroke="#E65100" stroke-width="1.2" rx="4"/>
+    <text x="812" y="409" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">Wait in External Lot</text>
+    <text x="812" y="423" font-family="Arial" font-size="8" text-anchor="middle" fill="#888">notified when space opens</text>
+    <text x="826" y="344" font-family="Arial" font-size="8" fill="#888">No space</text>
+
+    <!-- "Space OK" label -->
+    <text x="858" y="294" font-family="Arial" font-size="8" fill="#888">Space OK</text>
+
+    <!-- Arrow Gate → Driver Notified -->
+    <line x1="842" y1="300" x2="876" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- NODE 5: Driver Notified -->
+    <!-- box x=880..1000, center=940 -->
+    <rect x="880" y="272" width="120" height="56" fill="white" stroke="#555" stroke-width="1.5" rx="5"/>
+    <text x="940" y="293" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Driver</text>
+    <text x="940" y="307" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Notified</text>
+    <text x="940" y="321" font-family="Arial" font-size="9" text-anchor="middle" fill="#888">Must confirm attendance</text>
+
+    <!-- Arrow Node5 → Confirm Diamond -->
+    <line x1="1000" y1="300" x2="1028" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- DRIVER CONFIRMATION DIAMOND -->
+    <!-- center x=1058, y=300 -->
+    <polygon points="1058,272 1088,300 1058,328 1028,300" fill="white" stroke="#555" stroke-width="1.5"/>
+    <text x="1058" y="297" font-family="Arial" font-size="8.5" text-anchor="middle" fill="#333">Driver</text>
+    <text x="1058" y="308" font-family="Arial" font-size="8.5" text-anchor="middle" fill="#333">confirms?</text>
+
+    <!-- Branch UP — On Hold -->
+    <line x1="1058" y1="272" x2="1058" y2="210" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+    <rect x="994" y="155" width="128" height="52" fill="#FFEBEE" stroke="#C62828" stroke-width="1.2" rx="4"/>
+    <text x="1058" y="174" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">On Hold</text>
+    <text x="1058" y="188" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">(retry limit reached)</text>
+    <text x="1058" y="200" font-family="Arial" font-size="8" text-anchor="middle" fill="#888">manual ops intervention</text>
+    <text x="1070" y="249" font-family="Arial" font-size="8" fill="#888">No / Timeout</text>
+
+    <!-- "Yes" label -->
+    <text x="1100" y="294" font-family="Arial" font-size="8" fill="#888">Yes</text>
+
+    <!-- Arrow Confirm → Dock Occupied -->
+    <line x1="1088" y1="300" x2="1120" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- NODE 6: Dock Occupied -->
+    <!-- box x=1124..1244, center=1184 (between 4.3.1 and 4.3.2 boxes) -->
+    <!-- 4.3.1 ends x=1060, 4.3.2 starts x=1120 — actually let me make dock occupied be outside both -->
+    <!-- Wait: 4.3.1 box x=720..1060. Dock Occupied at x=1064..1184 — outside 4.3.1, before 4.3.2 -->
+    <rect x="1064" y="272" width="120" height="56" fill="white" stroke="#555" stroke-width="1.5" rx="5"/>
+    <text x="1124" y="293" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Dock</text>
+    <text x="1124" y="307" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Occupied</text>
+    <text x="1124" y="321" font-family="Arial" font-size="9" text-anchor="middle" fill="#888">Driver at dock</text>
+
+    <!-- Arrow Node6 → Task Progress -->
+    <line x1="1184" y1="300" x2="1220" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- NODE 7: Task in Progress -->
+    <!-- box x=1224..1344, center=1284. Inside 4.3.2 box (x=1120..1280) -->
+    <!-- Adjust 4.3.2 box to x=1120: center of task node is 1284, so it works -->
+    <rect x="1228" y="272" width="120" height="56" fill="white" stroke="#555" stroke-width="1.5" rx="5"/>
+    <text x="1288" y="293" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Task in</text>
+    <text x="1288" y="307" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Progress</text>
+    <text x="1288" y="321" font-family="Arial" font-size="9" text-anchor="middle" fill="#888">Loading / unloading</text>
+
+    <!-- Branch UP from Task Progress — notifications -->
+    <line x1="1288" y1="272" x2="1288" y2="210" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+    <rect x="1204" y="155" width="168" height="52" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.2" rx="4"/>
+    <text x="1288" y="173" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">Progress Alert (X₁%)</text>
+    <text x="1288" y="187" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">Pre-Call next driver (X₂%)</text>
+    <text x="1288" y="200" font-family="Arial" font-size="8" text-anchor="middle" fill="#888">sent automatically</text>
+
+    <!-- Arrow Task → Finish Task -->
+    <line x1="1348" y1="300" x2="1380" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- NODE 8: Finish Task -->
+    <!-- box x=1384..1504, center=1444. Inside 4.4.2 box (x=1330..1530) -->
+    <rect x="1388" y="272" width="120" height="56" fill="white" stroke="#555" stroke-width="1.5" rx="5"/>
+    <text x="1448" y="293" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">Finish Task</text>
+    <text x="1448" y="307" font-family="Arial" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#222">(operator)</text>
+    <text x="1448" y="321" font-family="Arial" font-size="9" text-anchor="middle" fill="#888">Cage popup shown</text>
+
+    <!-- Branch DOWN from Finish Task — End Process + Effective Call -->
+    <line x1="1448" y1="328" x2="1448" y2="388" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+    <rect x="1360" y="392" width="176" height="52" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.2" rx="4"/>
+    <text x="1448" y="411" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">End Process notification</text>
+    <text x="1448" y="425" font-family="Arial" font-size="9.5" text-anchor="middle" fill="#333">Effective Call → next driver</text>
+    <text x="1448" y="437" font-family="Arial" font-size="8" text-anchor="middle" fill="#888">sent automatically</text>
+
+    <!-- Arrow Finish Task → Dock Released -->
+    <line x1="1508" y1="300" x2="1535" y2="300" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- DOCK RELEASED / END -->
+    <!-- Simplified: just show "Dock Released" label on arrow then END circle -->
+    <text x="1547" y="288" font-family="Arial" font-size="9" text-anchor="middle" fill="#555">Dock</text>
+    <text x="1547" y="300" font-family="Arial" font-size="9" text-anchor="middle" fill="#555">Released</text>
+    <line x1="1560" y1="310" x2="1574" y2="310" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+    <circle cx="1594" cy="300" r="14" fill="#222"/>
+    <circle cx="1594" cy="300" r="8" fill="white"/>
+    <circle cx="1594" cy="300" r="5" fill="#222"/>
+
+    <!-- ============================================================
+         LEGEND
+    ============================================================ -->
+    <rect x="72" y="490" width="1522" height="148"
+          fill="#FAFAFA" stroke="#DDD" stroke-width="1" rx="6"/>
+
+    <text x="90" y="510" font-family="Arial" font-size="10.5" font-weight="bold" fill="#333">Improvements in this FRF:</text>
+
+    <!-- Row 1 -->
+    <rect x="90" y="520" width="12" height="12" fill="none" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4,2" rx="2"/>
+    <text x="108" y="531" font-family="Arial" font-size="10" fill="#333"><tspan font-weight="bold">4.2</tspan> Entry site configuration — STA check (LH only), entry site assignment, geofence per parking area, vacancy cascade, early arrival monitoring</text>
+
+    <rect x="90" y="540" width="12" height="12" fill="none" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4,2" rx="2"/>
+    <text x="108" y="551" font-family="Arial" font-size="10" fill="#333"><tspan font-weight="bold">4.1</tspan> Automatic assignment — cargo composition rules (% or absolute, AND/OR logic), dock group floor logic</text>
+
+    <rect x="90" y="560" width="12" height="12" fill="none" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4,2" rx="2"/>
+    <text x="108" y="571" font-family="Arial" font-size="10" fill="#333"><tspan font-weight="bold">4.3.1</tspan> Gate queue control — phased notifications based on gate physical capacity (meters); confirmation timeout; On Hold if retry limit reached</text>
+
+    <!-- Row 2 -->
+    <rect x="90" y="580" width="12" height="12" fill="none" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4,2" rx="2"/>
+    <text x="108" y="591" font-family="Arial" font-size="10" fill="#333"><tspan font-weight="bold">4.3.2</tspan> End process notifications — Progress Alert (X₁%), Pre-Call to next driver (X₂%), End Process + Effective Call at task completion</text>
+
+    <rect x="90" y="600" width="12" height="12" fill="none" stroke="#C0392B" stroke-width="1.5" stroke-dasharray="4,2" rx="2"/>
+    <text x="108" y="611" font-family="Arial" font-size="10" fill="#333"><tspan font-weight="bold">4.4.2</tspan> Cage popup — shows next driver's cage/corridor to operator on Finish Task (FMS + PDA, LM only)</text>
+
+    <rect x="90" y="620" width="12" height="12" fill="none" stroke="#555" stroke-width="1" rx="2"/>
+    <text x="108" y="631" font-family="Arial" font-size="10" fill="#333"><tspan font-weight="bold">4.4.1 / 4.4.3</tspan> Queue list visibility — configurable columns, new fields (LH ETA, CPT, AT, Cage), notification log + entry tag log</text>
+
+    <!-- Branch legend -->
+    <line x1="720" y1="525" x2="750" y2="525" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+    <rect x="754" y="517" width="10" height="10" fill="#FFF8E1" stroke="#F9A825" stroke-width="1"/>
+    <text x="770" y="527" font-family="Arial" font-size="10" fill="#555">Alternative / exception path</text>
+
+    <rect x="850" y="517" width="10" height="10" fill="#FFEBEE" stroke="#C62828" stroke-width="1"/>
+    <text x="866" y="527" font-family="Arial" font-size="10" fill="#555">On Hold / blocked state</text>
+
+    <rect x="980" y="517" width="10" height="10" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1"/>
+    <text x="996" y="527" font-family="Arial" font-size="10" fill="#555">Automated notification sent to driver</text>
+
+  </svg>
+  <p class="caption">Diagram 1 — YMS FRF v4: Where improvements apply in the current process flow</p>
+</div>
+</body>
+</html>

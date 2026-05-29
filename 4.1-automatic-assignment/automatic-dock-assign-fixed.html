@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YMS – Automatic Assignment Logic</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
+.wrap{width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;}
+.sb{position:absolute;top:0;left:0;width:1920px;height:1080px;transform-origin:top left;display:flex;}
+.sidebar{width:220px;background:#1a1f36;color:#fff;flex-shrink:0;font-size:12px;height:1080px;}
+.slogo{padding:14px 16px 10px;border-bottom:1px solid #2d3454;}
+.slogo .br{color:#EE4D2D;font-weight:700;font-size:15px;}.slogo .br b{color:#fff;}
+.slogo .env{color:#a0aec0;font-size:10px;margin-top:1px;}
+.sstat{padding:9px 16px;color:#a0aec0;font-size:11px;border-bottom:1px solid #2d3454;}
+.si{padding:8px 16px;color:#cbd5e0;font-size:11px;cursor:pointer;}
+.si.sub{padding-left:28px;color:#a0aec0;}
+.si.active{background:#2d3454;color:#fff;border-left:3px solid #EE4D2D;}
+.main{flex:1;display:flex;flex-direction:column;height:1080px;background:#f0f2f5;}
+.topbar{background:#fff;padding:0 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;height:48px;flex-shrink:0;}
+.bc{font-size:12px;color:#718096;}.bc b{color:#2d3748;}
+.tr{display:flex;align-items:center;gap:14px;font-size:12px;color:#4a5568;}
+.sk{background:#EE4D2D;color:#fff;padding:4px 12px;border-radius:4px;font-size:11px;font-weight:600;}
+.ptabs{display:flex;background:#fff;border-bottom:1px solid #e2e8f0;padding:0 22px;flex-shrink:0;}
+.ptab{padding:13px 16px;font-size:12px;color:#718096;cursor:pointer;border-bottom:2px solid transparent;}
+.ptab.active{color:#EE4D2D;border-bottom:2px solid #EE4D2D;font-weight:500;}
+.content{padding:18px 22px;overflow-y:auto;flex:1;}
+.stitle{font-size:14px;font-weight:600;color:#2d3748;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.stitle::before{content:'';width:3px;height:16px;background:#EE4D2D;border-radius:2px;display:inline-block;}
+.acard{background:#fff;border:1px solid #e2e8f0;border-radius:4px;margin-bottom:14px;}
+.arow{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid #f0f4f8;font-size:12px;color:#4a5568;}
+.arow:last-child{border-bottom:none;}
+.toggle-sw{position:relative;width:38px;height:20px;flex-shrink:0;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.tsl{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#cbd5e0;border-radius:20px;transition:.3s;}
+.tsl:before{position:absolute;content:'';height:14px;width:14px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
+input:checked+.tsl{background:#EE4D2D;}
+input:checked+.tsl:before{transform:translateX(18px);}
+.dtabs{display:flex;margin-bottom:0;}
+.dtab{padding:7px 20px;border:1px solid #e2e8f0;font-size:13px;cursor:pointer;color:#718096;background:#fff;}
+.dtab.active{color:#EE4D2D;border-color:#EE4D2D;font-weight:500;}
+.dtab:first-child{border-radius:4px 0 0 4px;}.dtab:last-child{border-radius:0 4px 4px 0;}
+.fi{display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:4px;height:34px;overflow:hidden;flex:1;}
+.fi-lbl{background:#fff;padding:0 10px;font-size:12px;color:#4a5568;font-weight:500;white-space:nowrap;border-right:1px solid #e2e8f0;height:100%;display:flex;align-items:center;}
+.fi-input{border:none;outline:none;padding:0 10px;font-size:12px;color:#9a9ea6;flex:1;height:100%;background:#fff;}
+.fi-select{border:none;outline:none;padding:0 10px;font-size:12px;color:#9a9ea6;flex:1;height:100%;background:#fff;cursor:pointer;}
+.fi-arrow{padding:0 8px;color:#9a9ea6;font-size:11px;pointer-events:none;}
+.fline{display:flex;gap:10px;margin-bottom:9px;}
+.fline:last-child{margin-bottom:0;}
+.bor{background:#EE4D2D;color:#fff;border:none;padding:0 22px;border-radius:4px;font-size:13px;cursor:pointer;height:34px;font-weight:500;}
+.bwh{background:#fff;color:#4a5568;border:1px solid #e2e8f0;padding:0 16px;border-radius:4px;font-size:13px;cursor:pointer;height:34px;}
+.bmore{background:#fff;color:#EE4D2D;border:none;padding:0 8px;font-size:13px;cursor:pointer;height:34px;font-weight:500;}
+.twrap{background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:#f7fafc;padding:10px;text-align:left;color:#2d3748;font-weight:600;border-bottom:1px solid #e2e8f0;font-size:12px;}
+td{padding:10px;border-bottom:1px solid #f7fafc;color:#4a5568;}
+tr:last-child td{border-bottom:none;}
+.el{color:#EE4D2D;cursor:pointer;font-size:12px;}
+.pgn{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:11px;color:#718096;border-top:1px solid #f0f4f8;}
+.overlay{position:absolute;top:0;left:0;width:1920px;height:1080px;background:rgba(0,0,0,.52);display:none;align-items:center;justify-content:center;z-index:100;}
+.modal{background:#fff;border-radius:8px;width:700px;max-height:960px;overflow-y:auto;display:flex;flex-direction:column;}
+.mhdr{padding:18px 24px 14px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;background:#fff;}
+.mhdr h3{font-size:15px;font-weight:600;color:#1a202c;}
+.mclose{background:none;border:none;font-size:19px;cursor:pointer;color:#718096;}
+.mbody{padding:18px 24px;flex:1;}
+.prefill-bar{background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 16px;display:flex;gap:28px;margin-bottom:16px;}
+.pf{display:flex;flex-direction:column;gap:2px;}
+.pf-lbl{font-size:10px;color:#a0aec0;text-transform:uppercase;letter-spacing:.4px;font-weight:500;}
+.pf-val{font-size:13px;font-weight:600;color:#1a202c;}
+.pf-note{margin-left:auto;font-size:10px;color:#a0aec0;align-self:center;font-style:italic;}
+.sblock{border:1px solid #e2e8f0;border-radius:6px;margin-bottom:14px;}
+.sblock-hdr{background:#2d3748;color:#fff;padding:9px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;border-radius:6px 6px 0 0;}
+.sblock-sub{font-size:11px;color:#718096;padding:6px 14px;background:#f7fafc;border-bottom:1px solid #e2e8f0;font-style:italic;}
+.sblock-body{padding:14px;}
+.frow{display:flex;gap:12px;margin-bottom:12px;}
+.frow:last-child{margin-bottom:0;}
+.fgrp{flex:1;display:flex;flex-direction:column;gap:4px;}
+.fgrp label{font-size:11px;color:#718096;font-weight:500;}
+.fgrp select{padding:6px 9px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;color:#2d3748;height:32px;width:100%;}
+.tag-opt{font-size:10px;color:#a0aec0;font-weight:400;font-style:italic;margin-left:3px;}
+.chips-wrap{border:1px solid #e2e8f0;border-radius:4px;padding:5px 8px;min-height:32px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;background:#fff;}
+.chip{background:#f0f4f8;color:#4a5568;border-radius:3px;padding:3px 8px;font-size:11px;display:flex;align-items:center;gap:4px;}
+.chip .rm{cursor:pointer;color:#a0aec0;font-size:10px;}
+.chip-add{font-size:11px;color:#EE4D2D;cursor:pointer;padding:3px 0;}
+.pf-hint{font-size:10px;color:#a0aec0;margin-top:3px;font-style:italic;}
+.cargo-config-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f4f8;}
+.cargo-config-row:last-of-type{border-bottom:none;margin-bottom:12px;}
+.cargo-row-left{display:flex;flex-direction:column;gap:2px;}
+.cargo-row-title{font-size:13px;font-weight:600;color:#2d3748;}
+.cargo-row-desc{font-size:11px;color:#a0aec0;}
+.seg-group-h{display:flex;gap:8px;}
+.seg-opt-h{display:flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid #e2e8f0;border-radius:5px;cursor:pointer;background:#fff;transition:all .15s;min-width:160px;}
+.seg-opt-h.active{border-color:#EE4D2D;background:#fff8f7;}
+.seg-opt-h input[type=radio]{accent-color:#EE4D2D;width:13px;height:13px;flex-shrink:0;}
+.seg-opt-h-label{font-size:12px;font-weight:500;color:#2d3748;}
+.seg-opt-h-desc{font-size:11px;color:#a0aec0;margin-top:1px;}
+.logic-desc-box{font-size:11px;color:#4a5568;background:#f7fafc;border:1px solid #e8edf2;border-radius:4px;padding:8px 11px;margin-top:10px;}
+.attrs-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-top:4px;border-top:1px solid #f0f4f8;}
+.attrs-title{font-size:12px;font-weight:600;color:#2d3748;}
+.btn-add-attr{background:#EE4D2D;color:#fff;border:none;padding:5px 12px;border-radius:4px;font-size:11px;cursor:pointer;}
+.attr-card{background:#f7fafc;border:1px solid #e2e8f0;border-radius:5px;padding:12px 14px;margin-bottom:9px;}
+.attr-card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.anametag{background:#2d3748;color:#fff;border-radius:3px;padding:3px 10px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+.anametag .btype{background:#718096;color:#fff;border-radius:2px;padding:1px 5px;font-size:9px;font-weight:400;}
+.anametag .btype.sel{background:#dd6b20;}
+.rm-attr{background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:3px 10px;font-size:11px;color:#718096;cursor:pointer;}
+.rm-attr:hover{color:#e53e3e;border-color:#e53e3e;}
+.minmax-row{display:flex;gap:10px;align-items:flex-end;margin-top:8px;}
+.mm-grp{flex:1;display:flex;flex-direction:column;gap:3px;}
+.mm-grp label{font-size:10px;color:#718096;}
+.mm-grp input{padding:5px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;color:#2d3748;width:100%;height:30px;}
+.mm-unit{font-size:11px;color:#a0aec0;padding-bottom:5px;}
+.mm-dash{color:#a0aec0;padding-bottom:5px;font-size:14px;}
+.attr-source{font-size:10px;color:#a0aec0;margin-top:5px;font-style:italic;}
+.sv-lbl{font-size:10px;color:#718096;margin-bottom:4px;}
+.ms-options{background:#fff;border:1px solid #e2e8f0;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:400;display:none;margin-top:2px;max-height:160px;overflow-y:auto;}
+.ms-opt{padding:7px 10px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:8px;color:#2d3748;}
+.ms-opt:hover{background:#fff3f0;}
+.ms-opt input[type=checkbox]{accent-color:#EE4D2D;}
+.attr-picker-wrap{position:relative;}
+.attr-picker{background:#fff;border:1px solid #e2e8f0;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.12);position:absolute;right:0;top:32px;width:190px;padding:4px 0;z-index:300;display:none;}
+.api{padding:8px 14px;font-size:12px;color:#2d3748;cursor:pointer;}
+.api:hover{background:#fff3f0;color:#EE4D2D;}
+.mftr{padding:13px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;background:#fff;}
+.bcnc{background:#fff;color:#4a5568;border:1px solid #e2e8f0;padding:8px 20px;border-radius:4px;font-size:13px;cursor:pointer;}
+.bcfm{background:#EE4D2D;color:#fff;border:none;padding:8px 20px;border-radius:4px;font-size:13px;cursor:pointer;font-weight:500;}
+</style>
+</head>
+<body style="margin:0;padding:0;background:#f0f2f5;">
+
+<div class="wrap" id="wrap">
+<div class="sb" id="sb">
+  <div class="sidebar">
+    <div class="slogo"><div class="br">Shopee <b>Xpress</b></div><div class="env">UAT</div></div>
+    <div class="sstat">FMHubA &#9662;</div>
+    <div class="si">Agency</div><div class="si">Inbound</div><div class="si">Outbound</div>
+    <div class="si">Return</div><div class="si">Station Management &#9662;</div>
+    <div class="si sub">Area Management</div><div class="si sub">Dock Management</div>
+    <div class="si sub">Queue List</div>
+    <div class="si sub active">Queue &amp; Dock Configurations</div>
+    <div class="si sub">Bag Management</div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="bc">Station Management / <b>Queue &amp; Dock Configurations</b></div>
+      <div class="tr"><span class="sk">Show Key</span><span>&#128276;</span><span>English &#9662;</span><span>camila.braz &#9662;</span></div>
+    </div>
+    <div class="ptabs">
+      <div class="ptab">Queue Prioritisation</div>
+      <div class="ptab active">Automatic Assignment Logic</div>
+      <div class="ptab">Geofencing Registration</div>
+      <div class="ptab">Vehicle Capacity Control</div>
+    </div>
+    <div class="content">
+      <div class="stitle">Automatic Assignment Setting</div>
+      <div class="acard">
+        <div class="arow">Assign Vehicles Automatically Upon Queue Registration (Inbound)<label class="toggle-sw"><input type="checkbox"><span class="tsl"></span></label></div>
+        <div class="arow">Assign Vehicles Automatically Upon Queue Registration (Outbound)<label class="toggle-sw"><input type="checkbox"><span class="tsl"></span></label></div>
+        <div class="arow">Priority of TO Pack Type Attribute: <span style="color:#EE4D2D;font-size:11px;">All Other Pack Attributes</span><button class="bwh" style="font-size:11px;padding:3px 10px;height:26px;">Edit</button></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="stitle" style="margin-bottom:0;">Automatic Assignment Attribute Configuration</div>
+        <div style="display:flex;gap:8px;"><button class="bwh" style="font-size:12px;">Batch Action &#9662;</button><button class="bwh" style="font-size:12px;">Export</button><button class="bwh" style="font-size:12px;">Log</button></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:12px;">
+        <div style="padding:12px 16px 0;border-bottom:1px solid #e2e8f0;">
+          <div class="dtabs"><div class="dtab active">Dock</div><div class="dtab">Dock Group</div></div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div class="fline">
+            <div class="fi" style="flex:1.2;"><span class="fi-lbl">Dock Name</span><input class="fi-input" placeholder="Input"/></div>
+            <div class="fi" style="flex:1;"><span class="fi-lbl">Dock Type</span><select class="fi-select"><option value="">Select</option></select><span class="fi-arrow">&#9662;</span></div>
+            <div class="fi" style="flex:1;"><span class="fi-lbl">Arrival Type</span><select class="fi-select"><option value="">Select</option></select><span class="fi-arrow">&#9662;</span></div>
+          </div>
+          <div class="fline">
+            <div class="fi" style="flex:1;"><span class="fi-lbl">Vehicle Type</span><select class="fi-select"><option value="">Select</option></select><span class="fi-arrow">&#9662;</span></div>
+            <div class="fi" style="flex:1;"><span class="fi-lbl">TO Pack Type</span><select class="fi-select"><option value="">Select</option></select><span class="fi-arrow">&#9662;</span></div>
+            <div class="fi" style="flex:1.3;"><span class="fi-lbl">LH Outbound Destination</span><select class="fi-select"><option value="">Select</option></select><span class="fi-arrow">&#9662;</span></div>
+          </div>
+          <div class="fline">
+            <div class="fi" style="flex:1;"><span class="fi-lbl">Bulky</span><select class="fi-select"><option value="">Select</option></select><span class="fi-arrow">&#9662;</span></div>
+            <div class="fi" style="flex:1;"><span class="fi-lbl">HV</span><select class="fi-select"><option value="">Select</option></select><span class="fi-arrow">&#9662;</span></div>
+            <div style="flex:1.3;display:flex;align-items:center;justify-content:flex-end;gap:8px;"><button class="bor">Search</button><button class="bwh">Reset</button><button class="bmore">More &#9662;</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="twrap">
+        <table>
+          <thead><tr><th>Dock Name</th><th>Dock Type</th><th>Arrival Type</th><th>Vehicle Type</th><th>TO Pack Type</th><th>LH Outbound Dest.</th><th>Bulky</th><th>HV</th><th>RTO</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>test1</td><td>General</td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td><span class="el" onclick="openModal('test1','General','&#8212;')">Edit</span></td></tr>
+            <tr><td>EXTERNA14</td><td>Outbound</td><td>LH - Outbound</td><td>TRUCK-EXPRESSA</td><td>&#8212;</td><td>Hub SP, Hub RJ</td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td><span class="el" onclick="openModal('EXTERNA14','Outbound','LH - Outbound')">Edit</span></td></tr>
+          </tbody>
+        </table>
+        <div class="pgn"><span>Total: 2</span><div style="display:flex;align-items:center;gap:6px;"><span>&#9664;</span><span style="background:#EE4D2D;color:#fff;padding:2px 8px;border-radius:2px;font-size:11px;">1</span><span>&#9654;</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="mhdr"><h3>Edit Automatic Assignment Attributes</h3><button class="mclose" onclick="closeModal()">&#10005;</button></div>
+      <div class="mbody">
+        <div class="prefill-bar">
+          <div class="pf"><div class="pf-lbl">Dock Name</div><div class="pf-val" id="pf-name">&#8212;</div></div>
+          <div style="width:1px;background:#e2e8f0;"></div>
+          <div class="pf"><div class="pf-lbl">Dock Type</div><div class="pf-val" id="pf-type">&#8212;</div></div>
+          <div style="width:1px;background:#e2e8f0;"></div>
+          <div class="pf"><div class="pf-lbl">Arrival Type</div><div class="pf-val" id="pf-arrival">&#8212;</div></div>
+          <div class="pf-note">Pre-filled from Dock Management &middot; not editable</div>
+        </div>
+        <div class="sblock">
+          <div class="sblock-hdr">Group Identification<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:#cbd5e0;">Enable</span><label class="toggle-sw"><input type="checkbox" id="grp-tog" checked onchange="toggleGrp(this)"><span class="tsl"></span></label></div></div>
+          <div class="sblock-sub">Optional &#8212; defines which trips/vehicles this dock will receive.</div>
+          <div class="sblock-body" id="grp-body">
+            <div class="frow">
+              <div class="fgrp" id="lh-field" style="display:none;">
+                <label>LH Outbound Destination <span class="tag-opt">optional &middot; multiselect</span></label>
+                <div class="chips-wrap"><span class="chip">[7203] LM Hub_SP_S&#227;o... <span class="rm">&#10005;</span></span><span class="chip">[8452] LM Hub_SP_Itapevi <span class="rm">&#10005;</span></span><span class="chip-add">+ Add</span></div>
+                <div class="pf-hint">Only editable when Arrival Type is LH Outbound.</div>
+              </div>
+              <div class="fgrp">
+                <label>Vehicle Type <span class="tag-opt">optional &middot; multiselect</span></label>
+                <div class="chips-wrap"><span class="chip">TRUCK - EXPRESSA <span class="rm">&#10005;</span></span><span class="chip">CARRETA <span class="rm">&#10005;</span></span><span class="chip-add">+ Add</span></div>
+                <div class="pf-hint">Default: All. At least one must be selected to confirm.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sblock">
+          <div class="sblock-hdr">Cargo Composition &amp; Parameters<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:#cbd5e0;">Enable</span><label class="toggle-sw"><input type="checkbox" id="cargo-tog" onchange="toggleCargo(this)"><span class="tsl"></span></label></div></div>
+          <div class="sblock-sub">Optional &#8212; defines how the dock rule is evaluated based on cargo attributes.</div>
+          <div class="sblock-body">
+            <div id="cargo-off" style="text-align:center;color:#a0aec0;font-size:12px;padding:8px 0;">Enable to configure cargo composition rules for this dock.</div>
+            <div id="cargo-fields" style="display:none;">
+              <div class="cargo-config-row">
+                <div class="cargo-row-left">
+                  <div class="cargo-row-title">Evaluation *</div>
+                  <div class="cargo-row-desc">Defines how ranges are interpreted by the decision engine.</div>
+                </div>
+                <div class="seg-group-h">
+                  <label class="seg-opt-h active" id="seg-abs" onclick="setEval('abs')">
+                    <input type="radio" name="eval" value="abs" checked>
+                    <div><div class="seg-opt-h-label">Number absolute</div><div class="seg-opt-h-desc">Absolute quantity thresholds.</div></div>
+                  </label>
+                  <label class="seg-opt-h" id="seg-pct" onclick="setEval('pct')">
+                    <input type="radio" name="eval" value="pct">
+                    <div><div class="seg-opt-h-label">% Percentage</div><div class="seg-opt-h-desc">Percentage of total load.</div></div>
+                  </label>
+                </div>
+              </div>
+              <div class="cargo-config-row">
+                <div class="cargo-row-left">
+                  <div class="cargo-row-title">Restriction Logic *</div>
+                  <div class="cargo-row-desc">How the engine evaluates multiple restrictions.</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                  <div class="seg-group-h">
+                    <label class="seg-opt-h active" id="seg-and" onclick="setLogic('and')">
+                      <input type="radio" name="logic" value="and" checked>
+                      <div><div class="seg-opt-h-label">And &#8212; all must pass.</div></div>
+                    </label>
+                    <label class="seg-opt-h" id="seg-or" onclick="setLogic('or')">
+                      <input type="radio" name="logic" value="or">
+                      <div><div class="seg-opt-h-label">Or &#8212; at least one must pass.</div></div>
+                    </label>
+                  </div>
+                  <div class="logic-desc-box" id="logic-desc" style="width:100%;text-align:left;">And &#8212; the vehicle is accepted only if every restriction is satisfied.</div>
+                </div>
+              </div>
+              <div class="attrs-hdr">
+                <div class="attrs-title">Attributes * <span style="font-weight:400;color:#a0aec0;font-size:11px;">(at least one)</span></div>
+                <div class="attr-picker-wrap">
+                  <button class="btn-add-attr" onclick="togglePicker(event)">+ Add attribute</button>
+                  <div class="attr-picker" id="attr-picker">
+                    <div class="api" data-name="TO Pack Type" data-type="multiselect" onclick="addAttr(this)">TO Pack Type</div>
+                    <div class="api" data-name="Size Type" data-type="multiselect" onclick="addAttr(this)">Size Type</div>
+                    <div class="api" data-name="Total of Orders" data-type="number" onclick="addAttr(this)">Total of Orders</div>
+                    <div class="api" data-name="Trip Type" data-type="select" onclick="addAttr(this)">Trip Type</div>
+                    <div class="api" data-name="Bulky" data-type="number" onclick="addAttr(this)">Bulky</div>
+                    <div class="api" data-name="HV" data-type="number" onclick="addAttr(this)">HV</div>
+                    <div class="api" data-name="RTO" data-type="number" onclick="addAttr(this)">RTO</div>
+                  </div>
+                </div>
+              </div>
+              <div id="attr-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mftr"><button class="bcnc" onclick="closeModal()">Cancel</button><button class="bcfm">Confirm</button></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function scaleUI(){var w=document.getElementById('wrap');var s=document.getElementById('sb');var sc=w.offsetWidth/1920;s.style.transform='scale('+sc+')';w.style.height=Math.round(1080*sc)+'px';}
+window.addEventListener('resize',scaleUI);setTimeout(scaleUI,50);
+var evalMode='abs';var attrCount=0;
+var attrMeta={
+  'TO Pack Type':{type:'multiselect',opts:['Scuttle','Saca','Pallet','Volumoso','Saca Sorter'],src:'Source: Admin > Linehaul > Linehaul Trips'},
+  'Size Type':{type:'multiselect',opts:['Small','Medium','Large','Bulky'],src:'Options from Order Tag Management config.'},
+  'Total of Orders':{type:'number',opts:[],src:'Source: Admin > Linehaul > Linehaul Trips',fixedUnit:'orders'},
+  'Trip Type':{type:'select',opts:['Regular','Express','Transfer'],src:'Source: Admin > Linehaul > Linehaul Trips > Trip Classification'},
+  'Bulky':{type:'number',opts:[],src:''},
+  'HV':{type:'number',opts:[],src:''},
+  'RTO':{type:'number',opts:[],src:''}
+};
+function openModal(name,type,arrival){
+  document.getElementById('pf-name').textContent=name;
+  document.getElementById('pf-type').textContent=type;
+  document.getElementById('pf-arrival').textContent=arrival;
+  document.getElementById('lh-field').style.display=type.indexOf('Outbound')>-1?'flex':'none';
+  document.getElementById('overlay').style.display='flex';
+  document.getElementById('cargo-tog').checked=false;
+  document.getElementById('cargo-fields').style.display='none';
+  document.getElementById('cargo-off').style.display='block';
+  document.getElementById('attr-list').innerHTML='';
+  attrCount=0;evalMode='abs';
+  document.getElementById('seg-abs').classList.add('active');
+  document.getElementById('seg-pct').classList.remove('active');
+  document.getElementById('seg-and').classList.add('active');
+  document.getElementById('seg-or').classList.remove('active');
+  document.querySelectorAll('input[name="eval"]')[0].checked=true;
+  document.querySelectorAll('input[name="logic"]')[0].checked=true;
+  document.getElementById('logic-desc').textContent='And — the vehicle is accepted only if every restriction is satisfied.';
+}
+function closeModal(){document.getElementById('overlay').style.display='none';}
+function toggleGrp(el){document.getElementById('grp-body').style.opacity=el.checked?'1':'.45';document.getElementById('grp-body').style.pointerEvents=el.checked?'auto':'none';}
+function toggleCargo(el){document.getElementById('cargo-fields').style.display=el.checked?'block':'none';document.getElementById('cargo-off').style.display=el.checked?'none':'block';}
+function setEval(m){evalMode=m;document.getElementById('seg-abs').classList.toggle('active',m==='abs');document.getElementById('seg-pct').classList.toggle('active',m==='pct');var u=m==='pct'?'%':'units';document.querySelectorAll('.mm-unit[data-dyn="1"]').forEach(function(el){el.textContent=u;});}
+function setLogic(m){document.getElementById('seg-and').classList.toggle('active',m==='and');document.getElementById('seg-or').classList.toggle('active',m==='or');document.getElementById('logic-desc').textContent=m==='and'?'And — the vehicle is accepted only if every restriction is satisfied.':'Or — the vehicle is accepted if at least one restriction is satisfied.';}
+function togglePicker(e){e.stopPropagation();var p=document.getElementById('attr-picker');p.style.display=p.style.display==='block'?'none':'block';}
+document.addEventListener('click',function(e){if(!e.target.closest('.attr-picker-wrap'))document.getElementById('attr-picker').style.display='none';if(!e.target.closest('.ms-options')&&!e.target.closest('.chip-add')){document.querySelectorAll('.ms-options').forEach(function(ms){ms.style.display='none';});}});
+function addAttr(el){
+  var name=el.dataset.name;var type=el.dataset.type;
+  document.getElementById('attr-picker').style.display='none';
+  var meta=attrMeta[name];var unit=meta.fixedUnit||(evalMode==='pct'?'%':'units');
+  var typeLabel=type==='multiselect'?'multiselect':type==='select'?'select':'number';
+  var id='ac-'+(++attrCount);
+  var html='<div class="attr-card-hdr"><span class="anametag">'+name+' <span class="btype'+(type==='select'?' sel':'')+'" >'+typeLabel+'</span></span><button class="rm-attr" onclick="this.closest(\'.attr-card\').remove()">Remove</button></div>';
+  if(type==='multiselect'){var msId='ms-'+id;var chipsId='chips-'+id;html+='<div class="sv-lbl">Selected values</div><div class="chips-wrap" id="'+chipsId+'"><span class="chip-add" onclick="toggleMsById(\''+msId+'\')">+ Add</span></div><div class="ms-options" id="'+msId+'">';meta.opts.forEach(function(o){html+='<div class="ms-opt" onclick="toggleChipById(\''+chipsId+'\',\''+msId+'\',\''+o+'\',this)"><input type="checkbox"> '+o+'</div>';});html+='</div>';}
+  else if(type==='select'){html+='<select style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;margin-bottom:4px;height:32px;"><option value="">Select</option>';meta.opts.forEach(function(o){html+='<option>'+o+'</option>';});html+='</select>';}
+  if(meta.src)html+='<div class="attr-source">'+meta.src+'</div>';
+  if(type!=='select'){var dyn=meta.fixedUnit?'':'data-dyn="1"';html+='<div class="minmax-row"><div class="mm-grp"><label>Min *</label><input type="number" placeholder="0"/></div><div class="mm-dash">&#8212;</div><div class="mm-grp"><label>Max *</label><input type="number" placeholder="0"/></div><div class="mm-unit" '+dyn+'>'+unit+'</div></div>';}
+  var div=document.createElement('div');div.className='attr-card';div.id=id;div.innerHTML=html;
+  document.getElementById('attr-list').appendChild(div);
+}
+function toggleMsById(msId){var ms=document.getElementById(msId);ms.style.display=ms.style.display==='block'?'none':'block';}
+function toggleChipById(chipsId,msId,val,el){var cb=el.querySelector('input');cb.checked=!cb.checked;var wrap=document.getElementById(chipsId);if(cb.checked){var chip=document.createElement('span');chip.className='chip';chip.dataset.val=val;chip.innerHTML=val+' <span class="rm" onclick="this.closest(\'.chip\').remove();var cb=document.getElementById(\''+msId+'\').querySelectorAll(\'.ms-opt\');cb.forEach(function(o){if(o.textContent.trim()===\''+val+'\')o.querySelector(\'input\').checked=false;})">&#10005;</span>';wrap.insertBefore(chip,wrap.querySelector('.chip-add'));}else{var ex=wrap.querySelector('[data-val="'+val+'"]');if(ex)ex.remove();}}
+</script>
+</body>
+</html>

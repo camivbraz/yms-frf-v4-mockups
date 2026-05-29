@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>YMS – Dock Group Assignment (Interactive)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:#e8eaf0;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:16px;font-family:'Segoe UI',Arial,sans-serif;}
+.scene-wrap{overflow:hidden;position:relative;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.18);}
+#scene{width:1200px;height:820px;transform-origin:top left;position:relative;background:#f0f2f5;overflow:hidden;display:flex;flex-direction:column;}
+.layout{display:flex;flex:1;overflow:hidden;}
+.sb{width:196px;background:#1a1f36;flex-shrink:0;}
+.sb-logo{padding:14px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sb-logo .sp{color:#fff;font-size:17px;font-weight:700;}.sb-logo .xp{color:#EE4D2D;}
+.sb-live{background:#EE4D2D;color:#fff;font-size:9px;padding:1px 4px;border-radius:2px;margin-left:3px;}
+.sb-sub{color:#5a6380;font-size:10px;margin-top:2px;}
+.sb-sec{font-size:9px;color:#4a5568;padding:10px 14px 3px;text-transform:uppercase;letter-spacing:.5px;}
+.sb-item{padding:8px 14px;font-size:12px;color:#8892b0;border-left:2px solid transparent;cursor:pointer;}
+.sb-item.act{color:#fff;background:rgba(238,77,45,.15);border-left-color:#EE4D2D;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;font-size:11px;color:#718096;flex-shrink:0;}
+.topbar a{color:#EE4D2D;text-decoration:none;}
+.topbar-right{margin-left:auto;}
+.page-tabs{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 20px;flex-shrink:0;}
+.ptab{padding:11px 16px;font-size:12px;color:#718096;border-bottom:2px solid transparent;cursor:pointer;}
+.ptab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+.content{flex:1;padding:14px 20px;overflow-y:auto;}
+.box{background:#fff;border-radius:4px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.box-hdr{display:flex;align-items:center;gap:7px;padding:11px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600;color:#1a202c;}
+.box-hdr::before{content:'';display:inline-block;width:3px;height:14px;background:#EE4D2D;border-radius:2px;}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #f7f7f7;font-size:11px;color:#4a5568;}
+.set-row:last-child{border-bottom:none;}
+.tgl{width:30px;height:16px;background:#e2e8f0;border-radius:8px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;display:inline-block;user-select:none;}
+.tgl.on{background:#48bb78;}
+.tgl::after{content:'';width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+.tgl.on::after{left:16px;}
+.lnk{color:#EE4D2D;font-size:11px;cursor:pointer;}
+.subtabs{display:flex;padding:0 16px;border-bottom:1px solid #e2e8f0;}
+.stab{padding:8px 14px;font-size:12px;color:#718096;border-bottom:2px solid transparent;cursor:pointer;}
+.stab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+.filter-wrap{padding:10px 16px;border-bottom:1px solid #f0f0f0;}
+.frow{display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap;}.frow:last-child{margin-bottom:0;}
+.fi{display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:3px;height:28px;overflow:hidden;background:#fff;}
+.fi-l{padding:0 8px;font-size:11px;color:#4a5568;border-right:1px solid #e2e8f0;white-space:nowrap;height:100%;display:flex;align-items:center;background:#f7fafc;}
+.fi input,.fi select{border:none;outline:none;padding:0 6px;font-size:11px;color:#2d3748;background:transparent;height:100%;}
+.fi input{width:110px;}.fi select{width:90px;}
+.btn-s{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:0 14px;height:28px;font-size:11px;cursor:pointer;font-weight:500;}
+.btn-r{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:3px;padding:0 10px;height:28px;font-size:11px;cursor:pointer;}
+.tbl-hdr{padding:8px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;}
+.tbl-act-btn{background:#fff;border:1px solid #e2e8f0;color:#4a5568;border-radius:3px;padding:3px 8px;font-size:11px;cursor:pointer;margin-left:6px;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:8px 12px;border-bottom:1px solid #e2e8f0;}
+td{padding:8px 12px;border-bottom:1px solid #f5f5f5;color:#2d3748;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.bdg{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:500;}
+.bdg-ob{background:#e6f3ff;color:#2b6cb0;}.bdg-ib{background:#e6ffed;color:#276749;}.bdg-ge{background:#f0f0f0;color:#555;}
+.st-on{color:#48bb78;font-size:11px;}.st-off{color:#a0aec0;font-size:11px;}
+.btn-ed{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:3px 10px;font-size:11px;cursor:pointer;}
+.btn-del{background:#fff;color:#e53e3e;border:1px solid #e53e3e;border-radius:3px;padding:3px 10px;font-size:11px;cursor:pointer;margin-left:4px;}
+
+/* Modal */
+.ovl{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-start;justify-content:center;padding-top:14px;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
+.ovl.show{opacity:1;pointer-events:all;}
+.modal{width:610px;max-height:792px;background:#fff;border-radius:6px;box-shadow:0 16px 48px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;transform:translateY(-6px);transition:transform .2s;}
+.ovl.show .modal{transform:translateY(0);}
+.mhdr{padding:13px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.mtit{font-size:14px;font-weight:600;color:#1a202c;}
+.mcls{background:#f7fafc;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;color:#718096;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.mcls:hover{background:#e2e8f0;}
+.pfb{display:flex;border-bottom:1px solid #e2e8f0;background:#f7fafc;flex-shrink:0;}
+.pfi{flex:1;padding:9px 13px;border-right:1px solid #e2e8f0;}.pfi:last-child{border-right:none;}
+.pfl{font-size:9px;color:#718096;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.pfv{font-size:13px;font-weight:600;color:#1a202c;}
+.mwarn{background:#fffbeb;border-bottom:1px solid #f6c90e;padding:8px 14px;font-size:11px;color:#744210;display:none;align-items:flex-start;gap:7px;line-height:1.5;flex-shrink:0;}
+.mwarn.show{display:flex;}
+.mbdy{flex:1;overflow-y:auto;padding:12px 14px;}
+.msec{border:1px solid #e2e8f0;border-radius:5px;margin-bottom:10px;overflow:visible;}
+.msechdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:#f7fafc;border-bottom:1px solid #e2e8f0;border-radius:5px 5px 0 0;}
+.msecl{display:flex;align-items:center;gap:6px;}
+.msecbar{width:3px;height:14px;background:#EE4D2D;border-radius:2px;flex-shrink:0;}
+.msectit{font-size:13px;font-weight:600;color:#1a202c;}
+.msecopt{font-size:10px;color:#718096;}
+.msecr{display:flex;align-items:center;gap:6px;font-size:11px;color:#718096;}
+.msecbdy{padding:11px 13px;display:none;overflow:visible;}
+.msecbdy.open{display:block;}
+.sec-desc{font-size:11px;color:#718096;margin-bottom:10px;line-height:1.5;}
+.gi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.flbl{font-size:11px;font-weight:500;color:#4a5568;margin-bottom:4px;display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
+.tag{font-size:9px;padding:1px 4px;border-radius:2px;font-weight:400;}
+.tag-ms{background:#fff3cd;color:#856404;}.tag-op{background:#d4edda;color:#155724;}
+.chipwrap{border:1px solid #e2e8f0;border-radius:3px;padding:4px;min-height:30px;display:flex;flex-wrap:wrap;align-items:center;gap:3px;background:#fff;font-size:11px;}
+.chip{display:inline-flex;align-items:center;background:#fff0ed;color:#c53030;border:1px solid #feb2b2;border-radius:10px;padding:2px 7px;font-size:10px;gap:4px;}
+.rmx{cursor:pointer;color:#a0aec0;font-size:11px;line-height:1;background:none;border:none;padding:0;}
+.rmx:hover{color:#e53e3e;}
+.addlnk{color:#EE4D2D;font-size:11px;cursor:pointer;padding:2px 5px;border-radius:3px;border:none;background:none;}
+.addlnk:hover{background:#fff5f3;}
+.fnote{font-size:9px;color:#718096;margin-top:3px;font-style:italic;}
+.tcsel{border:1px solid #e2e8f0;border-radius:3px;padding:4px 8px;font-size:12px;color:#2d3748;width:200px;background:#fff;cursor:pointer;}
+.ccrow{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px;gap:10px;}
+.cclbl{font-size:12px;font-weight:500;color:#2d3748;padding-top:5px;min-width:130px;flex-shrink:0;}
+.req{color:#EE4D2D;margin-left:1px;}
+.sopt-wrap{display:flex;gap:6px;flex-wrap:wrap;}
+.sopt{border:2px solid #e2e8f0;border-radius:5px;padding:5px 11px;font-size:12px;cursor:pointer;color:#4a5568;background:#fff;transition:all .12s;user-select:none;}
+.sopt:hover{border-color:#EE4D2D;color:#EE4D2D;}
+.sopt.active{border-color:#EE4D2D;background:#fff5f3;color:#EE4D2D;font-weight:500;}
+.lgc-desc{font-size:10px;color:#718096;background:#f7fafc;border-radius:3px;padding:4px 8px;margin-top:5px;}
+.attr-hdr{display:flex;align-items:center;justify-content:space-between;margin:4px 0 8px;}
+.attr-lbl{font-size:12px;font-weight:500;color:#2d3748;}
+.hint{font-size:10px;color:#718096;font-weight:400;}
+.btn-addattr{background:#fff;border:1px solid #EE4D2D;color:#EE4D2D;border-radius:3px;padding:4px 10px;font-size:11px;cursor:pointer;}
+.btn-addattr:hover{background:#fff5f3;}
+.acard{border:1px solid #e2e8f0;border-radius:5px;padding:10px 11px;margin-bottom:8px;background:#fafafa;}
+.acard-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.acard-tit{font-size:12px;font-weight:600;color:#1a202c;display:flex;align-items:center;gap:5px;}
+.btn-rm{background:none;border:none;color:#718096;font-size:11px;cursor:pointer;text-decoration:underline;}
+.btn-rm:hover{color:#e53e3e;}
+.mswrap{border:1px solid #e2e8f0;border-radius:3px;padding:4px;min-height:28px;display:flex;flex-wrap:wrap;align-items:center;gap:3px;background:#fff;margin-bottom:6px;}
+.mschip{display:inline-flex;align-items:center;background:#fff0ed;color:#c53030;border:1px solid #feb2b2;border-radius:8px;padding:2px 6px;font-size:10px;gap:3px;}
+.numrow{display:flex;align-items:center;gap:6px;font-size:11px;color:#4a5568;}
+.numinp{width:64px;border:1px solid #e2e8f0;border-radius:3px;padding:4px 6px;font-size:12px;color:#2d3748;background:#fff;}
+.numinp:focus{outline:none;border-color:#EE4D2D;}
+
+/* Compliance */
+.comp-sec{border:1px solid #e2e8f0;border-radius:5px;margin-bottom:10px;overflow:hidden;}
+.comp-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:#f7fafc;border-bottom:1px solid #e2e8f0;}
+.comp-hdr-l{display:flex;align-items:center;gap:8px;}
+.comp-sub{font-size:10px;color:#718096;margin-top:1px;}
+.inv-badge{font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;background:#fff5f5;color:#c53030;border:1px solid #feb2b2;}
+.inv-badge.ok{background:#f0fff4;color:#276749;border-color:#9ae6b4;}
+.inv-badge.na{background:#f7fafc;color:#718096;border-color:#e2e8f0;}
+.ctbl{width:100%;border-collapse:collapse;font-size:11px;}
+.ctbl th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:7px 12px;border-bottom:1px solid #e2e8f0;}
+.ctbl td{padding:6px 12px;border-bottom:1px solid #f0f0f0;color:#2d3748;vertical-align:top;}
+.ctbl .dock-row{cursor:pointer;transition:background .1s;}
+.ctbl .dock-row:hover{background:#fafcff;}
+.ctbl .dock-row.invalid-row td{background:#fffafa;}
+.ctbl .cfg-row td{background:#f7f9fc;border-bottom:1px solid #e2e8f0;padding:10px 12px;}
+.ctbl tr:last-child td{border-bottom:none;}
+.cv{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;color:#276749;background:#f0fff4;border:1px solid #9ae6b4;border-radius:8px;padding:2px 7px;}
+.ci{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;color:#c53030;background:#fff5f5;border:1px solid #feb2b2;border-radius:8px;padding:2px 7px;}
+.cn{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#718096;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:2px 7px;}
+.ci-reason{font-size:9px;color:#c53030;margin-top:3px;line-height:1.4;font-style:italic;}
+.cell-cfg{font-size:10px;color:#2d3748;display:block;}
+.cell-cfg.gray{color:#718096;}
+.cna{font-size:10px;color:#a0aec0;font-style:italic;}
+
+/* Dock config panel */
+.dcfg{display:flex;gap:12px;flex-wrap:wrap;}
+.dcfg-sec{flex:1;min-width:200px;background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:9px 10px;}
+.dcfg-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:11px;font-weight:600;color:#1a202c;}
+.dcfg-sub{font-size:10px;color:#718096;margin-bottom:6px;}
+.dcfg-chips{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px;}
+.dchip{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:8px;border:1px solid #e2e8f0;color:#4a5568;background:#fff;cursor:pointer;user-select:none;transition:all .1s;}
+.dchip.sel{background:#fff0ed;color:#c53030;border-color:#feb2b2;}
+.dchip:hover:not(.sel){border-color:#EE4D2D;color:#EE4D2D;}
+.dcfg-min{display:flex;align-items:center;gap:6px;font-size:11px;color:#4a5568;margin-top:4px;}
+.dcfg-min input{width:56px;border:1px solid #e2e8f0;border-radius:3px;padding:3px 6px;font-size:11px;}
+.dcfg-min input:focus{outline:none;border-color:#EE4D2D;}
+.cfg-toggle-row{display:flex;align-items:center;gap:6px;font-size:10px;color:#718096;margin-bottom:6px;}
+.expand-btn{background:none;border:none;cursor:pointer;font-size:10px;color:#718096;padding:0 4px;line-height:1;}
+.expand-btn:hover{color:#EE4D2D;}
+
+.mftr{padding:10px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;background:#fff;}
+.btn-cnl{background:#fff;border:1px solid #e2e8f0;color:#4a5568;border-radius:3px;padding:6px 16px;font-size:12px;cursor:pointer;}
+.btn-cnl:hover{background:#f7fafc;}
+.btn-cfm{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:6px 20px;font-size:12px;font-weight:500;cursor:pointer;}
+.btn-cfm:hover{background:#d63f24;}
+
+/* Floating picker */
+#fp{position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:5px;box-shadow:0 4px 14px rgba(0,0,0,.15);z-index:9999;min-width:170px;display:none;max-height:200px;overflow-y:auto;}
+.fp-item{padding:7px 12px;font-size:12px;cursor:pointer;color:#2d3748;border-bottom:1px solid #f0f0f0;}
+.fp-item:last-child{border-bottom:none;}
+.fp-item:hover{background:#fff5f3;color:#EE4D2D;}
+.fp-item.dis{color:#ccc;cursor:default;pointer-events:none;}
+
+.toast{position:absolute;bottom:20px;right:20px;background:#1a202c;color:#fff;font-size:12px;padding:9px 16px;border-radius:5px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;pointer-events:none;z-index:500;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="scene-wrap" id="swrap">
+<div id="scene">
+
+  <div class="layout">
+    <div class="sb">
+      <div class="sb-logo">
+        <div><span class="sp">Shopee</span><span class="xp">Xpress</span><span class="sb-live">LIVE</span></div>
+        <div class="sb-sub">OF Hub_SP_Lapa</div>
+      </div>
+      <div class="sb-sec">Menu</div>
+      <div class="sb-item">Dashboard</div><div class="sb-item">Inbound</div><div class="sb-item">Outbound</div>
+      <div class="sb-sec">Station Management</div>
+      <div class="sb-item act">Queue &amp; Dock Config</div>
+      <div class="sb-item">Dock Management</div><div class="sb-item">Area Management</div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        Station Management <span style="margin:0 5px;color:#cbd5e0;">/</span>
+        <a>Queue &amp; Dock Configurations</a>
+        <div class="topbar-right">&#128276; &nbsp; camila.braz &#9660;</div>
+      </div>
+      <div class="page-tabs">
+        <div class="ptab">Queue Prioritisation</div>
+        <div class="ptab act">Automatic Assignment Logic</div>
+        <div class="ptab">Geofencing Registration</div>
+        <div class="ptab">Vehicle Capacity Control</div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="box-hdr">Automatic Assignment Setting</div>
+          <div class="set-row"><span>Assign Vehicles Automatically Upon Queue Registration (Inbound)</span><div class="tgl on"></div></div>
+          <div class="set-row"><span>Assign Vehicles Automatically Upon Queue Registration (Outbound)</span><div class="tgl"></div></div>
+          <div class="set-row"><span>Priority of TO Pack Type Attribute: <span style="color:#EE4D2D;font-size:10px;">All Other Pack Attributes</span></span><span class="lnk">Edit</span></div>
+        </div>
+        <div class="box">
+          <div class="box-hdr">Automatic Assignment Attribute Configuration</div>
+          <div class="subtabs"><div class="stab">Dock</div><div class="stab act">Dock Group</div></div>
+          <div class="filter-wrap">
+            <div class="frow">
+              <div class="fi"><span class="fi-l">Dock Group Name</span><input placeholder="Input"></div>
+              <div class="fi"><span class="fi-l">Dock Group Type</span><select><option>Select</option><option>General</option><option>Outbound</option></select></div>
+              <div class="fi"><span class="fi-l">Arrival Type</span><select style="width:110px;"><option>Select</option><option>LH - Outbound</option></select></div>
+            </div>
+            <div class="frow"><button class="btn-s">Search</button><button class="btn-r">Reset</button></div>
+          </div>
+          <div class="tbl-hdr">
+            <span style="font-size:11px;color:#718096;">Total: 4 groups</span>
+            <div><button class="tbl-act-btn">Export</button><button class="tbl-act-btn">Log</button></div>
+          </div>
+          <table>
+            <thead><tr><th>Dock Group Name</th><th>Dock Group Type</th><th>Arrival Type</th><th>Identification</th><th>Cargo Comp</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>GRP-LH-OUT-01</strong></td>
+                <td><span class="bdg bdg-ob">Outbound</span></td><td>LH – Outbound</td>
+                <td><span id="tbl-id" class="st-on">&#9679; On</span></td>
+                <td><span id="tbl-cargo" class="st-off">&#9675; Off</span></td>
+                <td><button class="btn-ed" onclick="openModal()">Edit</button><button class="btn-del">Delete</button></td>
+              </tr>
+              <tr><td><strong>GRP-FM-OUT-01</strong></td><td><span class="bdg bdg-ob">Outbound</span></td><td>FM – Outbound</td><td><span class="st-on">&#9679; On</span></td><td><span class="st-on">&#9679; On</span></td><td><button class="btn-ed">Edit</button><button class="btn-del">Delete</button></td></tr>
+              <tr><td><strong>GRP-LH-INB-01</strong></td><td><span class="bdg bdg-ib">Inbound</span></td><td>LH – Inbound</td><td><span class="st-off">&#9675; Off</span></td><td><span class="st-on">&#9679; On</span></td><td><button class="btn-ed">Edit</button><button class="btn-del">Delete</button></td></tr>
+              <tr><td><strong>GRP-GENERAL-01</strong></td><td><span class="bdg bdg-ge">General</span></td><td>—</td><td><span class="st-off">&#9675; Off</span></td><td><span class="st-off">&#9675; Off</span></td><td><button class="btn-ed">Edit</button><button class="btn-del">Delete</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="ovl" class="ovl">
+    <div class="modal">
+      <div class="mhdr"><span class="mtit">Edit Automatic Assignment Attributes</span><button class="mcls" onclick="closeModal()">&#10005;</button></div>
+      <div class="pfb">
+        <div class="pfi"><div class="pfl">Group Name</div><div class="pfv">GRP-LH-OUT-01</div></div>
+        <div class="pfi"><div class="pfl">Dock Group Type</div><div class="pfv">Outbound</div></div>
+        <div class="pfi"><div class="pfl">Arrival Type</div><div class="pfv">LH – Outbound</div></div>
+      </div>
+      <div class="mwarn" id="mwarn"><span style="font-size:14px;flex-shrink:0;">&#9888;</span><span id="warnTxt"></span></div>
+      <div class="mbdy" id="mbdy">
+
+        <!-- IDENTIFICATION -->
+        <div class="msec">
+          <div class="msechdr">
+            <div class="msecl"><div class="msecbar"></div><span class="msectit">Identification</span><span class="msecopt">(optional)</span></div>
+            <div class="msecr">Enable <div class="tgl on" id="grp-id-tgl" onclick="toggleGrp('id')"></div></div>
+          </div>
+          <div class="msecbdy open" id="grp-id-body">
+            <p class="sec-desc">Defines which trips and vehicles are eligible to be assigned to docks in this group. Docks must accept <strong>at least</strong> the vehicle types configured here.</p>
+            <div class="gi-grid">
+              <div>
+                <div class="flbl">LH Outbound Destination <span class="tag tag-ms">multiselect</span><span class="tag tag-op">optional</span></div>
+                <div class="chipwrap" id="grp-lh-wrap">
+                  <div class="chip">[7203] LM Hub_SP_Sul <button class="rmx" data-target="grp-lh" data-v="[7203] LM Hub_SP_Sul">&#215;</button></div>
+                  <button class="addlnk" onclick="openFP(this,'grp-lh')">+ Add</button>
+                </div>
+                <div class="fnote">Only editable when Arrival Type = LH – Outbound.</div>
+              </div>
+              <div>
+                <div class="flbl">Vehicle Type <span class="tag tag-ms">multiselect</span><span class="tag tag-op">optional</span></div>
+                <div class="chipwrap" id="grp-vt-wrap">
+                  <div class="chip" data-v="TRUCK – EXPRESSA">TRUCK – EXPRESSA <button class="rmx" onclick="rmGrpVt('TRUCK – EXPRESSA')">&#215;</button></div>
+                  <div class="chip" data-v="CARRETA">CARRETA <button class="rmx" onclick="rmGrpVt('CARRETA')">&#215;</button></div>
+                  <button class="addlnk" onclick="openFP(this,'grp-vt')">+ Add</button>
+                </div>
+                <div class="fnote">Docks must accept at least these types.</div>
+              </div>
+            </div>
+            <div>
+              <div class="flbl">Trip Classification <span class="tag tag-op">optional</span></div>
+              <select id="grp-tc" class="tcsel" onchange="recheck()">
+                <option value="">Select...</option>
+                <option value="LHfield">LHfield</option>
+                <option value="LHtrunking">LHtrunking</option>
+                <option value="LHdirect">LHdirect</option>
+              </select>
+              <div class="fnote">Single select, exact match.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARGO -->
+        <div class="msec">
+          <div class="msechdr">
+            <div class="msecl"><div class="msecbar"></div><span class="msectit">Cargo Composition &amp; Parameters</span><span class="msecopt">(optional)</span></div>
+            <div class="msecr">Enable <div class="tgl" id="grp-cargo-tgl" onclick="toggleGrp('cargo')"></div></div>
+          </div>
+          <div class="msecbdy" id="grp-cargo-body">
+            <p class="sec-desc">Defines the minimum cargo standard. Docks with their Cargo Composition toggled off will use this configuration. Docks with their own configuration must meet or exceed this minimum.</p>
+            <div class="ccrow">
+              <div class="cclbl">Evaluation<span class="req">*</span></div>
+              <div class="sopt-wrap">
+                <div class="sopt" id="sAbs" onclick="selEval('abs')">Number absolute</div>
+                <div class="sopt" id="sPct" onclick="selEval('pct')">% Percentage</div>
+              </div>
+            </div>
+            <div class="ccrow">
+              <div class="cclbl">Restriction Logic<span class="req">*</span></div>
+              <div>
+                <div class="sopt-wrap">
+                  <div class="sopt" id="sAnd" onclick="selLogic('and')">AND – all must pass</div>
+                  <div class="sopt" id="sOr" onclick="selLogic('or')">OR – at least one must pass</div>
+                </div>
+                <div class="lgc-desc" id="lgcDesc" style="display:none;"></div>
+              </div>
+            </div>
+            <div class="attr-hdr">
+              <span class="attr-lbl">Attributes<span class="req">*</span> <span class="hint">(at least one)</span></span>
+              <button class="btn-addattr" onclick="openFP(this,'grp-attr')">+ Add attribute</button>
+            </div>
+            <div id="acards"></div>
+          </div>
+        </div>
+
+        <!-- COMPLIANCE -->
+        <div class="comp-sec">
+          <div class="comp-hdr">
+            <div class="comp-hdr-l">
+              <div class="msecbar"></div>
+              <div>
+                <div class="msectit">Dock compliance</div>
+                <div class="comp-sub">Click a dock row to view and edit its configuration</div>
+              </div>
+            </div>
+            <span class="inv-badge na" id="invBadge">—</span>
+          </div>
+          <table class="ctbl">
+            <thead><tr>
+              <th style="width:120px;">Dock</th>
+              <th>Identification<br><span style="font-size:9px;font-weight:400;color:#a0aec0;">dock config &amp; compliance with group</span></th>
+              <th>Cargo Composition<br><span style="font-size:9px;font-weight:400;color:#a0aec0;">dock config &amp; compliance with group</span></th>
+            </tr></thead>
+            <tbody id="compBody"></tbody>
+          </table>
+        </div>
+
+      </div>
+      <div class="mftr">
+        <button class="btn-cnl" onclick="closeModal()">Cancel</button>
+        <button class="btn-cfm" onclick="saveGroup()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating picker (portal — not clipped by any overflow) -->
+  <div id="fp"></div>
+
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+
+<script>
+// ── Scale ──────────────────────────────────────────────────────────────
+const scene=document.getElementById('scene'),swrap=document.getElementById('swrap');
+function scaleScene(){
+  const s=Math.min((window.innerWidth-32)/1200,(window.innerHeight-32)/820,1);
+  swrap.style.width=Math.round(1200*s)+'px';swrap.style.height=Math.round(820*s)+'px';
+  scene.style.transform='scale('+s+')';
+}
+scaleScene();window.addEventListener('resize',scaleScene);
+
+// ── State ──────────────────────────────────────────────────────────────
+const VT_ALL=['TRUCK – EXPRESSA','CARRETA','BITREM','VAN'];
+const LH_ALL=['[8452] Hub_SP_Leste','[9031] Hub_SP_Norte','[4210] Hub_RJ_Centro'];
+const TO_OPTS=['Individual Parcel','SP To','Scuttle','Saca','Pallet','Volumoso','Saca Sorter'];
+const SZ_OPTS=['Out of standard','Bulky','Quasi-bulky','Medium','Small','Extra Small'];
+
+const grp = {
+  idOn: true,
+  vtTypes: ['TRUCK – EXPRESSA','CARRETA'],  // group requires both
+  lhDests: ['[7203] LM Hub_SP_Sul'],
+  cargoOn: false,
+  evalMode: null,
+  logic: null,
+  attrs: [],
+};
+
+// Each dock: idOn=true means dock uses its own ID config (must be superset of group)
+//            idOn=false means dock inherits group config → always compliant for ID
+//            cargoOn=true means dock uses own cargo config (min must be >= group min for each matching attr)
+//            cargoOn=false means dock inherits group cargo config → always compliant for cargo
+// cargoMin    = dock's own min % for Saca, measured by TO Pack Type (% of TOs)
+// ordersMin   = dock's own min % for Saca, measured by TO Type by Orders (% of orders)
+const docks = [
+  { id:'EXT.OUT71', idOn:true,  vtTypes:['TRUCK – EXPRESSA','CARRETA'], cargoOn:false, cargoMin:null, ordersMin:null },
+  { id:'EXT.OUT72', idOn:true,  vtTypes:['TRUCK – EXPRESSA','CARRETA'], cargoOn:true,  cargoMin:55,   ordersMin:70  },
+  { id:'EXT.OUT73', idOn:true,  vtTypes:['TRUCK – EXPRESSA'],           cargoOn:false, cargoMin:null, ordersMin:null },
+  { id:'EXT.OUT74', idOn:true,  vtTypes:['TRUCK – EXPRESSA','CARRETA'], cargoOn:true,  cargoMin:20,   ordersMin:15  },
+  { id:'EXT.OUT75', idOn:true,  vtTypes:['TRUCK – EXPRESSA','CARRETA'], cargoOn:true,  cargoMin:60,   ordersMin:75  },
+];
+
+let expandedDock = null; // dock id string or null
+let attrCtr = 0;
+
+// ── Floating Picker ────────────────────────────────────────────────────
+const fp = document.getElementById('fp');
+let fpCtx = null;
+
+function openFP(anchorEl, ctx) {
+  fpCtx = ctx;
+  fp.innerHTML = '';
+
+  let items = [];
+  if(ctx === 'grp-vt'){
+    items = VT_ALL.map(v=>({label:v, value:v, dis:grp.vtTypes.includes(v)}));
+  } else if(ctx === 'grp-lh'){
+    items = LH_ALL.map(v=>({label:v, value:v, dis:grp.lhDests.includes(v)}));
+  } else if(ctx === 'grp-attr'){
+    items = [
+      {label:'TO Pack Type',        value:'to-pack',   dis:grp.attrs.some(a=>a.type==='to-pack')},
+      {label:'TO Type by Orders',   value:'to-orders', dis:grp.attrs.some(a=>a.type==='to-orders')},
+      {label:'Size Type',           value:'size',      dis:grp.attrs.some(a=>a.type==='size')},
+      {label:'Total of Orders',     value:'orders',    dis:grp.attrs.some(a=>a.type==='orders')},
+    ];
+  } else if(ctx.startsWith('attr-chips-')){
+    const id = parseInt(ctx.split('-')[2]);
+    const attr = grp.attrs.find(a=>a.id===id);
+    const opts = (attr&&(attr.type==='to-pack'||attr.type==='to-orders'))?TO_OPTS:SZ_OPTS;
+    items = opts.map(v=>({label:v, value:v, dis:attr&&attr.chips.includes(v)}));
+  } else if(ctx.startsWith('dock-vt-')){
+    const di = parseInt(ctx.split('-')[2]);
+    items = VT_ALL.map(v=>({label:v, value:v, dis:docks[di].vtTypes.includes(v)}));
+  }
+
+  items.forEach(item=>{
+    const d=document.createElement('div');
+    d.className='fp-item'+(item.dis?' dis':'');
+    d.textContent=item.label;
+    if(!item.dis) d.addEventListener('mousedown',function(e){
+      e.preventDefault();e.stopPropagation();
+      handleFPSelect(ctx,item.value);
+      hideFP();
+    });
+    fp.appendChild(d);
+  });
+
+  // Position relative to scene
+  const scale = 1200/(swrap.offsetWidth||1200);
+  const anchorRect=anchorEl.getBoundingClientRect();
+  const sceneRect=scene.getBoundingClientRect();
+  const x=(anchorRect.left-sceneRect.left)*scale;
+  const y=(anchorRect.bottom-sceneRect.top)*scale+2;
+  fp.style.left=x+'px';fp.style.top=y+'px';fp.style.display='block';
+}
+
+function hideFP(){ fp.style.display='none'; fpCtx=null; }
+
+function handleFPSelect(ctx, v){
+  if(ctx==='grp-vt'){
+    grp.vtTypes.push(v);
+    const wrap=document.getElementById('grp-vt-wrap');
+    const add=wrap.querySelector('.addlnk');
+    const c=document.createElement('div');c.className='chip';c.dataset.v=v;
+    c.innerHTML=v+' <button class="rmx" onclick="rmGrpVt(\''+v+'\')">&#215;</button>';
+    wrap.insertBefore(c,add);
+    recheck();
+  } else if(ctx==='grp-lh'){
+    grp.lhDests.push(v);
+    const wrap=document.getElementById('grp-lh-wrap');
+    const add=wrap.querySelector('.addlnk');
+    const c=document.createElement('div');c.className='chip';c.dataset.v=v;
+    c.innerHTML=v+' <button class="rmx" onclick="rmGrpLh(\''+v.replace(/'/g,"\\'") +'\')">&#215;</button>';
+    wrap.insertBefore(c,add);
+  } else if(ctx==='grp-attr'){
+    addAttr(v);
+  } else if(ctx.startsWith('attr-chips-')){
+    const id=parseInt(ctx.split('-')[2]);
+    addAttrChip(id,v);
+  } else if(ctx.startsWith('dock-vt-')){
+    const di=parseInt(ctx.split('-')[2]);
+    docks[di].vtTypes.push(v);
+    renderDockCfg(di);
+    recheck();
+  }
+}
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#fp')&&!e.target.closest('.addlnk')&&!e.target.closest('.btn-addattr'))hideFP();
+});
+
+// ── Group controls ─────────────────────────────────────────────────────
+function toggleGrp(sec){
+  if(sec==='id'){
+    grp.idOn=!grp.idOn;
+    document.getElementById('grp-id-tgl').classList.toggle('on',grp.idOn);
+    document.getElementById('grp-id-body').classList.toggle('open',grp.idOn);
+  } else {
+    grp.cargoOn=!grp.cargoOn;
+    document.getElementById('grp-cargo-tgl').classList.toggle('on',grp.cargoOn);
+    document.getElementById('grp-cargo-body').classList.toggle('open',grp.cargoOn);
+  }
+  recheck();
+}
+function rmGrpVt(v){
+  grp.vtTypes=grp.vtTypes.filter(x=>x!==v);
+  const wrap=document.getElementById('grp-vt-wrap');
+  wrap.querySelectorAll('.chip').forEach(c=>{if(c.dataset.v===v)c.remove();});
+  recheck();
+}
+function rmGrpLh(v){
+  grp.lhDests=grp.lhDests.filter(x=>x!==v);
+  const wrap=document.getElementById('grp-lh-wrap');
+  wrap.querySelectorAll('.chip').forEach(c=>{if(c.dataset.v===v)c.remove();});
+}
+function selEval(m){
+  grp.evalMode=m;
+  document.getElementById('sAbs').classList.toggle('active',m==='abs');
+  document.getElementById('sPct').classList.toggle('active',m==='pct');
+}
+function selLogic(m){
+  grp.logic=m;
+  document.getElementById('sAnd').classList.toggle('active',m==='and');
+  document.getElementById('sOr').classList.toggle('active',m==='or');
+  const d=document.getElementById('lgcDesc');d.style.display='block';
+  d.textContent=m==='and'?'All selected restrictions must be satisfied simultaneously.':'Cargo accepted if at least one restriction is met.';
+}
+function addAttr(type){
+  attrCtr++;const id=attrCtr;
+  const isOrders=(type==='orders');
+  const hasChips=(type!=='orders');
+  const title = type==='to-pack'  ? 'TO Pack Type'
+              : type==='to-orders'? 'TO Type by Orders'
+              : type==='size'     ? 'Size Type'
+              :                     'Total of Orders';
+  const unit  = type==='to-pack'  ? '% of TOs in trip'
+              : type==='to-orders'? '% of orders in trip'
+              : type==='size'     ? '% units'
+              :                     'orders';
+  const note  = type==='to-pack'  ? 'Threshold calculated over count / % of TOs per pack type.'
+              : type==='to-orders'? 'Threshold calculated over count / % of orders per TO type.'
+              : '';
+  const obj={id,type,chips:[],min:'',max:''};
+  grp.attrs.push(obj);
+  const ms=hasChips?'<span style="background:#e9f5fe;color:#2b6cb0;font-size:9px;padding:1px 4px;border-radius:2px;margin-left:4px;">multiselect</span>':'';
+  const card=document.createElement('div');card.className='acard';card.id='ac'+id;
+  card.innerHTML=`<div class="acard-hdr">
+    <span class="acard-tit">${title}${ms}</span>
+    <button class="btn-rm" onclick="rmAttr(${id})">Remove</button>
+  </div>`
+  +(note?`<div style="font-size:10px;color:#718096;margin-bottom:6px;font-style:italic;">${note}</div>`:'')
+  +(hasChips?`<div style="font-size:10px;color:#718096;margin-bottom:4px;">Selected values</div>
+  <div class="mswrap" id="mw${id}">
+    <button class="addlnk" onclick="openFP(this,'attr-chips-${id}')">+ Add</button>
+  </div>`:'')
+  +`<div class="numrow" style="margin-top:6px;">
+    <span>Min<span class="req">*</span></span>
+    <input class="numinp" id="mn${id}" type="number" placeholder="0" oninput="syncAttr(${id})">
+    <span>Max<span class="req">*</span></span>
+    <input class="numinp" id="mx${id}" type="number" placeholder="100" oninput="syncAttr(${id})">
+    <span style="color:#718096;">${unit}</span>
+  </div>`;
+  document.getElementById('acards').appendChild(card);
+}
+function addAttrChip(id,v){
+  const obj=grp.attrs.find(a=>a.id===id);if(!obj||obj.chips.includes(v))return;
+  obj.chips.push(v);
+  const wrap=document.getElementById('mw'+id);
+  const add=wrap.querySelector('.addlnk');
+  const c=document.createElement('div');c.className='mschip';c.dataset.v=v;
+  c.innerHTML=v+' <button class="rmx" onclick="rmAttrChip('+id+',\''+v+'\')">&#215;</button>';
+  wrap.insertBefore(c,add);
+  recheck();
+}
+function rmAttrChip(id,v){
+  const obj=grp.attrs.find(a=>a.id===id);if(obj)obj.chips=obj.chips.filter(x=>x!==v);
+  document.getElementById('mw'+id)?.querySelectorAll('.mschip').forEach(c=>{if(c.dataset.v===v)c.remove();});
+  recheck();
+}
+function rmAttr(id){
+  grp.attrs=grp.attrs.filter(a=>a.id!==id);
+  document.getElementById('ac'+id)?.remove();
+  recheck();
+}
+function syncAttr(id){
+  const obj=grp.attrs.find(a=>a.id===id);if(!obj)return;
+  obj.min=document.getElementById('mn'+id)?.value||'';
+  obj.max=document.getElementById('mx'+id)?.value||'';
+  recheck();
+}
+
+// ── Dock config rendering ──────────────────────────────────────────────
+function renderDockCfg(di){
+  const dock=docks[di];
+  const el=document.getElementById('dcfg-'+di);if(!el)return;
+  el.innerHTML=`<div class="dcfg">
+    <div class="dcfg-sec">
+      <div class="dcfg-hdr">Identification <div class="tgl ${dock.idOn?'on':''}" onclick="toggleDock(${di},'id')"></div></div>
+      ${dock.idOn?`<div class="dcfg-sub">Accepted vehicle types:</div>
+      <div class="dcfg-chips" id="dock-vt-chips-${di}">
+        ${VT_ALL.map(v=>`<div class="dchip ${dock.vtTypes.includes(v)?'sel':''}" onclick="toggleDockVt(${di},'${v}')">${v}</div>`).join('')}
+      </div>`:`<div class="dcfg-sub" style="color:#718096;">Uses dock group configuration</div>`}
+    </div>
+    <div class="dcfg-sec">
+      <div class="dcfg-hdr">Cargo Composition <div class="tgl ${dock.cargoOn?'on':''}" onclick="toggleDock(${di},'cargo')"></div></div>
+      ${dock.cargoOn?`<div class="dcfg-sub">Min % for Saca:</div>
+      <div class="dcfg-min" style="margin-bottom:5px;">
+        <span style="color:#4a5568;font-size:10px;min-width:110px;">TO Pack Type</span>
+        <input type="number" value="${dock.cargoMin!=null?dock.cargoMin:''}" placeholder="0" oninput="setDockCargoMin(${di},this.value,'pack')"> %
+      </div>
+      <div class="dcfg-min">
+        <span style="color:#4a5568;font-size:10px;min-width:110px;">TO by Orders</span>
+        <input type="number" value="${dock.ordersMin!=null?dock.ordersMin:''}" placeholder="0" oninput="setDockCargoMin(${di},this.value,'orders')"> %
+      </div>`:`<div class="dcfg-sub" style="color:#718096;">Uses dock group configuration</div>`}
+    </div>
+  </div>`;
+}
+
+function toggleDock(di,sec){
+  if(sec==='id') docks[di].idOn=!docks[di].idOn;
+  else docks[di].cargoOn=!docks[di].cargoOn;
+  renderDockCfg(di);recheck();
+}
+function toggleDockVt(di,v){
+  if(docks[di].vtTypes.includes(v)) docks[di].vtTypes=docks[di].vtTypes.filter(x=>x!==v);
+  else docks[di].vtTypes.push(v);
+  renderDockCfg(di);recheck();
+}
+function setDockCargoMin(di,v,field){
+  const val=v===''?null:parseFloat(v);
+  if(field==='orders') docks[di].ordersMin=val;
+  else docks[di].cargoMin=val;
+  recheck();
+}
+
+// ── Compliance check ───────────────────────────────────────────────────
+function getGrpCargoMin(){
+  if(!grp.cargoOn) return null;
+  const a=grp.attrs.find(a=>a.type==='to-pack'&&a.chips.includes('Saca')&&a.min!=='');
+  return a?parseFloat(a.min):null;
+}
+function getGrpOrdersMin(){
+  if(!grp.cargoOn) return null;
+  const a=grp.attrs.find(a=>a.type==='to-orders'&&a.chips.includes('Saca')&&a.min!=='');
+  return a?parseFloat(a.min):null;
+}
+function isInvalid(dock){
+  const idInv = grp.idOn && grp.vtTypes.length>0 && dock.idOn &&
+    grp.vtTypes.some(v=>!dock.vtTypes.includes(v));
+  const grpMin    = getGrpCargoMin();
+  const grpOrdMin = getGrpOrdersMin();
+  const cargoInv  = (grpMin!==null && dock.cargoOn && dock.cargoMin!==null && dock.cargoMin<grpMin)
+                 || (grpOrdMin!==null && dock.cargoOn && dock.ordersMin!==null && dock.ordersMin<grpOrdMin);
+  return {idInv, cargoInv};
+}
+
+// Returns full HTML for a compliance cell — always shows dock's own config,
+// then shows compliance result vs group below it.
+function cellHtml(dock, sec){
+  let cfgLine='', statusLine='';
+  if(sec==='id'){
+    // Dock config
+    if(!dock.idOn){
+      cfgLine='<span class="cell-cfg gray">Uses group config</span>';
+    } else {
+      const vts=dock.vtTypes.length>0?dock.vtTypes.join(', '):'All types';
+      cfgLine='<span class="cell-cfg">Accepts: <strong>'+vts+'</strong></span>';
+    }
+    // Compliance
+    if(!grp.idOn){
+      statusLine='<span class="cna">Group section off</span>';
+    } else if(grp.vtTypes.length===0){
+      statusLine='<span class="cv">✓ No group restriction</span>';
+    } else if(!dock.idOn){
+      statusLine='<span class="cn">↑ Inherits group</span>';
+    } else {
+      const missing=grp.vtTypes.filter(v=>!dock.vtTypes.includes(v));
+      if(missing.length===0){
+        statusLine='<span class="cv">✓ Compliant</span>';
+      } else {
+        statusLine='<span class="ci">✗ Non-compliant</span><div class="ci-reason">Missing: '+missing.join(', ')+'</div>';
+      }
+    }
+  } else { // cargo
+    // Dock config line
+    if(!dock.cargoOn){
+      cfgLine='<span class="cell-cfg gray">Uses group config</span>';
+    } else {
+      let parts=[];
+      if(dock.cargoMin!==null) parts.push('TO Pack Type Saca ≥ <strong>'+dock.cargoMin+'%</strong>');
+      if(dock.ordersMin!==null) parts.push('TO by Orders Saca ≥ <strong>'+dock.ordersMin+'%</strong>');
+      cfgLine='<span class="cell-cfg">'+(parts.length?parts.join(' &nbsp;·&nbsp; '):'Own config (no min set)')+'</span>';
+    }
+    // Compliance line(s)
+    if(!grp.cargoOn){
+      statusLine='<span class="cna">Group section off</span>';
+    } else {
+      const grpMin    = getGrpCargoMin();
+      const grpOrdMin = getGrpOrdersMin();
+      if(grpMin===null && grpOrdMin===null){
+        statusLine='<span class="cna">No group min set yet</span>';
+      } else if(!dock.cargoOn){
+        let parts=[];
+        if(grpMin!==null)    parts.push('TO Pack Type ≥'+grpMin+'%');
+        if(grpOrdMin!==null) parts.push('TO by Orders ≥'+grpOrdMin+'%');
+        statusLine='<span class="cn">↑ Inherits group ('+parts.join(', ')+')</span>';
+      } else {
+        let lines=[];
+        if(grpMin!==null){
+          if(dock.cargoMin===null)          lines.push('<span class="cna">TO Pack Type min not set</span>');
+          else if(dock.cargoMin>=grpMin)    lines.push('<span class="cv">✓ TO Pack Type (≥'+grpMin+'%)</span>');
+          else lines.push('<span class="ci">✗ TO Pack Type</span><div class="ci-reason">Has '+dock.cargoMin+'%, group requires ≥'+grpMin+'%</div>');
+        }
+        if(grpOrdMin!==null){
+          if(dock.ordersMin===null)           lines.push('<span class="cna">TO by Orders min not set</span>');
+          else if(dock.ordersMin>=grpOrdMin)  lines.push('<span class="cv">✓ TO by Orders (≥'+grpOrdMin+'%)</span>');
+          else lines.push('<span class="ci">✗ TO by Orders</span><div class="ci-reason">Has '+dock.ordersMin+'%, group requires ≥'+grpOrdMin+'%</div>');
+        }
+        statusLine=lines.join('<div style="margin-top:2px;">') + (lines.length>1?'</div>':'');
+      }
+    }
+  }
+  return cfgLine+'<div style="margin-top:3px;">'+statusLine+'</div>';
+}
+
+function recheck(){
+  let invCount=0;
+  const tbody=document.getElementById('compBody');
+  const expanded=expandedDock;
+
+  let html='';
+  docks.forEach((dock,di)=>{
+    const {idInv,cargoInv}=isInvalid(dock);
+    if(idInv||cargoInv)invCount++;
+    const isOpen=(expanded===dock.id);
+    html+=`<tr class="dock-row${(idInv||cargoInv)?' invalid-row':''}" onclick="toggleExpand('${dock.id}',${di})">
+      <td><strong>${dock.id}</strong><br><span style="font-size:9px;color:#a0aec0;">${isOpen?'▲ hide config':'▼ edit config'}</span></td>
+      <td>${cellHtml(dock,'id')}</td>
+      <td>${cellHtml(dock,'cargo')}</td>
+    </tr>`;
+    if(isOpen){
+      html+=`<tr class="cfg-row"><td colspan="3"><div id="dcfg-${di}"></div></td></tr>`;
+    }
+  });
+  tbody.innerHTML=html;
+  docks.forEach((dock,di)=>{
+    if(expanded===dock.id) renderDockCfg(di);
+  });
+
+  // Badge
+  const badge_el=document.getElementById('invBadge');
+  if(!grp.idOn&&!grp.cargoOn){ badge_el.textContent='—';badge_el.className='inv-badge na'; }
+  else if(invCount===0){ badge_el.textContent='All valid';badge_el.className='inv-badge ok'; }
+  else { badge_el.textContent=invCount+' invalid';badge_el.className='inv-badge'; }
+
+  // Warning
+  const warn=document.getElementById('mwarn');
+  if(invCount>0){
+    warn.classList.add('show');
+    document.getElementById('warnTxt').textContent=invCount+' dock'+(invCount>1?'s':'')+' do not meet the dock group configuration. You can still save — they will use the dock group configuration until their individual settings are updated.';
+  } else { warn.classList.remove('show'); }
+
+  // Update table row status
+  document.getElementById('tbl-id').innerHTML=grp.idOn?'&#9679; On':'&#9675; Off';
+  document.getElementById('tbl-id').className=grp.idOn?'st-on':'st-off';
+  document.getElementById('tbl-cargo').innerHTML=grp.cargoOn?'&#9679; On':'&#9675; Off';
+  document.getElementById('tbl-cargo').className=grp.cargoOn?'st-on':'st-off';
+}
+
+function toggleExpand(dockId,di){
+  expandedDock=(expandedDock===dockId)?null:dockId;
+  recheck();
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────
+function openModal(){ document.getElementById('ovl').classList.add('show'); recheck(); }
+function closeModal(){ document.getElementById('ovl').classList.remove('show'); hideFP(); }
+document.getElementById('ovl').addEventListener('click',e=>{ if(e.target===document.getElementById('ovl'))closeModal(); });
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.innerHTML=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+function saveGroup(){ closeModal(); showToast('&#10003; GRP-LH-OUT-01 saved successfully'); }
+
+// Initial render
+recheck();
+</script>
+</body>
+</html>

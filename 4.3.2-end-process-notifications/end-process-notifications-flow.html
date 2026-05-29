@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.3.2 End Process Notifications — Flow</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f0f2f5;font-family:'Segoe UI',Arial,sans-serif;padding:28px 20px 48px;}
+
+.page-header{text-align:center;margin-bottom:28px;}
+.page-header h2{font-size:15px;font-weight:700;color:#1a202c;margin-bottom:4px;}
+.page-header p{font-size:12px;color:#718096;}
+
+/* COLUMNS */
+.columns{display:flex;gap:0;justify-content:center;align-items:flex-start;max-width:1100px;margin:0 auto;}
+
+/* LANE HEADERS */
+.lane-headers{display:flex;gap:0;max-width:1100px;margin:0 auto 0;}
+.lane-hdr{flex:1;text-align:center;padding:10px 16px;font-size:12px;font-weight:700;letter-spacing:.3px;color:#fff;border-right:1px solid rgba(255,255,255,.2);}
+.lane-hdr:last-child{border-right:none;}
+.lane-hdr.current{background:#1565C0;}
+.lane-hdr.system{background:#4a5568;}
+.lane-hdr.next{background:#276749;}
+
+/* LANE */
+.lane{flex:1;padding:16px 14px;border-right:1px solid #e2e8f0;position:relative;}
+.lane:last-child{border-right:none;}
+.lane.current{background:#F7FAFF;}
+.lane.system{background:#F7F8FA;}
+.lane.next{background:#F7FFF9;}
+
+/* NODE */
+.node{
+  width:100%;border-radius:8px;padding:11px 14px;
+  font-size:12px;font-weight:500;text-align:center;
+  line-height:1.45;margin-bottom:4px;
+}
+.node.trigger {background:#E8EAF6;border:1.5px solid #5C6BC0;color:#283593;}
+.node.action  {background:#E3F2FD;border:1.5px solid #1E88E5;color:#1565C0;}
+.node.notif   {background:#F3E5F5;border:1.5px solid #8E24AA;color:#4A148C;}
+.node.notif2  {background:#E8F5E9;border:1.5px solid #43A047;color:#1B5E20;}
+.node.config  {background:#FFF8E1;border:1.5px dashed #F9A825;color:#795548;font-size:11px;}
+.node.end     {background:#E8F5E9;border:1.5px solid #2E7D32;color:#1B5E20;}
+.node.call    {background:#FFF3E0;border:1.5px solid #E65100;color:#BF360C;}
+.node.cascade {background:#FFF3E0;border:1.5px dashed #E65100;color:#BF360C;font-size:11px;}
+.node .sub    {font-size:10.5px;opacity:.78;margin-top:3px;font-weight:400;}
+.node .badge  {display:inline-block;background:#EE4D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:5px;}
+.node .opt    {display:inline-block;background:#e2e8f0;color:#4a5568;font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;margin-left:4px;}
+
+/* ARROW */
+.arr{display:flex;flex-direction:column;align-items:center;margin:2px 0;}
+.arr-line{width:2px;height:16px;}
+.arr-head{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;}
+.arr.grey  .arr-line{background:#a0aec0;} .arr.grey  .arr-head{border-top:7px solid #a0aec0;}
+.arr.blue  .arr-line{background:#1E88E5;} .arr.blue  .arr-head{border-top:7px solid #1E88E5;}
+.arr.green .arr-line{background:#43A047;} .arr.green .arr-head{border-top:7px solid #43A047;}
+.arr.purple.arr-line{background:#8E24AA;} .arr.purple .arr-head{border-top:7px solid #8E24AA;}
+.arr.orange.arr-line{background:#E65100;} .arr.orange .arr-head{border-top:7px solid #E65100;}
+
+/* CROSS-LANE ARROWS — rendered as SVG overlay */
+.diagram-wrap{position:relative;max-width:1100px;margin:0 auto;}
+.cross-arrows{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
+
+/* SPACER */
+.sp{height:16px;}
+.sp-sm{height:8px;}
+
+/* SECTION LABEL */
+.sec-lbl{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+  color:#a0aec0;text-align:center;padding:8px 0 6px;
+  border-top:1px dashed #e2e8f0;margin-top:4px;margin-bottom:4px;
+}
+
+/* TASK TYPES */
+.task-types{
+  background:#EDE7F6;border:1.5px solid #7E57C2;border-radius:8px;
+  padding:10px 14px;font-size:11px;color:#4527A0;margin-bottom:4px;
+  text-align:left;
+}
+.task-types strong{font-size:12px;display:block;margin-bottom:5px;}
+.task-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.task-pill{background:#fff;border:1px solid #B39DDB;border-radius:12px;padding:2px 9px;font-size:10.5px;color:#4527A0;font-weight:500;}
+
+/* LEGEND */
+.legend{max-width:1100px;margin:24px auto 0;background:#fff;border-radius:8px;border:1px solid #e2e8f0;padding:14px 20px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;}
+.leg-title{font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;margin-right:8px;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#4a5568;}
+.leg-box{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+.leg-opt{background:#e2e8f0;color:#4a5568;font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;}
+.leg-pct{background:#EE4D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h2>4.3.2 End Process Notifications — Full Flow</h2>
+  <p>4 independent notifications · all optional · X₁% and X₂% configurable independently</p>
+</div>
+
+<!-- LANE HEADERS -->
+<div class="lane-headers">
+  <div class="lane-hdr current">🚛 Current driver · at dock</div>
+  <div class="lane-hdr system">⚙ System</div>
+  <div class="lane-hdr next">🚚 Next driver · position 1 in queue</div>
+</div>
+
+<div class="diagram-wrap" id="diagram">
+
+  <!-- CROSS-LANE ARROWS SVG -->
+  <svg class="cross-arrows" id="cross-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0,0 8,3 0,6" fill="#8E24AA"/>
+      </marker>
+      <marker id="arr-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0,0 8,3 0,6" fill="#43A047"/>
+      </marker>
+      <marker id="arr-orange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0,0 8,3 0,6" fill="#E65100"/>
+      </marker>
+      <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0,0 8,3 0,6" fill="#1565C0"/>
+      </marker>
+    </defs>
+  </svg>
+
+  <div class="columns">
+
+    <!-- ═══ LANE 1: CURRENT DRIVER ═══ -->
+    <div class="lane current" id="lane-current">
+
+      <div class="node trigger" id="n-arrive">
+        Driver arrives at dock
+        <div class="sub">Vehicle checked in · task assigned</div>
+      </div>
+      <div class="arr blue"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+      <div class="node action" id="n-working">
+        Loading / unloading in progress
+        <div class="sub">Orders being processed by LH / AS / FM</div>
+      </div>
+
+      <div class="sp"></div>
+      <div class="sec-lbl">Notification 1 — optional</div>
+
+      <div class="node config" id="n-cfg1">
+        ⚙ X₁% threshold reached<span class="badge">X₁%</span>
+        <div class="sub">% of task orders processed · configurable independently</div>
+      </div>
+      <div class="arr purple"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+      <div class="node notif" id="n-notif1">
+        🔔 "You are almost done"<span class="opt">optional</span>
+        <div class="sub">Driver informed that their task is nearing completion</div>
+      </div>
+
+      <div class="sp"></div>
+      <div class="sec-lbl">Notification 2 — optional</div>
+
+      <div class="node config" id="n-cfg2">
+        ⚙ Task fully completed
+        <div class="sub">All orders processed · task status = done (LH / AS / FM)</div>
+      </div>
+      <div class="arr green"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+      <div class="node end" id="n-notif2">
+        🔔 "Your task is complete · you may leave"<span class="opt">optional</span>
+        <div class="sub">Driver released from dock area</div>
+      </div>
+
+    </div>
+
+    <!-- ═══ LANE 2: SYSTEM ═══ -->
+    <div class="lane system" id="lane-system">
+
+      <div class="node action" id="n-monitor">
+        Monitors task progress in real time
+        <div class="sub">Integrates with LH, AS and FM modules</div>
+      </div>
+
+      <div class="sp"></div>
+
+      <div class="task-types" id="n-tasks">
+        <strong>Task types monitored</strong>
+        <div class="task-row">
+          <span class="task-pill">LM · Assignment Task (AT)</span>
+          <span class="task-pill">FM · Pick Up Task</span>
+          <span class="task-pill">LH · Linehaul Task</span>
+        </div>
+        <div style="margin-top:6px;font-size:10.5px;opacity:.8;">% calculated over orders within each task type</div>
+      </div>
+
+      <div class="sp"></div>
+      <div class="sec-lbl" style="border-top:none;">Evaluates thresholds</div>
+
+      <div class="node config" id="n-eval1">
+        X₁% reached → fires notification 1 to current driver
+      </div>
+      <div class="arr grey"><div class="arr-line"></div><div class="arr-head"></div></div>
+      <div class="node config" id="n-eval2">
+        X₂% reached → fires notification 3 to next driver
+      </div>
+      <div class="arr grey"><div class="arr-line"></div><div class="arr-head"></div></div>
+      <div class="node config" id="n-eval3">
+        Task complete → fires notification 2 to current driver · dock freed
+      </div>
+      <div class="arr grey"><div class="arr-line"></div><div class="arr-head"></div></div>
+      <div class="node config" id="n-eval4">
+        Dock freed → fires notification 4 in cascade
+      </div>
+
+    </div>
+
+    <!-- ═══ LANE 3: NEXT DRIVER ═══ -->
+    <div class="lane next" id="lane-next">
+
+      <div class="node action" id="n-waiting">
+        Waiting in queue · position 1
+        <div class="sub">No action required</div>
+      </div>
+
+      <div class="sp"></div>
+      <div class="sec-lbl">Notification 3 — optional</div>
+
+      <div class="node config" id="n-cfg3">
+        ⚙ X₂% threshold reached<span class="badge">X₂%</span>
+        <div class="sub">Independent from X₁% · configurable separately</div>
+      </div>
+      <div class="arr purple"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+      <div class="node notif" id="n-notif3">
+        🔔 "Get ready · your turn is coming"<span class="opt">optional</span>
+        <div class="sub">Pre-call · driver prepares before dock is freed</div>
+      </div>
+
+      <div class="sp"></div>
+      <div class="sec-lbl">Notification 4 — optional</div>
+
+      <div class="node config" id="n-cfg4">
+        ⚙ Dock freed
+        <div class="sub">Cascade: pos. 1 notified → if not arrived &amp; dock freed again → pos. 2 notified → ...</div>
+      </div>
+      <div class="arr orange"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+      <div class="node call" id="n-notif4">
+        🔔 "It's your turn · proceed to dock"<span class="opt">optional</span>
+        <div class="sub">Effective call · cascade continues if driver hasn't arrived</div>
+      </div>
+      <div class="arr orange"><div class="arr-line"></div><div class="arr-head"></div></div>
+      <div class="node cascade" id="n-cascade">
+        If pos. 1 hasn't arrived &amp; another dock freed → notify pos. 2 → pos. 3 → ...
+      </div>
+
+    </div>
+
+  </div><!-- /columns -->
+</div><!-- /diagram-wrap -->
+
+<!-- LEGEND -->
+<div class="legend">
+  <span class="leg-title">Legend</span>
+  <div class="leg-item"><div class="leg-box" style="background:#E8EAF6;border:1.5px solid #5C6BC0;"></div> Trigger / state</div>
+  <div class="leg-item"><div class="leg-box" style="background:#E3F2FD;border:1.5px solid #1E88E5;"></div> System action</div>
+  <div class="leg-item"><div class="leg-box" style="background:#F3E5F5;border:1.5px solid #8E24AA;"></div> Driver notification (current)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#FFF3E0;border:1.5px solid #E65100;"></div> Driver notification (next)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#FFF8E1;border:1.5px dashed #F9A825;"></div> Configured parameter</div>
+  <div class="leg-item"><span class="leg-pct">X%</span> Configurable % threshold</div>
+  <div class="leg-item"><span class="leg-opt">optional</span> Can be toggled on/off per station</div>
+</div>
+
+<script>
+function scaleIfNeeded(){
+  const wrap = document.getElementById('diagram');
+  const w = window.innerWidth - 40;
+  if(w < 1100){
+    const scale = w / 1100;
+    wrap.style.transform = `scale(${scale})`;
+    wrap.style.transformOrigin = 'top left';
+    wrap.style.width = '1100px';
+    document.querySelector('.lane-headers').style.transform = `scale(${scale})`;
+    document.querySelector('.lane-headers').style.transformOrigin = 'top left';
+    document.querySelector('.lane-headers').style.width = '1100px';
+    document.querySelector('.legend').style.transform = `scale(${scale})`;
+    document.querySelector('.legend').style.transformOrigin = 'top left';
+    document.querySelector('.legend').style.width = '1100px';
+  }
+}
+window.addEventListener('resize', scaleIfNeeded);
+scaleIfNeeded();
+</script>
+</body>
+</html>

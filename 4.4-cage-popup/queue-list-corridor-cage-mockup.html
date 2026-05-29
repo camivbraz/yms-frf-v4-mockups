@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>4.4.2 — Queue List: Corridor/Cage Column</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; font-size: 13px; }
+
+    /* SIDEBAR */
+    .sidebar { width: 200px; min-height: 100vh; background: #1a1f36; flex-shrink: 0; }
+    .sidebar-logo { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .logo { color: white; font-size: 15px; font-weight: 700; }
+    .logo span { color: #EE4D2D; }
+    .logo-badge { background: rgba(255,255,255,0.15); color: white; font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
+    .station { padding: 8px 16px; color: rgba(255,255,255,0.5); font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .station span { color: white; font-size: 11.5px; }
+    .search-box { margin: 10px 12px; background: rgba(255,255,255,0.08); border: none; border-radius: 4px; padding: 7px 10px; color: rgba(255,255,255,0.4); font-size: 11px; width: calc(100% - 24px); }
+    .nav-item { padding: 9px 16px; color: rgba(255,255,255,0.55); font-size: 11.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+    .nav-item.active { color: white; background: rgba(255,255,255,0.08); border-left: 3px solid #EE4D2D; }
+    .nav-group { padding: 8px 16px 4px; color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: white; border-bottom: 1px solid #e8e8e8; padding: 0 20px; height: 48px; display: flex; align-items: center; justify-content: space-between; }
+    .breadcrumb { font-size: 12px; color: #999; }
+    .breadcrumb b { color: #333; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; font-size: 12px; color: #555; }
+
+    /* CONTENT */
+    .content { padding: 20px; }
+    .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .page-header h1 { font-size: 16px; font-weight: 700; color: #222; border-left: 4px solid #EE4D2D; padding-left: 10px; }
+
+    /* FILTERS */
+    .filters { background: white; border: 1px solid #e8e8e8; border-radius: 4px; padding: 14px 16px; margin-bottom: 14px; }
+    .filter-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .filter-item { display: flex; align-items: center; gap: 6px; }
+    .filter-item label { font-size: 11.5px; color: #666; white-space: nowrap; }
+    .filter-input { border: 1px solid #ddd; border-radius: 3px; padding: 5px 8px; font-size: 11.5px; color: #555; width: 130px; }
+    .filter-actions { margin-left: auto; display: flex; gap: 8px; }
+    .btn-search { background: #EE4D2D; color: white; border: none; padding: 6px 18px; border-radius: 3px; font-size: 12px; cursor: pointer; }
+    .btn-reset { background: white; color: #555; border: 1px solid #ddd; padding: 6px 14px; border-radius: 3px; font-size: 12px; cursor: pointer; }
+
+    /* STATUS TABS */
+    .status-tabs { display: flex; gap: 0; margin-bottom: 14px; background: white; border: 1px solid #e8e8e8; border-radius: 4px; padding: 10px 16px; align-items: center; }
+    .status-tab { display: flex; align-items: center; gap: 5px; margin-right: 20px; font-size: 12px; color: #555; cursor: pointer; }
+    .status-tab input[type=checkbox] { accent-color: #EE4D2D; }
+    .tab-count { font-weight: 600; color: #222; }
+    .tab-count.orange { color: #EE4D2D; }
+    .tab-actions { margin-left: auto; display: flex; gap: 8px; }
+    .btn-outline { background: white; color: #555; border: 1px solid #ddd; padding: 5px 12px; border-radius: 3px; font-size: 12px; cursor: pointer; }
+    .btn-config { background: white; color: #555; border: 1px solid #ddd; padding: 5px 12px; border-radius: 3px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
+    /* TABLE */
+    .table-wrap { background: white; border: 1px solid #e8e8e8; border-radius: 4px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #fafafa; }
+    th { padding: 10px 12px; font-size: 11.5px; color: #555; font-weight: 600; text-align: left; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+    td { padding: 10px 12px; font-size: 12px; color: #333; border-bottom: 1px solid #f2f2f2; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    /* Freeze row highlight */
+    tr.freeze td { background: #FFF8F7; }
+    tr.freeze:hover td { background: #FFF0EE; }
+
+    /* STATUS BADGE */
+    .status { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+    .dot-assigned { background: #52c41a; }
+    .dot-occupied { background: #1890ff; }
+    .dot-ended { background: #bbb; }
+    .dot-onhold { background: #faad14; }
+    .dot-freeze { background: #EE4D2D; }
+
+    /* FREEZE BADGE */
+    .freeze-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #FFF0EE; color: #EE4D2D;
+      border: 1px solid #FFCCC7; border-radius: 3px;
+      padding: 2px 7px; font-size: 11px; font-weight: 600;
+    }
+
+    /* CORRIDOR/CAGE CELL */
+    .cage-value {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #F6FFED; color: #389e0d;
+      border: 1px solid #b7eb8f; border-radius: 3px;
+      padding: 2px 8px; font-size: 12px; font-weight: 600;
+    }
+    .cage-empty { color: #bbb; }
+
+    /* PRIORITISED */
+    .yes { color: #52c41a; font-weight: 600; }
+    .waiting-time { color: #EE4D2D; font-weight: 600; }
+    .waiting-time.normal { color: #52c41a; }
+
+    /* ACTION LINKS */
+    .action-links { display: flex; gap: 8px; }
+    .action-links a { color: #1890ff; font-size: 12px; cursor: pointer; text-decoration: none; }
+    .action-links a:hover { text-decoration: underline; }
+
+    /* PAGINATION */
+    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: white; border-top: 1px solid #f0f0f0; font-size: 12px; color: #555; }
+    .page-info { display: flex; align-items: center; gap: 8px; }
+    .page-nav { display: flex; align-items: center; gap: 4px; }
+    .page-btn { border: 1px solid #ddd; background: white; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+    .page-btn.active { background: #EE4D2D; color: white; border-color: #EE4D2D; }
+
+
+    /* LEGEND */
+    .legend { margin-top: 16px; background: white; border: 1px solid #e8e8e8; border-radius: 4px; padding: 14px 16px; }
+    .legend h3 { font-size: 12px; font-weight: 600; color: #333; margin-bottom: 10px; }
+    .legend-items { display: flex; gap: 24px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #555; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo">Shopee<span>Xpress</span><span class="logo-badge">LIVE</span></div>
+  </div>
+  <div class="station"><span>LM Hub_SP_Mauá ▾</span></div>
+  <input class="search-box" placeholder="Search Menu" type="text"/>
+  <div class="nav-item">⊞ Dashboard</div>
+  <div class="nav-item">🏢 Agency</div>
+  <div class="nav-item">📥 Inbound</div>
+  <div class="nav-item">📤 Outbound</div>
+  <div class="nav-item">📋 Audit Management</div>
+  <div class="nav-item">↩ Return</div>
+  <div class="nav-item">🎫 Ticket Management</div>
+  <div class="nav-item">📁 Exception Handling</div>
+  <div class="nav-item">🔀 Sorting Management</div>
+  <div class="nav-group">Station Management</div>
+  <div class="nav-item">📍 Area Management</div>
+  <div class="nav-item">🗂 Cage Management</div>
+  <div class="nav-item active">📋 Queue List</div>
+  <div class="nav-item">🚪 Dock Management</div>
+  <div class="nav-item">⚙️ Queue & Dock Config.</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb">Station Management / <b>Queue List</b></div>
+    <div class="topbar-right">
+      <span>🔔</span><span>📋</span>
+      <span>English ▾</span>
+      <span>camila.braz ▾</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <h1>Add Trucks in Queue</h1>
+      <input type="text" placeholder="Scan or Input Driver ID" style="border:1px solid #ddd;border-radius:3px;padding:6px 10px;font-size:12px;width:200px;margin-left:10px;"/>
+      <button style="background:white;border:1px solid #EE4D2D;color:#EE4D2D;padding:6px 16px;border-radius:3px;font-size:12px;cursor:pointer;">Add Manually</button>
+    </div>
+
+    <!-- TAB BAR -->
+    <div style="display:flex;gap:0;border-bottom:2px solid #f0f0f0;margin-bottom:14px;">
+      <div style="padding:8px 16px;font-size:12.5px;color:#999;cursor:pointer;">Inbound Queue List <span style="background:#eee;border-radius:10px;padding:1px 8px;font-size:11px;">0</span></div>
+      <div style="padding:8px 16px;font-size:12.5px;color:#EE4D2D;border-bottom:2px solid #EE4D2D;font-weight:600;cursor:pointer;margin-bottom:-2px;">Outbound Queue List <span style="background:#FFF0EE;color:#EE4D2D;border-radius:10px;padding:1px 8px;font-size:11px;">177</span></div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <div class="filter-row">
+        <div class="filter-item"><label>Queue Number</label><input class="filter-input" placeholder="Input"/></div>
+        <div class="filter-item"><label>Vehicle Number</label><input class="filter-input" value=""/></div>
+        <div class="filter-item"><label>Prioritised</label><input class="filter-input" placeholder="Select"/></div>
+        <div class="filter-item"><label>Prioritised Factors</label><input class="filter-input" placeholder="Select"/></div>
+        <div class="filter-actions">
+          <button class="btn-search">Search</button>
+          <button class="btn-reset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS COUNTS -->
+    <div class="status-tabs">
+      <div class="status-tab"><input type="checkbox" checked/> Pending <span class="tab-count">0</span></div>
+      <div class="status-tab"><input type="checkbox" checked/> Assigned <span class="tab-count orange">28</span></div>
+      <div class="status-tab"><input type="checkbox" checked/> Occupied <span class="tab-count">4</span></div>
+      <div class="status-tab"><input type="checkbox" checked/> On-hold <span class="tab-count">0</span></div>
+      <div class="status-tab"><input type="checkbox" checked/> Ended ⓘ <span class="tab-count">145</span></div>
+      <div class="tab-actions">
+        <button class="btn-config">⚙ Configuration ▾</button>
+        <button class="btn-outline">Print</button>
+        <button class="btn-outline">Export ▾</button>
+        <button class="btn-outline">Log</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32px;"><input type="checkbox"/></th>
+            <th>Queue Number</th>
+            <th>Vehicle Number</th>
+            <th>Waiting Time ↕</th>
+            <th>Prioritised</th>
+            <th>Prioritised Factors</th>
+            <th>Handover Task Number</th>
+            <th>Status</th>
+            <th>Dock</th>
+            <th>Corridor / Cage</th>
+            <th>Dock Occupancy Sequence</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- ROW 1: Queue Freeze (Pre-Call sent) — highlighted -->
+          <tr class="freeze">
+            <td><input type="checkbox"/></td>
+            <td><b>OB0153</b> <span class="freeze-badge">❄ Freeze</span></td>
+            <td>TKF3C34</td>
+            <td><span class="waiting-time">00:01</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td>AT2026052901AP7</td>
+            <td><span class="status"><span class="dot dot-assigned"></span> Assigned</span></td>
+            <td>MESA 7</td>
+            <td><span class="cage-value">C-07</span></td>
+            <td>-</td>
+            <td>
+              <div class="action-links">
+                <a>Re-assign</a>
+                <a>Inform Driver</a>
+                <a>More</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 2: Regular Assigned -->
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0154</b></td>
+            <td>FZK0B22</td>
+            <td><span class="waiting-time">00:02</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td>-</td>
+            <td><span class="status"><span class="dot dot-assigned"></span> Assigned</span></td>
+            <td>MESA 8</td>
+            <td><span class="cage-empty">—</span></td>
+            <td>-</td>
+            <td>
+              <div class="action-links">
+                <a>Re-assign</a>
+                <a>Inform Driver</a>
+                <a>More</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 3: Regular Assigned -->
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0163</b></td>
+            <td>PLF4H33</td>
+            <td><span class="waiting-time normal">00:20</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td>-</td>
+            <td><span class="status"><span class="dot dot-assigned"></span> Assigned</span></td>
+            <td>-</td>
+            <td><span class="cage-empty">—</span></td>
+            <td>-</td>
+            <td>
+              <div class="action-links">
+                <a>Re-assign</a>
+                <a>Inform Driver</a>
+                <a>More</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 4: Occupied -->
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0166</b></td>
+            <td>DTL2D47</td>
+            <td><span class="waiting-time normal">00:11</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td>-</td>
+            <td><span class="status"><span class="dot dot-occupied"></span> Occupied</span></td>
+            <td>MESA 7</td>
+            <td><span class="cage-empty">—</span></td>
+            <td>-</td>
+            <td>
+              <div class="action-links">
+                <a>View</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 5: Ended -->
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0025</b></td>
+            <td>DTL2D47</td>
+            <td><span style="color:#bbb;">00:25</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td>-</td>
+            <td><span class="status"><span class="dot dot-ended"></span> Ended</span></td>
+            <td>-</td>
+            <td><span class="cage-empty">—</span></td>
+            <td>-</td>
+            <td>
+              <div class="action-links">
+                <a>View</a>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <!-- PAGINATION -->
+      <div class="pagination">
+        <span>Total: 5</span>
+        <div class="page-info">
+          <div class="page-nav">
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">›</button>
+          </div>
+          <span>500 / Page ▾</span>
+          <span>Go to page</span>
+          <input type="text" style="width:40px;border:1px solid #ddd;border-radius:3px;padding:3px 6px;font-size:12px;"/>
+          <button class="page-btn">Go</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <h3>Legend</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="freeze-badge">❄ Freeze</span>
+          Driver received Pre-Call notification (ref. 4.3.2) — queue position frozen
+        </div>
+        <div class="legend-item">
+          <span class="cage-value">🏷 C-07</span>
+          Corridor/Cage populated from dock attribute — visible only in Queue Freeze state
+        </div>
+        <div class="legend-item">
+          <span class="cage-empty">—</span>
+          No Corridor/Cage — driver not in Queue Freeze
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

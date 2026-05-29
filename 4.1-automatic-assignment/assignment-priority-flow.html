@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Assignment Priority Logic</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;padding:32px;}
+.diagram{width:900px;}
+
+/* Utility */
+.col-center{display:flex;flex-direction:column;align-items:center;}
+
+/* Boxes */
+.box{border-radius:5px;padding:7px 14px;text-align:center;font-size:11px;font-weight:600;display:inline-block;line-height:1.4;}
+.box-dark{background:#1e2d5a;color:#fff;font-size:12px;}
+.box-blue{background:#dbeafe;color:#1e3a8a;border:1px solid #93c5fd;}
+.box-fallback{background:#fff;color:#1e3a8a;border:2px dashed #93c5fd;}
+.box-green{background:#dcfce7;color:#14532d;border:1px solid #86efac;padding:8px 24px;}
+.box-orange{background:#ffedd5;color:#7c2d12;border:1px solid #fdba74;padding:8px 24px;}
+
+/* Arrows */
+.arr{width:1.5px;background:#94a3b8;margin:0 auto;height:18px;position:relative;}
+.arr::after{content:'';position:absolute;bottom:-1px;left:-4px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #94a3b8;}
+.arr-h{height:1.5px;background:#94a3b8;position:relative;}
+.arr-h-r::after{content:'';position:absolute;right:-1px;top:-4px;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #94a3b8;}
+
+/* Diamond */
+.dmnd-wrap{display:flex;justify-content:center;padding:4px 0;}
+.dmnd{background:#fff;border:2px solid #1e2d5a;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dmnd-text{transform:rotate(-45deg);font-size:10px;text-align:center;color:#1e2d5a;font-weight:600;line-height:1.3;padding:2px;}
+
+/* Per-section dashed box */
+.per-sec{border:2px dashed #9b59b6;border-radius:8px;padding:16px 16px 20px;margin:4px 0;background:#fdf9ff;}
+.per-sec-lbl{text-align:center;font-size:9.5px;color:#7c3aed;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:14px;}
+
+/* Two columns */
+.two-col{display:grid;grid-template-columns:1fr 2px 1fr;gap:0;}
+.col-divider{background:#e2e8f0;margin:0 8px;}
+.col{display:flex;flex-direction:column;align-items:center;padding:0 8px;}
+.col-lbl{font-size:10px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;text-align:center;}
+
+/* Branch labels */
+.yl{font-size:10px;font-weight:700;background:#dcfce7;color:#14532d;border-radius:10px;padding:2px 8px;margin:3px 0;}
+.nl{font-size:10px;font-weight:700;background:#fee2e2;color:#991b1b;border-radius:10px;padding:2px 8px;margin:3px 0;}
+
+/* Branch grid inside YES */
+.sub-branches{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;}
+.sub-col{display:flex;flex-direction:column;align-items:center;}
+
+/* Note */
+.note{background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:8px 16px;font-size:10.5px;color:#475569;text-align:center;margin:4px 0;}
+
+/* Final */
+.final{display:flex;gap:60px;justify-content:center;margin-top:6px;}
+.final-col{display:flex;flex-direction:column;align-items:center;gap:4px;}
+</style>
+</head>
+<body>
+<div class="diagram">
+
+  <!-- ENTRY -->
+  <div class="col-center">
+    <div class="box box-dark">Driver matched a dock group</div>
+    <div class="arr"></div>
+  </div>
+
+  <!-- PER-SECTION DASHED BOX -->
+  <div class="per-sec">
+    <div class="per-sec-lbl">For each dock within the group — evaluated per section</div>
+    <div class="two-col">
+
+      <!-- ── IDENTIFICATION ── -->
+      <div class="col">
+        <div class="col-lbl">Identification</div>
+
+        <!-- Diamond 1 -->
+        <div class="dmnd-wrap">
+          <div class="dmnd" style="width:88px;height:88px;">
+            <div class="dmnd-text">Dock has<br>Identification<br>enabled?</div>
+          </div>
+        </div>
+
+        <!-- YES / NO split -->
+        <div style="display:grid;grid-template-columns:3fr 2fr;width:100%;gap:4px;margin-top:2px;">
+
+          <!-- YES side -->
+          <div class="col-center">
+            <span class="yl">YES</span>
+            <div class="arr" style="height:12px;"></div>
+            <!-- Compliance diamond -->
+            <div class="dmnd-wrap">
+              <div class="dmnd" style="width:76px;height:76px;">
+                <div class="dmnd-text" style="font-size:9px;">Dock<br>compliant<br>with group?</div>
+              </div>
+            </div>
+            <!-- YES-YES / YES-NO -->
+            <div class="sub-branches" style="margin-top:4px;">
+              <div class="sub-col">
+                <span class="yl">YES</span>
+                <div class="arr" style="height:10px;"></div>
+                <div class="box box-blue" style="font-size:9.5px;">Dock<br>Identification<br><span style="font-weight:400;">→ dock config</span></div>
+              </div>
+              <div class="sub-col">
+                <span class="nl">NO</span>
+                <div class="arr" style="height:10px;"></div>
+                <div class="box box-fallback" style="font-size:9.5px;">Dock Group<br>Identification<br><span style="font-weight:400;">→ group config<br>(fallback)</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NO side -->
+          <div class="col-center">
+            <span class="nl">NO</span>
+            <div class="arr" style="height:70px;"></div>
+            <div class="box box-blue" style="font-size:9.5px;">Dock Group<br>Identification<br><span style="font-weight:400;">→ dock group config</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- DIVIDER -->
+      <div class="col-divider"></div>
+
+      <!-- ── CARGO COMPOSITION ── -->
+      <div class="col">
+        <div class="col-lbl">Cargo Composition &amp; Parameters</div>
+
+        <!-- Diamond 1 -->
+        <div class="dmnd-wrap">
+          <div class="dmnd" style="width:88px;height:88px;">
+            <div class="dmnd-text">Dock has<br>Cargo Comp.<br>enabled?</div>
+          </div>
+        </div>
+
+        <!-- YES / NO split -->
+        <div style="display:grid;grid-template-columns:3fr 2fr;width:100%;gap:4px;margin-top:2px;">
+
+          <!-- YES side -->
+          <div class="col-center">
+            <span class="yl">YES</span>
+            <div class="arr" style="height:12px;"></div>
+            <div class="dmnd-wrap">
+              <div class="dmnd" style="width:76px;height:76px;">
+                <div class="dmnd-text" style="font-size:9px;">Dock<br>compliant<br>with group?</div>
+              </div>
+            </div>
+            <div class="sub-branches" style="margin-top:4px;">
+              <div class="sub-col">
+                <span class="yl">YES</span>
+                <div class="arr" style="height:10px;"></div>
+                <div class="box box-blue" style="font-size:9.5px;">Dock Cargo<br>Composition<br><span style="font-weight:400;">→ dock config</span></div>
+              </div>
+              <div class="sub-col">
+                <span class="nl">NO</span>
+                <div class="arr" style="height:10px;"></div>
+                <div class="box box-fallback" style="font-size:9.5px;">Dock Group<br>Cargo Comp.<br><span style="font-weight:400;">→ group config<br>(fallback)</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NO side -->
+          <div class="col-center">
+            <span class="nl">NO</span>
+            <div class="arr" style="height:70px;"></div>
+            <div class="box box-blue" style="font-size:9.5px;">Dock Group<br>Cargo Comp.<br><span style="font-weight:400;">→ dock group config</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- end two-col -->
+  </div><!-- end per-sec -->
+
+  <!-- COMBINE -->
+  <div class="col-center">
+    <div class="arr"></div>
+    <div class="box box-dark">Combine both sections → evaluate driver</div>
+    <div class="arr"></div>
+    <div class="note" style="width:680px;">
+      If no group match <span style="color:#94a3b8;">(ungrouped dock)</span>: own config → apply dock config &nbsp;|&nbsp; no config on either section → no restriction
+    </div>
+    <div class="arr"></div>
+
+    <!-- Final diamond -->
+    <div class="dmnd-wrap">
+      <div class="dmnd" style="width:96px;height:96px;">
+        <div class="dmnd-text" style="font-size:11px;">Driver<br>matches<br>rules?</div>
+      </div>
+    </div>
+
+    <!-- Final split -->
+    <div class="final">
+      <div class="final-col">
+        <span class="yl">YES</span>
+        <div class="arr" style="height:12px;"></div>
+        <div class="box box-green">Assign to dock</div>
+      </div>
+      <div class="final-col">
+        <span class="nl">NO</span>
+        <div class="arr" style="height:12px;"></div>
+        <div class="box box-orange">Stay in queue</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

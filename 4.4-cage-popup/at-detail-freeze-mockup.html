@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>4.4.2 — AT Detail: Dock field on Queue Freeze</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; font-size: 13px; }
+
+    /* SIDEBAR */
+    .sidebar { width: 200px; min-height: 100vh; background: #1a1f36; flex-shrink: 0; }
+    .sidebar-logo { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .logo { color: white; font-size: 15px; font-weight: 700; }
+    .logo span { color: #EE4D2D; }
+    .logo-badge { background: rgba(255,255,255,0.15); color: white; font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
+    .station { padding: 8px 16px; color: rgba(255,255,255,0.5); font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .station span { color: white; font-size: 11.5px; }
+    .search-box { margin: 10px 12px; background: rgba(255,255,255,0.08); border: none; border-radius: 4px; padding: 7px 10px; color: rgba(255,255,255,0.4); font-size: 11px; width: calc(100% - 24px); }
+    .nav-item { padding: 9px 16px; color: rgba(255,255,255,0.55); font-size: 11.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+    .nav-item.active { color: white; background: rgba(255,255,255,0.08); border-left: 3px solid #EE4D2D; }
+    .nav-group { padding: 8px 16px 4px; color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: white; border-bottom: 1px solid #e8e8e8; padding: 0 20px; height: 48px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .breadcrumb { font-size: 12px; color: #999; }
+    .breadcrumb b { color: #333; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; font-size: 12px; color: #555; }
+
+    /* CONTENT */
+    .content { padding: 20px; flex: 1; }
+
+    /* PAGE HEADER */
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .page-title { font-size: 16px; font-weight: 700; color: #222; }
+    .header-actions { display: flex; gap: 8px; }
+    .btn-outline { background: white; color: #555; border: 1px solid #ddd; padding: 6px 16px; border-radius: 3px; font-size: 12px; cursor: pointer; }
+    .btn-complete { background: #EE4D2D; color: white; border: none; padding: 6px 20px; border-radius: 3px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+    /* DETAIL CARD */
+    .detail-card { background: white; border: 1px solid #e8e8e8; border-radius: 4px; padding: 16px 20px; margin-bottom: 14px; }
+    .detail-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 24px; }
+    .detail-item label { font-size: 11px; color: #999; display: block; margin-bottom: 3px; }
+    .detail-item .val { font-size: 13px; color: #222; }
+    .detail-item .val.dash { color: #bbb; }
+    .detail-item .val.status { font-weight: 500; }
+
+    /* DOCK FIELD HIGHLIGHT */
+    .detail-item.dock-new .val {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #EE4D2D; font-weight: 600;
+    }
+    .freeze-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #EE4D2D; display: inline-block; flex-shrink: 0;
+    }
+
+    /* NUMBERS SECTION */
+    .numbers-section { display: flex; gap: 32px; padding-top: 12px; border-top: 1px solid #f5f5f5; margin-top: 12px; }
+    .number-item label { font-size: 11px; color: #999; display: block; margin-bottom: 2px; }
+    .number-item .big { font-size: 24px; font-weight: 700; color: #222; }
+    .number-item .dash { font-size: 18px; color: #bbb; font-weight: 400; }
+
+    /* SECTION TITLE */
+    .section-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #222; margin-bottom: 12px; }
+    .section-title::before { content: ''; width: 3px; height: 14px; background: #EE4D2D; border-radius: 2px; display: block; }
+
+    /* SCAN BAR */
+    .scan-bar { display: flex; align-items: center; gap: 10px; }
+    .scan-input { border: 1px solid #ddd; border-radius: 3px; padding: 6px 12px; font-size: 12px; color: #999; width: 260px; }
+
+    /* ORDER TABLE */
+    .table-wrap { background: white; border: 1px solid #e8e8e8; border-radius: 4px; overflow-x: auto; }
+    .table-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #fafafa; }
+    th { padding: 10px 14px; font-size: 11.5px; color: #555; font-weight: 600; text-align: left; border-bottom: 1px solid #e8e8e8; }
+    td { padding: 10px 14px; font-size: 12px; color: #333; border-bottom: 1px solid #f5f5f5; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+    .action-links a { color: #1890ff; font-size: 12px; cursor: pointer; text-decoration: none; margin-right: 8px; }
+
+    /* TOGGLE STATES */
+    .toggle-section { display: flex; gap: 16px; margin-bottom: 16px; }
+    .toggle-btn { padding: 6px 16px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid #ddd; background: white; color: #555; }
+    .toggle-btn.active { background: #FFF0EE; color: #EE4D2D; border-color: #FFCCC7; font-weight: 600; }
+
+    /* LEGEND */
+    .legend { margin-top: 16px; background: white; border: 1px solid #e8e8e8; border-radius: 4px; padding: 14px 16px; }
+    .legend h3 { font-size: 12px; font-weight: 600; color: #333; margin-bottom: 10px; }
+    .legend-items { display: flex; gap: 24px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #555; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; background: #EE4D2D; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo">Shopee<span>Xpress</span><span class="logo-badge">LIVE</span></div>
+  </div>
+  <div class="station"><span>LM Hub_SP_Mauá ▾</span></div>
+  <input class="search-box" placeholder="Search Menu" type="text"/>
+  <div class="nav-item">⊞ Dashboard</div>
+  <div class="nav-item">🏢 Agency</div>
+  <div class="nav-item">📥 Inbound</div>
+  <div class="nav-group">Delivery</div>
+  <div class="nav-item">📋 Assignment</div>
+  <div class="nav-item active" style="padding-left:28px;">↳ Detail</div>
+  <div class="nav-item">📤 Outbound</div>
+  <div class="nav-item">📋 Audit Management</div>
+  <div class="nav-item">↩ Return</div>
+  <div class="nav-item">🗂 Sorting Management</div>
+  <div class="nav-group">Station Management</div>
+  <div class="nav-item">📋 Queue List</div>
+  <div class="nav-item">🚪 Dock Management</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb">Delivery / Assignment / <b>Detail</b></div>
+    <div class="topbar-right">
+      <span>🔔</span><span>📋</span>
+      <span>English ▾</span>
+      <span>camila.braz ▾</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- TOGGLE: simula os dois estados -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <span style="font-size:11.5px;color:#888;">Demo — estado do driver:</span>
+      <button class="toggle-btn" onclick="setState('normal')" id="btn-normal">Normal (sem freeze)</button>
+      <button class="toggle-btn active" onclick="setState('freeze')" id="btn-freeze">Queue Freeze ❄</button>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="page-title">Assign Task ID: AT202605295FLN0</div>
+      <div class="header-actions">
+        <button class="btn-outline">Preview Label</button>
+        <button class="btn-outline">Print Label</button>
+        <button class="btn-complete">Complete</button>
+      </div>
+    </div>
+
+    <!-- AT DETAIL CARD -->
+    <div class="detail-card">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Status</label>
+          <div class="val status">Processing</div>
+        </div>
+        <div class="detail-item">
+          <label>Station Name</label>
+          <div class="val">LM Hub_SP_Mauá</div>
+        </div>
+        <div class="detail-item">
+          <label>Zipcode</label>
+          <div class="val" style="font-size:11.5px;">09371167, 09371210,...</div>
+        </div>
+        <div class="detail-item">
+          <label>Number of Order(s)</label>
+          <div class="val"></div>
+        </div>
+
+        <div class="detail-item">
+          <label>Journey Type</label>
+          <div class="val dash">-</div>
+        </div>
+        <div class="detail-item">
+          <label>Driver</label>
+          <div class="val">JUAREZ BARROS DA SILVA</div>
+        </div>
+        <div class="detail-item">
+          <label>Operator</label>
+          <div class="val">admin</div>
+        </div>
+        <div class="detail-item">
+          <label>Forward</label>
+          <div class="val big" style="font-size:22px;font-weight:700;">86</div>
+        </div>
+
+        <div class="detail-item">
+          <label>CIOT Status</label>
+          <div class="val dash">-</div>
+        </div>
+        <div class="detail-item">
+          <label>CIOT Error Message</label>
+          <div class="val dash">-</div>
+        </div>
+        <div class="detail-item">
+          <label>Agency</label>
+          <div class="val">SPXOWNFLEET</div>
+        </div>
+        <div class="detail-item">
+          <label>Return</label>
+          <div class="val dash">-</div>
+        </div>
+
+        <div class="detail-item">
+          <label>Corridor/Cage</label>
+          <div class="val">H-27</div>
+        </div>
+
+        <!-- DOCK FIELD — aparece apenas em Queue Freeze -->
+        <div class="detail-item dock-new" id="dock-field" style="display:flex;">
+          <label>Dock <span style="background:#FFF0EE;color:#EE4D2D;border:1px solid #FFCCC7;border-radius:3px;padding:0px 5px;font-size:10px;font-weight:600;margin-left:4px;">Queue Freeze</span></label>
+          <div class="val">
+            <span class="freeze-dot"></span>
+            MESA 7
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ADD ORDER -->
+    <div class="detail-card" style="padding:12px 20px;">
+      <div class="scan-bar">
+        <div class="section-title">Add New Order:</div>
+        <input class="scan-input" placeholder="Please Scan Or Input SPX TN/TO" type="text"/>
+      </div>
+    </div>
+
+    <!-- ORDER DETAIL TABLE -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="section-title" style="margin-bottom:0;">Order Detail</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-outline" style="padding:4px 12px;font-size:11.5px;">Mass Remove</button>
+          <input type="text" placeholder="SPX Tracking Number/TO" style="border:1px solid #ddd;border-radius:3px;padding:5px 10px;font-size:11.5px;width:200px;"/>
+          <span style="cursor:pointer;color:#555;">🔍</span>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Sequence</th>
+            <th>SPX Tracking Num/TO</th>
+            <th>Location Type</th>
+            <th>Journey Type</th>
+            <th>Order Quantity</th>
+            <th>Status</th>
+            <th>Number of On-hold</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>27</td><td>BR2643349759092</td><td>Home</td><td>Forward</td><td>1</td><td>LMHub_Assigning</td><td>-</td>
+            <td><a class="action-links">View</a><a class="action-links">Remove</a></td>
+          </tr>
+          <tr>
+            <td>13</td><td>BR262872838609N</td><td>-</td><td>Forward</td><td>1</td><td>LMHub_Assigning</td><td>-</td>
+            <td><a class="action-links">View</a><a class="action-links">Remove</a></td>
+          </tr>
+          <tr>
+            <td>64</td><td>BR26047642453IQ</td><td>-</td><td>Forward</td><td>1</td><td>LMHub_Assigning</td><td>-</td>
+            <td><a class="action-links">View</a><a class="action-links">Remove</a></td>
+          </tr>
+          <tr>
+            <td>28</td><td>BR269463752385H</td><td>Home</td><td>Forward</td><td>1</td><td>LMHub_Assigning</td><td>-</td>
+            <td><a class="action-links">View</a><a class="action-links">Remove</a></td>
+          </tr>
+          <tr>
+            <td>82</td><td>BR263008492135V</td><td>Office</td><td>Forward</td><td>1</td><td>LMHub_Assigning</td><td>-</td>
+            <td><a class="action-links">View</a><a class="action-links">Remove</a></td>
+          </tr>
+          <tr>
+            <td>22</td><td>BR261306683867T</td><td>-</td><td>Forward</td><td>1</td><td>LMHub_Assigning</td><td>-</td>
+            <td><a class="action-links">View</a><a class="action-links">Remove</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <h3>Legend</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="legend-dot"></span>
+          <span><b>Dock field</b> — aparece no AT detail somente quando o driver está em Queue Freeze (Pre-Call recebido, ref. 4.3.2). Mostra a doca atribuída ao driver na fila.</span>
+        </div>
+        <div class="legend-item">
+          <span style="color:#bbb;font-size:13px;">—</span>
+          Quando o driver não está em Queue Freeze, o campo Dock não é exibido.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function setState(state) {
+    const dockField = document.getElementById('dock-field');
+    const btnNormal = document.getElementById('btn-normal');
+    const btnFreeze = document.getElementById('btn-freeze');
+
+    if (state === 'freeze') {
+      dockField.style.display = 'flex';
+      btnFreeze.classList.add('active');
+      btnNormal.classList.remove('active');
+    } else {
+      dockField.style.display = 'none';
+      btnNormal.classList.add('active');
+      btnFreeze.classList.remove('active');
+    }
+  }
+</script>
+
+</body>
+</html>

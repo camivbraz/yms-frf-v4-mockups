@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>5. Data Information — Google Docs Format</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11px; margin: 20px; }
+  p.hint { font-size: 12px; color: #555; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  td, th { border: 1px solid #b0b0b0; padding: 7px 9px; vertical-align: top; font-size: 11px; }
+  .hdr { background-color: #1e3a5f; color: #ffffff; font-weight: bold; font-size: 11px; text-align: left; }
+  .section-row td { background-color: #1e3a5f; color: #ffffff; font-weight: bold; font-size: 11px; }
+  .alt { background-color: #f5f7fa; }
+  b { font-weight: bold; }
+  ul { margin: 4px 0 4px 16px; padding: 0; }
+  li { margin-bottom: 2px; }
+  .sub { color: #444; font-style: italic; margin-top: 4px; }
+  .mono { font-family: 'Courier New', monospace; font-size: 10.5px; background: #f0f0f0; padding: 1px 4px; border-radius: 2px; }
+  .tag { background-color: #e8eaed; padding: 1px 5px; border-radius: 3px; font-size: 10.5px; }
+</style>
+</head>
+<body>
+<p class="hint">Open this file in a browser → Ctrl+A → Ctrl+C → paste into Google Docs (Ctrl+V). The table structure will be preserved.</p>
+
+<table>
+  <colgroup>
+    <col style="width:22%">
+    <col style="width:78%">
+  </colgroup>
+
+  <!-- HEADER -->
+  <tr>
+    <th class="hdr">Item</th>
+    <th class="hdr">Necessity</th>
+  </tr>
+
+  <!-- ══════════════════════════════════
+       5.1 FEATURE CONFIGURATION DATA
+  ══════════════════════════════════ -->
+  <tr>
+    <td class="section-row" colspan="2">5.1 &nbsp;Feature Configuration Data</td>
+  </tr>
+
+  <tr>
+    <td><b>4.1.1 Dock Attributes</b></td>
+    <td>
+      Store new dock configuration fields: Trip Classification, Cargo Composition toggle, evaluation mode (% / absolute), restriction logic (AND / OR), attribute cards (type, values, min, max).<br><br>
+      Log all edits with: dock name, field changed, previous value, new value, operator, timestamp.
+    </td>
+  </tr>
+
+  <tr class="alt">
+    <td><b>4.1.2 Change logic — dock / dock group</b></td>
+    <td>
+      Store toggle state per section (Identification, Cargo Composition) at dock level.<br>
+      Track compliance status per dock relative to its group configuration.
+    </td>
+  </tr>
+
+  <tr>
+    <td><b>4.2.2 Add geofence</b></td>
+    <td>
+      Store geofence-to-entry-site relationship.<br>
+      Record link/unlink events with timestamp and operator.
+    </td>
+  </tr>
+
+  <tr class="alt">
+    <td><b>4.2.3 New entry site config</b></td>
+    <td>
+      Store per entry site: capacity limit, vehicle type pools (types + vacancies), Block Early Vehicles toggle, Queue Freezing toggle.
+    </td>
+  </tr>
+
+  <tr>
+    <td><b>4.3.1 Gate Queue Control</b></td>
+    <td>
+      Store per station: gate capacity (m), confirmation timeout (min), max travel time (min), retry limit.
+    </td>
+  </tr>
+
+  <tr class="alt">
+    <td><b>4.3.2 End Process Notifications</b></td>
+    <td>
+      Store per task type per station: X₁%, X₂%, enabled/disabled state per notification type.
+    </td>
+  </tr>
+
+  <tr>
+    <td><b>4.4.1 Configurable queue list</b></td>
+    <td>Store column visibility preferences and display order per user.</td>
+  </tr>
+
+  <tr class="alt">
+    <td><b>4.4 Queue list visibility</b></td>
+    <td>Add new parameters to existing queue list tables.</td>
+  </tr>
+
+  <!-- ══════════════════════════════════
+       5.2 LOGS
+  ══════════════════════════════════ -->
+  <tr>
+    <td class="section-row" colspan="2">5.2 &nbsp;Logs</td>
+  </tr>
+
+  <tr>
+    <td><b>Notification Log</b></td>
+    <td>
+      Log all notifications sent to drivers across the system.<br><br>
+      <b>Fields:</b> notification_id, type, driver_id, queue_id, trigger_event, timestamp, delivery_status, confirmation_status, confirmation_timestamp.<br><br>
+      <b>Events covered:</b><br>
+      <ul>
+        <li><b>Gate Queue Control (4.3.1):</b> gate space available (1st attempt + retries), On Hold after retry limit reached</li>
+        <li><b>End Process (4.3.2):</b> Progress Alert, End Process, Pre-Call, Effective Call</li>
+        <li><b>Entry site (4.2.3):</b> entry tag assigned, cascade update, early arrival blocked/released</li>
+        <li><b>Existing queue notifications:</b> dock assignment, dock reassignment, queue On Hold, return from On Hold</li>
+      </ul>
+    </td>
+  </tr>
+
+  <tr class="alt">
+    <td><b>Entry Tag Log</b></td>
+    <td>
+      Log all entry tag state changes per driver.<br><br>
+      <b>Fields:</b> log_id, driver_id, queue_id, previous_tag, new_tag, trigger_event_type, operator_id, timestamp.<br><br>
+      <b>Events covered:</b><br>
+      <ul>
+        <li>Initial entry tag assignment</li>
+        <li>Cascade reassignment (system-triggered)</li>
+        <li>On Hold placement (entry tag removed)</li>
+        <li>Return from On Hold (entry tag reassigned)</li>
+        <li>Manual tag change by operator</li>
+        <li>Entry tag cleared on queue closure</li>
+      </ul>
+    </td>
+  </tr>
+
+  <tr>
+    <td><b>Geofence Events Log</b></td>
+    <td>
+      Log all geofence crossing events per driver.<br><br>
+      <b>Fields:</b> event_id, driver_id, geofence_id, geofence_type, event_type (entry/exit), timestamp, queue_status_at_event.<br><br>
+      <b>Geofence types covered:</b><br>
+      <ul>
+        <li><b>Station Geofence:</b> entry and exit</li>
+        <li><b>Entry Site Geofence (per site):</b> entry and exit — linked to entry tag assignment and cascade logic</li>
+        <li><b>Gate Area Geofence — Portaria (4.3.1):</b> entry and exit — used to calculate gate occupied_meters in real time</li>
+      </ul>
+    </td>
+  </tr>
+
+  <!-- ══════════════════════════════════
+       5.3 DATABASE SCHEMA
+  ══════════════════════════════════ -->
+  <tr>
+    <td class="section-row" colspan="2">5.3 &nbsp;Database Schema</td>
+  </tr>
+
+  <tr>
+    <td><b>New tables</b></td>
+    <td>
+      <b>1. dock_attribute_cards</b><br>
+      dock_id, attribute_type, selected_values[ ], min_threshold, max_threshold. One row per attribute card per dock.<br><br>
+
+      <b>2. entry_site_vehicle_pools</b><br>
+      entry_site_id, vacancies, vehicle_types[ ]. One row per pool per entry site.<br><br>
+
+      <b>3. gate_queue_config</b><br>
+      station_id, gate_capacity_meters, confirmation_timeout_min, max_travel_time_min, retry_limit. One row per station.<br><br>
+
+      <b>4. process_notification_config</b><br>
+      station_id, task_type, notification_type, enabled, threshold_pct (X₁ and X₂). One row per notification type per task type per station.<br><br>
+
+      <b>5. user_column_preferences</b><br>
+      user_id, column_id, visible, display_order. One row per column per user.<br><br>
+
+      <b>6. notification_log</b><br>
+      notification_id, type, driver_id, queue_id, trigger_event, timestamp, delivery_status, confirmation_status, confirmation_timestamp.<br><br>
+
+      <b>7. entry_tag_log</b><br>
+      log_id, driver_id, queue_id, previous_tag, new_tag, trigger_event_type, operator_id, timestamp.<br><br>
+
+      <b>8. geofence_events_log</b><br>
+      event_id, driver_id, geofence_id, geofence_type, event_type (entry/exit), timestamp, queue_status_at_event.
+    </td>
+  </tr>
+
+  <tr class="alt">
+    <td><b>Adjustments to existing tables</b></td>
+    <td>
+      <b>dock_config</b> — add: trip_classification (single select), cargo_composition_enabled (bool), evaluation_mode (enum: percentage / absolute), restriction_logic (enum: AND / OR), identification_enabled (bool).<br><br>
+
+      <b>dock_group_config</b> — add: same fields as dock_config above.<br><br>
+
+      <b>entry_site</b> — add: capacity_limit (int), block_early_vehicles (bool), queue_freezing (bool — 1st site only), geofence_id (FK → zone_management).<br><br>
+
+      <b>zone_management</b> — add: tag_type (enum: station / entry_site / portaria).<br><br>
+
+      <b>vehicle_type_config</b> — add: length_cm (int) — used by Gate Queue Control to calculate gate occupancy in meters.<br><br>
+
+      <b>station_config</b> — add: sta_lh_inbound_min (int), sta_lh_outbound_min (int) — moved from dock level (4.2.1).<br><br>
+
+      <b>queue_log</b> — add: notification (text — populated when action = Notification), entry_tag (text). New action type: Notification.
+    </td>
+  </tr>
+
+</table>
+</body>
+</html>

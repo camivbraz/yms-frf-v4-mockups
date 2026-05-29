@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.1.2.4 Use Case Examples — Google Docs Format</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11px; margin: 20px; }
+  p.hint { font-size: 12px; color: #555; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  td, th { border: 1px solid #b0b0b0; padding: 6px 8px; vertical-align: top; font-size: 11px; }
+
+  /* Header row */
+  .hdr { background-color: #1e3a5f; color: #ffffff; font-weight: bold; font-size: 11px; text-align: left; }
+
+  /* Example title row */
+  .ex-row td { background-color: #e8eaed; font-weight: bold; font-size: 11px; }
+
+  /* Context reference box */
+  .ref-box { background-color: #f0f0f0; border: 1px solid #cccccc; padding: 4px 6px; margin-top: 6px; font-size: 10.5px; }
+  .ref-box b { font-size: 10.5px; }
+
+  /* Dock separator */
+  .dock-sep { border-top: 1px solid #cccccc; margin: 6px 0; }
+
+  /* Driver separator */
+  .drv-sep { border-top: 1px dashed #cccccc; margin: 5px 0; }
+
+  /* Eligibility */
+  .elig   { color: #1a7a2f; font-weight: bold; }
+  .noelig { color: #cc0000; font-weight: bold; }
+
+  /* Dock label in result */
+  .dock-lbl { font-weight: bold; font-size: 10.5px; margin-bottom: 2px; }
+
+  /* Result separator */
+  .res-sep { border-top: 1px solid #cccccc; margin: 6px 0; }
+
+  b { font-weight: bold; }
+</style>
+</head>
+<body>
+<p class="hint">Open this file in a browser → Ctrl+A → Ctrl+C → paste into Google Docs (Ctrl+V). The table structure will be preserved.</p>
+
+<table>
+
+  <!-- ── HEADER ── -->
+  <colgroup>
+    <col style="width:17%">
+    <col style="width:28%">
+    <col style="width:27%">
+    <col style="width:28%">
+  </colgroup>
+  <tr>
+    <th class="hdr">Context</th>
+    <th class="hdr">Dock Configuration</th>
+    <th class="hdr">Driver Data</th>
+    <th class="hdr">Matching Result</th>
+  </tr>
+
+  <!-- ════════════════════════════════════════
+       EXAMPLE 1 — Identification compliance
+       ════════════════════════════════════════ -->
+  <tr class="ex-row">
+    <td colspan="4">Example 1 — Identification: compliant dock expands accepted vehicle types beyond the group minimum</td>
+  </tr>
+  <tr>
+    <!-- CONTEXT -->
+    <td>
+      <b>Group:</b> Group A<br>
+      <b>Type:</b> Outbound<br>
+      <b>Arrival:</b> LH – Outbound<br>
+      <b>Docks:</b> OUT71, OUT72, OUT73
+      <div class="ref-box">
+        <b>Group config (balizador):</b><br>
+        Identification: ON<br>
+        Vehicle Type: TRUCK – EXPRESSA, CARRETA<br>
+        Cargo Composition: OFF
+      </div>
+    </td>
+
+    <!-- DOCK CONFIG -->
+    <td>
+      <b>OUT71</b><br>
+      Identification: <b>ON</b><br>
+      Vehicle Type: TRUCK – EXPRESSA, CARRETA, BITREM<br>
+      → <b>Compliant</b> (group types are subset) → dock config applied.<br>
+      Cargo Composition: <b>OFF</b> → group config (OFF) applied.
+      <div class="dock-sep"></div>
+      <b>OUT72</b><br>
+      Identification: <b>ON</b><br>
+      Vehicle Type: TRUCK – EXPRESSA, CARRETA<br>
+      → <b>Compliant</b> (exact match) → dock config applied.<br>
+      Cargo Composition: <b>OFF</b> → group config (OFF) applied.
+      <div class="dock-sep"></div>
+      <b>OUT73</b><br>
+      Identification: <b>ON</b><br>
+      Vehicle Type: TRUCK – EXPRESSA only<br>
+      → <b>Non-compliant</b> (CARRETA missing) → group config as fallback: TRUCK – EXPRESSA, CARRETA.<br>
+      Cargo Composition: <b>OFF</b> → group config (OFF) applied.
+    </td>
+
+    <!-- DRIVER DATA -->
+    <td>
+      <b>Driver A — TRUCK – EXPRESSA</b><br>
+      TO Pack Type: Saca 55% | Scuttle 30% | Pallet 15%
+      <div class="drv-sep"></div>
+      <b>Driver B — CARRETA</b><br>
+      TO Pack Type: Pallet 70% | Saca 20% | Volumoso 10%
+      <div class="drv-sep"></div>
+      <b>Driver C — BITREM</b><br>
+      TO Pack Type: Scuttle 50% | Pallet 30% | Volumoso 20%
+    </td>
+
+    <!-- MATCHING RESULT -->
+    <td>
+      <div class="dock-lbl">OUT71</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ (TRUCK in dock config) → assigned.<br>
+      <span class="elig">Driver B → ELIGIBLE</span><br>
+      Vehicle ✓ (CARRETA in dock config) → assigned.<br>
+      <span class="elig">Driver C → ELIGIBLE</span><br>
+      Vehicle ✓ (BITREM in dock config) → assigned.
+      <div class="res-sep"></div>
+      <div class="dock-lbl">OUT72</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ (TRUCK in dock config) → assigned.<br>
+      <span class="elig">Driver B → ELIGIBLE</span><br>
+      Vehicle ✓ (CARRETA in dock config) → assigned.<br>
+      <span class="noelig">Driver C → NOT ELIGIBLE</span><br>
+      Vehicle ✗ (BITREM not in dock config) → excluded.
+      <div class="res-sep"></div>
+      <div class="dock-lbl">OUT73</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ (TRUCK in group fallback) → assigned.<br>
+      <span class="elig">Driver B → ELIGIBLE</span><br>
+      Vehicle ✓ (CARRETA in group fallback) → assigned.<br>
+      <span class="noelig">Driver C → NOT ELIGIBLE</span><br>
+      Vehicle ✗ (BITREM not in group fallback) → excluded.
+    </td>
+  </tr>
+
+  <!-- ════════════════════════════════════════
+       EXAMPLE 2 — Cargo compliance
+       ════════════════════════════════════════ -->
+  <tr class="ex-row">
+    <td colspan="4">Example 2 — Cargo Composition: compliant dock applies stricter threshold; non-compliant dock falls back to group</td>
+  </tr>
+  <tr>
+    <!-- CONTEXT -->
+    <td>
+      <b>Group:</b> Group A<br>
+      <b>Type:</b> Outbound<br>
+      <b>Arrival:</b> LH – Outbound<br>
+      <b>Docks:</b> OUT71, OUT72, OUT73
+      <div class="ref-box">
+        <b>Group config (balizador):</b><br>
+        Identification: ON<br>
+        Vehicle Type: TRUCK – EXPRESSA, CARRETA<br>
+        Cargo Composition: ON<br>
+        TO Pack Type [Saca]: min 50%
+      </div>
+    </td>
+
+    <!-- DOCK CONFIG -->
+    <td>
+      <b>OUT71</b><br>
+      Identification: <b>ON</b> · Vehicle Type: TRUCK – EXPRESSA, CARRETA → Compliant.<br>
+      Cargo Composition: <b>ON</b><br>
+      TO Pack Type [Saca]: min 55%<br>
+      → <b>Compliant</b> (55% ≥ 50%) → dock config applied: Saca ≥ 55%.
+      <div class="dock-sep"></div>
+      <b>OUT72</b><br>
+      Identification: <b>ON</b> · Vehicle Type: TRUCK – EXPRESSA, CARRETA → Compliant.<br>
+      Cargo Composition: <b>ON</b><br>
+      TO Pack Type [Saca]: min 20%<br>
+      → <b>Non-compliant</b> (20% &lt; 50%) → group config as fallback: Saca ≥ 50%.
+      <div class="dock-sep"></div>
+      <b>OUT73</b><br>
+      Identification: <b>ON</b> · Vehicle Type: TRUCK – EXPRESSA, CARRETA → Compliant.<br>
+      Cargo Composition: <b>OFF</b><br>
+      → Group config applied: Saca ≥ 50%.
+    </td>
+
+    <!-- DRIVER DATA -->
+    <td>
+      <b>Driver A — TRUCK – EXPRESSA</b><br>
+      TO Pack Type: Saca 60% | Scuttle 25% | Pallet 15%
+      <div class="drv-sep"></div>
+      <b>Driver B — CARRETA</b><br>
+      TO Pack Type: Saca 52% | Scuttle 28% | Pallet 20%
+      <div class="drv-sep"></div>
+      <b>Driver C — TRUCK – EXPRESSA</b><br>
+      TO Pack Type: Saca 40% | Scuttle 35% | Volumoso 25%
+    </td>
+
+    <!-- MATCHING RESULT -->
+    <td>
+      <div class="dock-lbl">OUT71</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 60% ✓ (≥ 55%) → assigned.<br>
+      <span class="noelig">Driver B → NOT ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 52% ✗ (need ≥ 55%) → excluded.<br>
+      <span class="noelig">Driver C → NOT ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 40% ✗ (need ≥ 55%) → excluded.
+      <div class="res-sep"></div>
+      <div class="dock-lbl">OUT72</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 60% ✓ (≥ 50%, group fallback) → assigned.<br>
+      <span class="elig">Driver B → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 52% ✓ (≥ 50%, group fallback) → assigned.<br>
+      <span class="noelig">Driver C → NOT ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 40% ✗ (need ≥ 50%) → excluded.
+      <div class="res-sep"></div>
+      <div class="dock-lbl">OUT73</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 60% ✓ (≥ 50%, group config) → assigned.<br>
+      <span class="elig">Driver B → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 52% ✓ (≥ 50%, group config) → assigned.<br>
+      <span class="noelig">Driver C → NOT ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 40% ✗ (need ≥ 50%) → excluded.
+    </td>
+  </tr>
+
+  <!-- ════════════════════════════════════════
+       EXAMPLE 3 — All docks fall back to group
+       ════════════════════════════════════════ -->
+  <tr class="ex-row">
+    <td colspan="4">Example 3 — All docks effectively apply group config — uniform eligibility across the group</td>
+  </tr>
+  <tr>
+    <!-- CONTEXT -->
+    <td>
+      <b>Group:</b> Group A<br>
+      <b>Type:</b> Outbound<br>
+      <b>Arrival:</b> LH – Outbound<br>
+      <b>Docks:</b> OUT71, OUT72, OUT73
+      <div class="ref-box">
+        <b>Group config (balizador):</b><br>
+        Identification: ON<br>
+        Vehicle Type: TRUCK – EXPRESSA, CARRETA<br>
+        Cargo Composition: ON<br>
+        TO Pack Type [Saca]: min 50%
+      </div>
+    </td>
+
+    <!-- DOCK CONFIG -->
+    <td>
+      <b>OUT71</b><br>
+      Identification: <b>OFF</b> → group config applied: TRUCK – EXPRESSA, CARRETA.<br>
+      Cargo Composition: <b>OFF</b> → group config applied: Saca ≥ 50%.
+      <div class="dock-sep"></div>
+      <b>OUT72</b><br>
+      Identification: <b>ON</b><br>
+      Vehicle Type: TRUCK – EXPRESSA only<br>
+      → <b>Non-compliant</b> (CARRETA missing) → group fallback: TRUCK – EXPRESSA, CARRETA.<br>
+      Cargo Composition: <b>OFF</b> → group config applied: Saca ≥ 50%.
+      <div class="dock-sep"></div>
+      <b>OUT73</b><br>
+      Identification: <b>ON</b><br>
+      Vehicle Type: TRUCK – EXPRESSA only<br>
+      → <b>Non-compliant</b> (CARRETA missing) → group fallback: TRUCK – EXPRESSA, CARRETA.<br>
+      Cargo Composition: <b>ON</b><br>
+      TO Pack Type [Saca]: min 30%<br>
+      → <b>Non-compliant</b> (30% &lt; 50%) → group fallback: Saca ≥ 50%.
+    </td>
+
+    <!-- DRIVER DATA -->
+    <td>
+      <b>Driver A — TRUCK – EXPRESSA</b><br>
+      TO Pack Type: Saca 65% | Scuttle 20% | Pallet 15%
+      <div class="drv-sep"></div>
+      <b>Driver B — CARRETA</b><br>
+      TO Pack Type: Saca 55% | Pallet 30% | Volumoso 15%
+      <div class="drv-sep"></div>
+      <b>Driver C — TRUCK – EXPRESSA</b><br>
+      TO Pack Type: Saca 35% | Scuttle 40% | Pallet 25%
+    </td>
+
+    <!-- MATCHING RESULT -->
+    <td>
+      <div class="dock-lbl">OUT71</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 65% ✓ (≥ 50%) → assigned.<br>
+      <span class="elig">Driver B → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 55% ✓ (≥ 50%) → assigned.<br>
+      <span class="noelig">Driver C → NOT ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 35% ✗ (need ≥ 50%) → excluded.
+      <div class="res-sep"></div>
+      <div class="dock-lbl">OUT72</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 65% ✓ (≥ 50%) → assigned.<br>
+      <span class="elig">Driver B → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 55% ✓ (≥ 50%) → assigned.<br>
+      <span class="noelig">Driver C → NOT ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 35% ✗ (need ≥ 50%) → excluded.
+      <div class="res-sep"></div>
+      <div class="dock-lbl">OUT73</div>
+      <span class="elig">Driver A → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 65% ✓ (≥ 50%) → assigned.<br>
+      <span class="elig">Driver B → ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 55% ✓ (≥ 50%) → assigned.<br>
+      <span class="noelig">Driver C → NOT ELIGIBLE</span><br>
+      Vehicle ✓ · Saca 35% ✗ (need ≥ 50%) → excluded.
+    </td>
+  </tr>
+
+</table>
+</body>
+</html>

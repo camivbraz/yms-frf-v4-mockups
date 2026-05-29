@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.1.1.4 Dock Cargo Composition – Examples</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a1a; background: #f7f8fa; padding: 24px; }
+
+  h1 { font-size: 17px; font-weight: 700; margin-bottom: 6px; color: #111; }
+  .subtitle { font-size: 12px; color: #666; margin-bottom: 28px; }
+
+  .example-block { background: #fff; border: 1px solid #e0e3e8; border-radius: 8px; margin-bottom: 32px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+
+  .example-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; background: #f0f2f7; border-bottom: 1px solid #e0e3e8;
+  }
+  .example-badge {
+    background: #1a56db; color: #fff; font-size: 11px; font-weight: 700;
+    padding: 2px 9px; border-radius: 20px; white-space: nowrap;
+  }
+  .example-title { font-size: 13px; font-weight: 600; color: #222; }
+  .eval-mode-tag {
+    margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; white-space: nowrap;
+  }
+  .pct-tag  { background: #e1ecff; color: #1a56db; }
+  .abs-tag  { background: #fef3cd; color: #b07800; }
+  .none-tag { background: #e9fbe5; color: #1a7a31; }
+
+  /* Section labels */
+  .section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #888; padding: 8px 16px 4px; background: #fafbfc; border-bottom: 1px solid #f0f2f5;
+  }
+
+  /* Context / Config section (two columns) */
+  .top-grid {
+    display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #e8eaef;
+  }
+  .top-col { padding: 12px 16px; }
+  .top-col:first-child { border-right: 1px solid #e8eaef; }
+  .top-col h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #666; margin-bottom: 8px; }
+
+  .config-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .config-table th { text-align: left; font-weight: 600; color: #555; padding: 3px 6px 3px 0; width: 48%; vertical-align: top; }
+  .config-table td { padding: 3px 0; color: #222; vertical-align: top; }
+
+  .badge-enabled  { background: #e9fbe5; color: #166534; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
+  .badge-disabled { background: #f3f4f6; color: #888; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
+  .badge-fallback { background: #fff4e5; color: #b45309; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
+
+  .rule-pill {
+    display: inline-block; background: #f0f2f7; border: 1px solid #d0d5e0; font-size: 11px;
+    padding: 2px 8px; border-radius: 12px; margin: 2px 2px 2px 0; color: #333;
+  }
+  .rule-pill strong { color: #1a56db; }
+
+  /* Driver cards */
+  .drivers-section { border-bottom: 1px solid #e8eaef; }
+  .drivers-grid { display: grid; grid-template-columns: repeat(3,1fr); }
+  .drivers-grid.two { grid-template-columns: repeat(2,1fr); }
+  .driver-card {
+    padding: 12px 14px; border-right: 1px solid #eff0f5;
+  }
+  .driver-card:last-child { border-right: none; }
+
+  .driver-tag { font-size: 11px; font-weight: 700; color: #444; margin-bottom: 6px; }
+  .driver-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  .meta-chip {
+    font-size: 10px; background: #f0f2f7; color: #444; padding: 1px 6px; border-radius: 8px; font-weight: 600;
+  }
+  .meta-chip.trip  { background: #e8f3ff; color: #1a56db; }
+  .meta-chip.vtype { background: #f3e8ff; color: #7c3aed; }
+
+  .cargo-section { margin-bottom: 6px; }
+  .cargo-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #999; margin-bottom: 3px; }
+  .comp-bar { display: flex; gap: 4px; flex-wrap: wrap; }
+  .comp-item {
+    font-size: 10.5px; padding: 2px 7px; border-radius: 10px; font-weight: 600; white-space: nowrap;
+  }
+  /* TO Pack Type colours */
+  .saca    { background: #dbeafe; color: #1e40af; }
+  .pallet  { background: #d1fae5; color: #065f46; }
+  .volum   { background: #fce7f3; color: #9d174d; }
+  /* Size Type colours */
+  .bulky   { background: #fef9c3; color: #854d0e; }
+  .normal  { background: #f0fdf4; color: #166534; }
+  .quasi   { background: #fdf2f8; color: #9d174d; }
+  /* Absolute count */
+  .abs-count { background: #f5f3ff; color: #5b21b6; }
+
+  .total-line { font-size: 10px; color: #aaa; margin-top: 2px; }
+  .total-ok   { color: #16a34a; font-weight: 700; }
+
+  /* Results section */
+  .results-grid { display: grid; grid-template-columns: repeat(3,1fr); }
+  .results-grid.two { grid-template-columns: repeat(2,1fr); }
+  .result-card {
+    padding: 10px 14px; border-right: 1px solid #eff0f5; background: #fafbfc;
+  }
+  .result-card:last-child { border-right: none; }
+
+  .result-verdict {
+    font-size: 11px; font-weight: 700; border-radius: 6px;
+    padding: 3px 10px; display: inline-block; margin-bottom: 6px;
+  }
+  .eligible     { background: #e9fbe5; color: #15803d; }
+  .not-eligible { background: #fee2e2; color: #b91c1c; }
+
+  .result-dock-badge {
+    font-size: 10px; font-weight: 700; background: #e0f2fe; color: #0369a1;
+    padding: 1px 7px; border-radius: 10px; margin-bottom: 4px; display: inline-block;
+  }
+
+  .result-detail { font-size: 11px; color: #444; line-height: 1.6; }
+  .check { color: #16a34a; font-weight: 700; }
+  .cross { color: #dc2626; font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px dashed #e0e3e8; margin: 6px 0; }
+</style>
+</head>
+<body>
+
+<h1>4.1.1.4 — Dock Cargo Composition: Evaluation Examples</h1>
+<p class="subtitle">All compositions are complete per driver (TO Pack Type sums = 100%; Size Type sums = 100%). Examples 3–4 use Number Absolute evaluation.</p>
+
+<!-- ═══════════════════════════════════════════════
+     EXAMPLE 1 — % Percentage, both docks configured, group ignored
+     ═══════════════════════════════════════════════ -->
+<div class="example-block">
+  <div class="example-header">
+    <span class="example-badge">Example 1</span>
+    <span class="example-title">Both docks have their own Cargo Composition config — Group rule is ignored</span>
+    <span class="eval-mode-tag pct-tag">% Percentage</span>
+  </div>
+
+  <div class="top-grid">
+    <div class="top-col">
+      <h4>Context</h4>
+      <table class="config-table">
+        <tr><th>Docks:</th><td>OUT41, OUT42</td></tr>
+        <tr><th>Trip type:</th><td>LHfield</td></tr>
+        <tr><th>Vehicle types:</th><td>TRUCK-EXPRESSA, CARRETA, BITREM</td></tr>
+        <tr><th>Group:</th><td>Group A (has cargo rule — ignored)</td></tr>
+      </table>
+    </div>
+    <div class="top-col">
+      <h4>Dock Configuration</h4>
+      <table class="config-table">
+        <tr>
+          <th>OUT41 — Identification:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; Trip: LHfield &nbsp;|&nbsp; Vehicle: TRUCK-EXPRESSA</td>
+        </tr>
+        <tr>
+          <th>OUT41 — Cargo Composition:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; <span class="rule-pill"><strong>Saca ≥ 60%</strong></span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>OUT42 — Identification:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; Trip: LHfield &nbsp;|&nbsp; Vehicle: CARRETA, BITREM</td>
+        </tr>
+        <tr>
+          <th>OUT42 — Cargo Composition:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; <span class="rule-pill"><strong>Pallet ≥ 25%</strong></span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>Group A — Cargo:</th>
+          <td><span class="badge-disabled">Ignored</span> <small style="color:#aaa"> — dock config takes priority</small></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">Driver Data</div>
+  <div class="drivers-section">
+    <div class="drivers-grid">
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver A</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">TRUCK-EXPRESSA</span>
+          <span class="meta-chip trip">LHfield</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item saca">Saca 65%</span>
+            <span class="comp-item pallet">Pallet 25%</span>
+            <span class="comp-item volum">Volumoso 10%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">65 + 25 + 10 = 100% ✓</span></div>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item bulky">Bulky 15%</span>
+            <span class="comp-item normal">Normal 70%</span>
+            <span class="comp-item quasi">Quasi-bulky 15%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">15 + 70 + 15 = 100% ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver B</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">CARRETA</span>
+          <span class="meta-chip trip">LHfield</span>
+          <span class="meta-chip">Dest: 7203</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item pallet">Pallet 45%</span>
+            <span class="comp-item saca">Saca 25%</span>
+            <span class="comp-item volum">Volumoso 30%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">45 + 25 + 30 = 100% ✓</span></div>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item bulky">Bulky 40%</span>
+            <span class="comp-item normal">Normal 45%</span>
+            <span class="comp-item quasi">Quasi-bulky 15%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">40 + 45 + 15 = 100% ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver C</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">BITREM</span>
+          <span class="meta-chip trip">LHfield</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item saca">Saca 55%</span>
+            <span class="comp-item pallet">Pallet 30%</span>
+            <span class="comp-item volum">Volumoso 15%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">55 + 30 + 15 = 100% ✓</span></div>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item bulky">Bulky 20%</span>
+            <span class="comp-item normal">Normal 60%</span>
+            <span class="comp-item quasi">Quasi-bulky 20%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">20 + 60 + 20 = 100% ✓</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section-label">Matching Result</div>
+  <div class="results-grid">
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> TRUCK-EXPRESSA + LHfield<br>
+        Saca 65% <span class="check">✓</span> (≥ 60%)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> TRUCK-EXPRESSA not in OUT42 rule (CARRETA, BITREM only)
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> CARRETA not in OUT41 rule (TRUCK-EXPRESSA only)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> CARRETA + LHfield<br>
+        Pallet 45% <span class="check">✓</span> (≥ 25%)
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> BITREM not in OUT41 rule (TRUCK-EXPRESSA only)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> BITREM + LHfield<br>
+        Pallet 30% <span class="check">✓</span> (≥ 25%)
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     EXAMPLE 2 — % Percentage, Dock ID ON + Dock Cargo OFF → group fallback
+     ═══════════════════════════════════════════════ -->
+<div class="example-block">
+  <div class="example-header">
+    <span class="example-badge">Example 2</span>
+    <span class="example-title">Dock Identification ON, Dock Cargo Composition OFF — falls back to Group rule</span>
+    <span class="eval-mode-tag pct-tag">% Percentage</span>
+  </div>
+
+  <div class="top-grid">
+    <div class="top-col">
+      <h4>Context</h4>
+      <table class="config-table">
+        <tr><th>Docks:</th><td>OUT41, OUT42</td></tr>
+        <tr><th>Trip types:</th><td>LHfield, LHdirect</td></tr>
+        <tr><th>Vehicle types:</th><td>TRUCK-EXPRESSA, CARRETA</td></tr>
+        <tr><th>Group:</th><td>Group A</td></tr>
+      </table>
+    </div>
+    <div class="top-col">
+      <h4>Dock &amp; Group Configuration</h4>
+      <table class="config-table">
+        <tr>
+          <th>OUT41 — Identification:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; Trip: LHfield &nbsp;|&nbsp; Vehicle: TRUCK-EXPRESSA</td>
+        </tr>
+        <tr>
+          <th>OUT41 — Cargo Composition:</th>
+          <td><span class="badge-disabled">OFF</span> → <span class="badge-fallback">Group fallback</span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>OUT42 — Identification:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; Trip: LHfield &nbsp;|&nbsp; Vehicle: CARRETA &nbsp;|&nbsp; Dest: 7203</td>
+        </tr>
+        <tr>
+          <th>OUT42 — Cargo Composition:</th>
+          <td><span class="badge-disabled">OFF</span> → <span class="badge-fallback">Group fallback</span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>Group A — Cargo:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; <span class="rule-pill"><strong>Volumoso ≥ 40%</strong></span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">Driver Data</div>
+  <div class="drivers-section">
+    <div class="drivers-grid">
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver A</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">TRUCK-EXPRESSA</span>
+          <span class="meta-chip trip">LHfield</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item saca">Saca 60%</span>
+            <span class="comp-item pallet">Pallet 25%</span>
+            <span class="comp-item volum">Volumoso 15%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">60 + 25 + 15 = 100% ✓</span></div>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item bulky">Bulky 12%</span>
+            <span class="comp-item normal">Normal 70%</span>
+            <span class="comp-item quasi">Quasi-bulky 18%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">12 + 70 + 18 = 100% ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver B</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">CARRETA</span>
+          <span class="meta-chip trip">LHfield</span>
+          <span class="meta-chip">Dest: 7203</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item volum">Volumoso 45%</span>
+            <span class="comp-item saca">Saca 30%</span>
+            <span class="comp-item pallet">Pallet 25%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">45 + 30 + 25 = 100% ✓</span></div>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item bulky">Bulky 42%</span>
+            <span class="comp-item normal">Normal 43%</span>
+            <span class="comp-item quasi">Quasi-bulky 15%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">42 + 43 + 15 = 100% ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver C</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">TRUCK-EXPRESSA</span>
+          <span class="meta-chip trip">LHdirect</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item saca">Saca 50%</span>
+            <span class="comp-item pallet">Pallet 30%</span>
+            <span class="comp-item volum">Volumoso 20%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">50 + 30 + 20 = 100% ✓</span></div>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type (100%)</div>
+          <div class="comp-bar">
+            <span class="comp-item bulky">Bulky 10%</span>
+            <span class="comp-item normal">Normal 72%</span>
+            <span class="comp-item quasi">Quasi-bulky 18%</span>
+          </div>
+          <div class="total-line"><span class="total-ok">10 + 72 + 18 = 100% ✓</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section-label">Matching Result</div>
+  <div class="results-grid">
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> TRUCK-EXPRESSA + LHfield<br>
+        Cargo → Group A: Volumoso 15% <span class="cross">✗</span> (need ≥ 40%)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> TRUCK-EXPRESSA not in OUT42 (CARRETA only)
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> CARRETA not in OUT41 (TRUCK-EXPRESSA only)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> CARRETA + LHfield + Dest 7203<br>
+        Cargo → Group A: Volumoso 45% <span class="check">✓</span> (≥ 40%)
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> Trip LHdirect does not match OUT41 (LHfield only)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> Trip LHdirect does not match OUT42 (LHfield only)
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     EXAMPLE 3 — NUMBER ABSOLUTE, dock cargo + group fallback per dock
+     ═══════════════════════════════════════════════ -->
+<div class="example-block">
+  <div class="example-header">
+    <span class="example-badge">Example 3</span>
+    <span class="example-title">Number Absolute — OUT41 uses dock-level rule; OUT42 Cargo OFF → Group fallback</span>
+    <span class="eval-mode-tag abs-tag"># Number Absolute</span>
+  </div>
+
+  <div class="top-grid">
+    <div class="top-col">
+      <h4>Context</h4>
+      <table class="config-table">
+        <tr><th>Docks:</th><td>OUT41, OUT42</td></tr>
+        <tr><th>Trip type:</th><td>LHfield</td></tr>
+        <tr><th>Vehicle types:</th><td>CARRETA, TRUCK-EXPRESSA</td></tr>
+        <tr><th>Group:</th><td>Group B</td></tr>
+      </table>
+    </div>
+    <div class="top-col">
+      <h4>Dock &amp; Group Configuration</h4>
+      <table class="config-table">
+        <tr>
+          <th>OUT41 — Identification:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; Trip: LHfield &nbsp;|&nbsp; Vehicle: CARRETA</td>
+        </tr>
+        <tr>
+          <th>OUT41 — Cargo Composition:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; <span class="rule-pill"><strong>Saca TOs ≥ 40</strong></span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>OUT42 — Identification:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; Trip: LHfield &nbsp;|&nbsp; Vehicle: CARRETA</td>
+        </tr>
+        <tr>
+          <th>OUT42 — Cargo Composition:</th>
+          <td><span class="badge-disabled">OFF</span> → <span class="badge-fallback">Group fallback</span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>Group B — Cargo:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; <span class="rule-pill"><strong>Pallet TOs ≥ 15</strong></span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">Driver Data — Absolute TO counts (Saca + Pallet + Volumoso = Total TOs)</div>
+  <div class="drivers-section">
+    <div class="drivers-grid">
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver A</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">CARRETA</span>
+          <span class="meta-chip trip">LHfield</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type — Total: 80 TOs</div>
+          <div class="comp-bar">
+            <span class="comp-item abs-count">Saca: 50 TOs</span>
+            <span class="comp-item abs-count">Pallet: 20 TOs</span>
+            <span class="comp-item abs-count">Volumoso: 10 TOs</span>
+          </div>
+          <div class="total-line"><span class="total-ok">50 + 20 + 10 = 80 TOs ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver B</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">CARRETA</span>
+          <span class="meta-chip trip">LHfield</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type — Total: 65 TOs</div>
+          <div class="comp-bar">
+            <span class="comp-item abs-count">Saca: 35 TOs</span>
+            <span class="comp-item abs-count">Pallet: 18 TOs</span>
+            <span class="comp-item abs-count">Volumoso: 12 TOs</span>
+          </div>
+          <div class="total-line"><span class="total-ok">35 + 18 + 12 = 65 TOs ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver C</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">TRUCK-EXPRESSA</span>
+          <span class="meta-chip trip">LHfield</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type — Total: 70 TOs</div>
+          <div class="comp-bar">
+            <span class="comp-item abs-count">Saca: 45 TOs</span>
+            <span class="comp-item abs-count">Pallet: 16 TOs</span>
+            <span class="comp-item abs-count">Volumoso: 9 TOs</span>
+          </div>
+          <div class="total-line"><span class="total-ok">45 + 16 + 9 = 70 TOs ✓</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section-label">Matching Result</div>
+  <div class="results-grid">
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> CARRETA + LHfield<br>
+        Saca 50 TOs <span class="check">✓</span> (≥ 40)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> CARRETA + LHfield<br>
+        Cargo → Group B: Pallet 20 TOs <span class="check">✓</span> (≥ 15)
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> CARRETA + LHfield<br>
+        Saca 35 TOs <span class="cross">✗</span> (need ≥ 40)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> CARRETA + LHfield<br>
+        Cargo → Group B: Pallet 18 TOs <span class="check">✓</span> (≥ 15)
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> TRUCK-EXPRESSA not in OUT41 rule (CARRETA only)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> TRUCK-EXPRESSA not in OUT42 rule (CARRETA only)
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     EXAMPLE 4 — NUMBER ABSOLUTE, both docks Cargo OFF → full group fallback
+     ═══════════════════════════════════════════════ -->
+<div class="example-block">
+  <div class="example-header">
+    <span class="example-badge">Example 4</span>
+    <span class="example-title">Number Absolute — both docks' Cargo Composition OFF, Group C rule applies to all</span>
+    <span class="eval-mode-tag abs-tag"># Number Absolute</span>
+  </div>
+
+  <div class="top-grid">
+    <div class="top-col">
+      <h4>Context</h4>
+      <table class="config-table">
+        <tr><th>Docks:</th><td>OUT41, OUT42</td></tr>
+        <tr><th>Trip type:</th><td>LHdirect</td></tr>
+        <tr><th>Vehicle types:</th><td>CARRETA, TRUCK-EXPRESSA</td></tr>
+        <tr><th>Group:</th><td>Group C</td></tr>
+      </table>
+    </div>
+    <div class="top-col">
+      <h4>Dock &amp; Group Configuration</h4>
+      <table class="config-table">
+        <tr>
+          <th>OUT41 — Identification:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; Trip: LHdirect &nbsp;|&nbsp; Vehicle: CARRETA</td>
+        </tr>
+        <tr>
+          <th>OUT41 — Cargo Composition:</th>
+          <td><span class="badge-disabled">OFF</span> → <span class="badge-fallback">Group fallback</span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>OUT42 — Identification:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; Trip: LHdirect &nbsp;|&nbsp; Vehicle: TRUCK-EXPRESSA</td>
+        </tr>
+        <tr>
+          <th>OUT42 — Cargo Composition:</th>
+          <td><span class="badge-disabled">OFF</span> → <span class="badge-fallback">Group fallback</span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>Group C — Cargo:</th>
+          <td><span class="badge-enabled">ON</span> &nbsp; <span class="rule-pill"><strong>Bulky Orders ≥ 120</strong></span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">Driver Data — Absolute order counts (Bulky + Normal + Quasi-bulky = Total Orders)</div>
+  <div class="drivers-section">
+    <div class="drivers-grid">
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver A</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">CARRETA</span>
+          <span class="meta-chip trip">LHdirect</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type — Total: 380 Orders</div>
+          <div class="comp-bar">
+            <span class="comp-item abs-count">Bulky: 145</span>
+            <span class="comp-item abs-count">Normal: 180</span>
+            <span class="comp-item abs-count">Quasi-bulky: 55</span>
+          </div>
+          <div class="total-line"><span class="total-ok">145 + 180 + 55 = 380 ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver B</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">CARRETA</span>
+          <span class="meta-chip trip">LHfield</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type — Total: 420 Orders</div>
+          <div class="comp-bar">
+            <span class="comp-item abs-count">Bulky: 218</span>
+            <span class="comp-item abs-count">Normal: 147</span>
+            <span class="comp-item abs-count">Quasi-bulky: 55</span>
+          </div>
+          <div class="total-line"><span class="total-ok">218 + 147 + 55 = 420 ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver C</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">TRUCK-EXPRESSA</span>
+          <span class="meta-chip trip">LHdirect</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">Size Type — Total: 350 Orders</div>
+          <div class="comp-bar">
+            <span class="comp-item abs-count">Bulky: 154</span>
+            <span class="comp-item abs-count">Normal: 147</span>
+            <span class="comp-item abs-count">Quasi-bulky: 49</span>
+          </div>
+          <div class="total-line"><span class="total-ok">154 + 147 + 49 = 350 ✓</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section-label">Matching Result</div>
+  <div class="results-grid">
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> CARRETA + LHdirect<br>
+        Cargo → Group C: Bulky 145 <span class="check">✓</span> (≥ 120)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> CARRETA not in OUT42 rule (TRUCK-EXPRESSA only)
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> Trip LHfield does not match OUT41 (LHdirect only)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> Trip LHfield does not match OUT42 (LHdirect only)
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41</span><br>
+      <span class="result-verdict not-eligible">NOT ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="cross">✗</span> TRUCK-EXPRESSA not in OUT41 rule (CARRETA only)
+      </div>
+      <hr class="divider">
+      <span class="result-dock-badge">OUT42</span><br>
+      <span class="result-verdict eligible">ELIGIBLE</span>
+      <div class="result-detail">
+        ID <span class="check">✓</span> TRUCK-EXPRESSA + LHdirect<br>
+        Cargo → Group C: Bulky 154 <span class="check">✓</span> (≥ 120)
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     EXAMPLE 5 — No restriction (Dock ID OFF, no group match)
+     ═══════════════════════════════════════════════ -->
+<div class="example-block">
+  <div class="example-header">
+    <span class="example-badge">Example 5</span>
+    <span class="example-title">No cargo restriction — Dock Identification OFF and no matching Group</span>
+    <span class="eval-mode-tag none-tag">No Restriction</span>
+  </div>
+
+  <div class="top-grid">
+    <div class="top-col">
+      <h4>Context</h4>
+      <table class="config-table">
+        <tr><th>Docks:</th><td>OUT41, OUT42</td></tr>
+        <tr><th>Vehicle types:</th><td>VAN, TRUCK-EXPRESSA</td></tr>
+        <tr><th>Group:</th><td>None matching these drivers</td></tr>
+      </table>
+    </div>
+    <div class="top-col">
+      <h4>Dock &amp; Group Configuration</h4>
+      <table class="config-table">
+        <tr>
+          <th>OUT41 — Identification:</th>
+          <td><span class="badge-disabled">OFF</span> → no cargo evaluation triggered</td>
+        </tr>
+        <tr>
+          <th>OUT41 — Cargo Composition:</th>
+          <td><span class="badge-disabled">OFF</span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>OUT42 — Identification:</th>
+          <td><span class="badge-disabled">OFF</span> → no cargo evaluation triggered</td>
+        </tr>
+        <tr>
+          <th>OUT42 — Cargo Composition:</th>
+          <td><span class="badge-disabled">OFF</span></td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:5px;"></td></tr>
+        <tr>
+          <th>Group:</th>
+          <td><span class="badge-disabled">No match</span> — no group applies to these drivers</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">Driver Data</div>
+  <div class="drivers-section">
+    <div class="drivers-grid two">
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver A</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">VAN</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type — Total: 50 TOs</div>
+          <div class="comp-bar">
+            <span class="comp-item abs-count">Saca: 10</span>
+            <span class="comp-item abs-count">Pallet: 26</span>
+            <span class="comp-item abs-count">Volumoso: 14</span>
+          </div>
+          <div class="total-line"><span class="total-ok">10 + 26 + 14 = 50 TOs ✓</span></div>
+        </div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-tag">Driver B</div>
+        <div class="driver-meta">
+          <span class="meta-chip vtype">TRUCK-EXPRESSA</span>
+        </div>
+        <div class="cargo-section">
+          <div class="cargo-label">TO Pack Type — Total: 50 TOs</div>
+          <div class="comp-bar">
+            <span class="comp-item abs-count">Pallet: 30</span>
+            <span class="comp-item abs-count">Saca: 8</span>
+            <span class="comp-item abs-count">Volumoso: 12</span>
+          </div>
+          <div class="total-line"><span class="total-ok">30 + 8 + 12 = 50 TOs ✓</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section-label">Matching Result</div>
+  <div class="results-grid two">
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41 &amp; OUT42</span><br>
+      <span class="result-verdict eligible">ELIGIBLE — both docks</span>
+      <div class="result-detail">
+        Identification OFF on both docks → no cargo rule applied.<br>
+        No matching group → no restriction.<br>
+        Driver A can be assigned to any dock.
+      </div>
+    </div>
+    <div class="result-card">
+      <span class="result-dock-badge">OUT41 &amp; OUT42</span><br>
+      <span class="result-verdict eligible">ELIGIBLE — both docks</span>
+      <div class="result-detail">
+        Identification OFF on both docks → no cargo rule applied.<br>
+        No matching group → no restriction.<br>
+        Driver B can be assigned to any dock.
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

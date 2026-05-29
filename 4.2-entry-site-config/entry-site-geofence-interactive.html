@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>YMS – Entry Site Geofence Config · Interactive Mockup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#e8eaf0;display:flex;align-items:flex-start;justify-content:center;padding:20px;font-family:'Segoe UI',Arial,sans-serif;}
+.scene-wrap{border-radius:10px;box-shadow:0 6px 32px rgba(0,0,0,0.22);overflow:hidden;}
+#scene{width:1920px;height:1080px;transform-origin:top left;background:#f0f2f5;display:flex;flex-direction:column;position:relative;}
+.view{display:none;flex-direction:column;height:100%;}
+.view.active{display:flex;}
+
+/* SHARED */
+.topbar{height:56px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 28px;gap:14px;flex-shrink:0;}
+.bread{font-size:15px;color:#718096;display:flex;align-items:center;gap:8px;}
+.bread .cur{color:#1a202c;font-weight:500;}
+.bread-sep{color:#cbd5e0;}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.btn-red{background:#EE4D2D;color:#fff;border:none;border-radius:4px;padding:9px 20px;font-size:14px;cursor:pointer;font-weight:500;}
+.btn-outline{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:4px;padding:9px 16px;font-size:14px;cursor:pointer;}
+.btn-green{background:#38a169;color:#fff;border:none;border-radius:4px;padding:9px 20px;font-size:14px;cursor:pointer;font-weight:500;}
+.lnk{color:#3182ce;font-size:14px;cursor:pointer;text-decoration:none;background:none;border:none;padding:0;}
+.lnk:hover{text-decoration:underline;}
+.sep{color:#d0d0d0;margin:0 5px;}
+
+/* SIDEBAR */
+.sb{width:240px;background:#1a1f36;flex-shrink:0;display:flex;flex-direction:column;}
+.sb-logo{padding:20px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sb-logo .sp{color:#fff;font-size:24px;font-weight:700;}
+.sb-logo .xp{color:#EE4D2D;}
+.sb-uattag{background:#EE4D2D;color:#fff;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:5px;}
+.sb-station{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;color:#8892b0;}
+.sb-sec{font-size:10px;color:#4a5568;padding:14px 20px 5px;text-transform:uppercase;letter-spacing:0.7px;}
+.sb-item{padding:12px 20px;font-size:14px;color:#8892b0;border-left:3px solid transparent;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.sb-item:hover{background:rgba(255,255,255,0.04);}
+.sb-item.act{color:#fff;background:rgba(238,77,45,0.15);border-left-color:#EE4D2D;}
+
+/* MAIN CONTENT */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.content{flex:1;padding:24px 32px;overflow-y:auto;}
+.box{background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.box-hdr{display:flex;align-items:center;gap:8px;padding:16px 22px;border-bottom:1px solid #f0f0f0;font-size:15px;font-weight:600;color:#1a202c;}
+.box-hdr::before{content:'';display:inline-block;width:4px;height:16px;background:#EE4D2D;border-radius:2px;}
+
+/* PAGE TABS */
+.page-tabs{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 28px;flex-shrink:0;}
+.ptab{padding:14px 20px;font-size:14px;color:#718096;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;}
+.ptab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:13px 16px;border-bottom:1px solid #e2e8f0;white-space:nowrap;}
+td{padding:13px 16px;border-bottom:1px solid #f5f5f5;color:#2d3748;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafcff;}
+
+/* BADGES */
+.badge-on{background:#e6f7ee;color:#276749;font-size:12px;padding:3px 10px;border-radius:10px;font-weight:500;}
+.badge-off{background:#f0f0f0;color:#718096;font-size:12px;padding:3px 10px;border-radius:10px;font-weight:500;}
+.badge-geo{display:inline-flex;align-items:center;gap:4px;background:#FFF3E0;color:#E65100;font-size:11px;padding:2px 9px;border-radius:10px;font-weight:500;border:1px solid #FFCC80;}
+.badge-no-geo{display:inline-flex;align-items:center;gap:4px;background:#f0f0f0;color:#a0aec0;font-size:11px;padding:2px 9px;border-radius:10px;font-weight:500;border:1px solid #e2e8f0;}
+.tgl{width:36px;height:20px;background:#e2e8f0;border-radius:10px;position:relative;cursor:pointer;display:inline-block;flex-shrink:0;}
+.tgl.on{background:#48bb78;}
+.tgl::after{content:'';width:14px;height:14px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,0.2);}
+.tgl.on::after{left:19px;}
+.btn-edit{background:#fff;border:1px solid #e2e8f0;color:#4a5568;border-radius:3px;padding:5px 14px;font-size:13px;cursor:pointer;}
+.btn-edit:hover{border-color:#EE4D2D;color:#EE4D2D;}
+
+/* ── MAP VIEW ── */
+.left-icons{width:54px;background:#1a1f36;display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:6px;flex-shrink:0;}
+.ico-btn{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;color:#8892b0;}
+.ico-btn.act{background:rgba(238,77,45,0.2);color:#EE4D2D;}
+.map-area{flex:1;position:relative;overflow:hidden;background:#e8edf0;}
+.map-toolbar{position:absolute;top:14px;left:14px;display:flex;gap:8px;z-index:10;}
+.map-btn{background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:8px 14px;font-size:13px;cursor:pointer;color:#4a5568;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.map-btn.active{background:#fff5f3;border-color:#EE4D2D;color:#EE4D2D;}
+.map-ctrl-wrap{position:absolute;bottom:50px;right:320px;display:flex;flex-direction:column;gap:4px;z-index:10;}
+.map-ctrl{width:36px;height:36px;background:#fff;border:1px solid #e2e8f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.map-tiles{position:absolute;bottom:14px;left:14px;background:#fff;border-radius:4px;border:1px solid #e2e8f0;display:flex;overflow:hidden;z-index:10;}
+.tile-opt{padding:7px 16px;font-size:13px;cursor:pointer;color:#718096;}
+.tile-opt.act{color:#EE4D2D;font-weight:500;}
+
+/* RIGHT PANEL - MAP */
+.rp{width:320px;background:#fff;border-left:1px solid #e2e8f0;display:flex;flex-direction:column;flex-shrink:0;}
+.rp-hdr{padding:16px 20px;border-bottom:1px solid #e2e8f0;}
+.rp-title{font-size:15px;font-weight:600;color:#1a202c;margin-bottom:3px;}
+.rp-sub{font-size:13px;color:#718096;}
+.rp-section{padding:16px 20px;border-bottom:1px solid #f0f0f0;}
+.rp-label{font-size:12px;color:#4a5568;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;}
+.rp-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:5px;cursor:pointer;margin-bottom:8px;font-size:14px;color:#4a5568;transition:all .12s;}
+.rp-option:hover{border-color:#EE4D2D;background:#fff5f3;color:#EE4D2D;}
+.rp-option.selected{border-color:#EE4D2D;background:#fff5f3;color:#EE4D2D;font-weight:500;}
+.rp-option input[type=radio]{accent-color:#EE4D2D;}
+.select-box{width:100%;border:1px solid #e2e8f0;border-radius:4px;padding:8px 12px;font-size:14px;color:#4a5568;background:#fff;cursor:pointer;margin-bottom:6px;}
+.select-box:focus{outline:none;border-color:#EE4D2D;}
+.hint-text{font-size:12px;color:#a0aec0;margin-top:4px;}
+.rp-footer{padding:16px 20px;margin-top:auto;display:flex;gap:10px;border-top:1px solid #f0f0f0;}
+.drawing-indicator{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(26,31,54,0.85);color:#fff;font-size:13px;padding:8px 20px;border-radius:20px;z-index:20;display:none;}
+.drawing-indicator.show{display:block;}
+
+/* OVERLAYS */
+.ovl{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;z-index:1000;}
+.ovl.open{display:flex;}
+.modal{background:#fff;border-radius:8px;box-shadow:0 16px 48px rgba(0,0,0,0.28);width:580px;overflow:hidden;}
+.modal-hdr{padding:22px 26px 0;display:flex;align-items:flex-start;gap:16px;}
+.modal-icon{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.modal-icon.err{background:#FFF0F0;}
+.modal-icon.suc{background:#F0FFF4;}
+.modal-title{font-size:18px;font-weight:600;color:#1a202c;margin-bottom:6px;}
+.modal-msg{font-size:14px;color:#718096;line-height:1.6;}
+.modal-body{margin:16px 26px;}
+.modal-detail-err{background:#FFF5F5;border:1px solid #FED7D7;border-radius:6px;padding:14px 16px;}
+.modal-detail-err p{font-size:13px;color:#C53030;line-height:1.6;}
+.modal-detail-suc{background:#F0FFF4;border:1px solid #9AE6B4;border-radius:6px;padding:14px 16px;}
+.modal-detail-suc p{font-size:13px;color:#276749;line-height:1.6;}
+.modal-footer{padding:16px 26px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid #f0f0f0;}
+
+/* HINT BAR */
+.hint-bar{background:#1a1f36;color:#aab4c8;font-size:13px;padding:8px 24px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.hint-bar .dot{width:8px;height:8px;border-radius:50%;background:#EE4D2D;flex-shrink:0;}
+
+/* Drawing mode overlay on map */
+.draw-overlay{position:absolute;inset:0;cursor:crosshair;z-index:15;display:none;}
+.draw-overlay.active{display:block;}
+</style>
+</head>
+<body>
+<div class="scene-wrap">
+<div id="scene">
+
+<!-- ══════════════════════════════════════
+     VIEW 1: ENTRY SITE LIST
+══════════════════════════════════════ -->
+<div class="view active" id="view-entry-list">
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <div class="sb">
+      <div class="sb-logo">
+        <span class="sp">Shopee<span class="xp">Xpress</span></span><span class="sb-uattag">UAT</span>
+        <div style="font-size:11px;color:#5a6380;margin-top:4px;">UAT_SoC_Santana ▾</div>
+      </div>
+      <div style="flex:1;">
+        <div class="sb-sec">Menu</div>
+        <div class="sb-item">▦ Dashboard</div>
+        <div class="sb-item act">🏢 Station Management</div>
+        <div class="sb-item">📍 Zone Management</div>
+        <div class="sb-item">🚛 LineHaul</div>
+        <div class="sb-item">🛠 Operation Support</div>
+        <div class="sb-item">💰 Finance</div>
+        <div class="sb-item">📦 Order Management</div>
+        <div class="sb-item">👥 Workforce Management</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="bread">
+          Station Management <span class="bread-sep">›</span>
+          <span class="cur">Queue & Dock Configurations</span>
+        </div>
+        <div class="topbar-r">
+          <button class="btn-red">Edit</button>
+        </div>
+      </div>
+      <div class="page-tabs">
+        <div class="ptab">Queue Dock Configurations</div>
+        <div class="ptab">Vehicle Capacity Control</div>
+        <div class="ptab act">Entry Site Configuration</div>
+        <div class="ptab">Automatic Queue Registration</div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="box-hdr">Entry Site Configuration</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Site</th>
+                <th>Status</th>
+                <th>Block Early Vehicles</th>
+                <th>Geofence</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1st Site</strong></td>
+                <td><span class="badge-on">Active</span></td>
+                <td><div class="tgl on"></div></td>
+                <td><span class="badge-geo" id="geo-1st">◉ Zone_P1_001</span></td>
+                <td><button class="btn-edit" onclick="openMapEdit('1st Site','Zone_P1_001',true)">Edit</button></td>
+              </tr>
+              <tr>
+                <td><strong>2nd Site</strong></td>
+                <td><span class="badge-on">Active</span></td>
+                <td><div class="tgl"></div></td>
+                <td><span class="badge-no-geo" id="geo-2nd">— Not configured</span></td>
+                <td><button class="btn-edit" onclick="openMapEdit('2nd Site','',false)">Edit</button></td>
+              </tr>
+              <tr>
+                <td><strong>3rd Site</strong></td>
+                <td><span class="badge-on">Active</span></td>
+                <td><div class="tgl on"></div></td>
+                <td><span class="badge-no-geo" id="geo-3rd">— Not configured</span></td>
+                <td><button class="btn-edit" onclick="openMapEdit('3rd Site','',false)">Edit</button></td>
+              </tr>
+              <tr>
+                <td><strong>4th Site</strong></td>
+                <td><span class="badge-off">Inactive</span></td>
+                <td><div class="tgl"></div></td>
+                <td><span class="badge-no-geo">— Not configured</span></td>
+                <td><button class="btn-edit">Edit</button></td>
+              </tr>
+              <tr>
+                <td><strong>5th Site</strong></td>
+                <td><span class="badge-off">Inactive</span></td>
+                <td><div class="tgl"></div></td>
+                <td><span class="badge-no-geo">— Not configured</span></td>
+                <td><button class="btn-edit">Edit</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hint-bar"><span class="dot"></span>Clique em <strong>Edit</strong> em qualquer site para configurar a geofence no Zone Management · 1st Site já tem geofence · 2nd e 3rd estão sem configuração</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW 2: ZONE MANAGEMENT EDIT
+══════════════════════════════════════ -->
+<div class="view" id="view-map-edit">
+  <div class="topbar">
+    <div class="bread">
+      <a class="lnk" onclick="showView('view-entry-list')">Station Management</a>
+      <span class="bread-sep">›</span>
+      <a class="lnk" onclick="showView('view-entry-list')">Queue & Dock Configurations</a>
+      <span class="bread-sep">›</span>
+      <span class="cur" id="map-breadcrumb">Entry Site Geofence – 2nd Site</span>
+    </div>
+    <div class="topbar-r">
+      <button class="btn-outline" onclick="showView('view-entry-list')">Cancel</button>
+      <button class="btn-red" id="btn-save" onclick="trySave()">Save</button>
+    </div>
+  </div>
+
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <div class="left-icons">
+      <div class="ico-btn">⊞</div>
+      <div class="ico-btn act">📍</div>
+      <div class="ico-btn">🕐</div>
+      <div class="ico-btn">📋</div>
+      <div class="ico-btn">ℹ</div>
+    </div>
+
+    <div class="map-area" id="map-edit-area">
+      <div class="map-toolbar">
+        <div class="map-btn">Address ▾</div>
+        <div class="map-btn active" id="draw-tool-btn" onclick="toggleDrawMode()">✏ Draw Geofence</div>
+        <div class="map-btn">🔍</div>
+      </div>
+
+      <div class="drawing-indicator" id="draw-indicator">✏ Drawing mode active — click on the map to place points</div>
+      <div class="draw-overlay" id="draw-overlay" onclick="simulateDraw()"></div>
+
+      <!-- MAP SVG -->
+      <svg id="map-svg" width="100%" height="100%" viewBox="0 0 1540 1024" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1540" height="1024" fill="#e8edf0"/>
+        <!-- Streets -->
+        <rect x="0" y="200" width="1540" height="38" fill="#d0d8e0" opacity="0.7"/>
+        <rect x="0" y="420" width="1540" height="52" fill="#c8d2dc" opacity="0.8"/>
+        <rect x="0" y="650" width="1540" height="38" fill="#d0d8e0" opacity="0.7"/>
+        <rect x="0" y="840" width="1540" height="32" fill="#d0d8e0" opacity="0.6"/>
+        <rect x="150" y="0" width="33" height="1024" fill="#d0d8e0" opacity="0.7"/>
+        <rect x="380" y="0" width="48" height="1024" fill="#c8d2dc" opacity="0.8"/>
+        <rect x="700" y="0" width="38" height="1024" fill="#d0d8e0" opacity="0.7"/>
+        <rect x="1000" y="0" width="33" height="1024" fill="#d0d8e0" opacity="0.6"/>
+        <!-- Blocks -->
+        <rect x="200" y="250" width="170" height="160" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="440" y="250" width="250" height="160" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="740" y="250" width="250" height="160" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="200" y="485" width="170" height="155" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="440" y="485" width="250" height="155" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="740" y="485" width="250" height="155" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="1050" y="250" width="220" height="160" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <rect x="1050" y="485" width="220" height="155" rx="2" fill="#dde4ec" opacity="0.6"/>
+        <!-- Station Geofence -->
+        <polygon points="300,70 1100,70 1180,760 220,800" fill="rgba(255,152,0,0.08)" stroke="#FF9800" stroke-width="4" stroke-dasharray="12,6"/>
+        <text x="680" y="115" font-size="18" fill="#E65100" font-weight="600" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">Station Geofence boundary</text>
+        <!-- Existing P1 geofence (shown as reference) -->
+        <polygon id="geo-p1-ref" points="340,180 610,170 625,440 330,450" fill="rgba(49,130,206,0.1)" stroke="#3182ce" stroke-width="2" stroke-dasharray="6,4"/>
+        <text x="478" y="310" font-size="13" fill="#2b6cb0" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">1st Site (existing)</text>
+        <!-- New geofence being drawn - hidden initially -->
+        <polygon id="new-geo" points="650,180 920,170 935,445 640,455" fill="rgba(238,77,45,0.15)" stroke="#EE4D2D" stroke-width="3" style="display:none;"/>
+        <!-- Outside-boundary geofence (error simulation) -->
+        <polygon id="err-geo" points="900,60 1250,40 1320,500 880,520" fill="rgba(197,48,48,0.12)" stroke="#C53030" stroke-width="3" stroke-dasharray="8,4" style="display:none;"/>
+        <!-- Labels -->
+        <text x="800" y="448" font-size="13" fill="#8899aa" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">R. Agop Guzelian</text>
+        <text x="290" y="370" font-size="12" fill="#8899aa" font-family="Segoe UI,Arial,sans-serif" transform="rotate(-72,290,370)">R. Armênia</text>
+      </svg>
+
+      <div class="map-ctrl-wrap">
+        <div class="map-ctrl">⤢</div>
+        <div class="map-ctrl">+</div>
+        <div class="map-ctrl">−</div>
+      </div>
+      <div class="map-tiles">
+        <div class="tile-opt act">Map</div>
+        <div class="tile-opt">Satellite</div>
+        <div class="tile-opt">Light</div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="rp">
+      <div class="rp-hdr">
+        <div class="rp-title" id="rp-site-name">2nd Site – Geofence Config</div>
+        <div class="rp-sub">UAT_SoC_Santana</div>
+      </div>
+
+      <div class="rp-section">
+        <div class="rp-label">Geofence source</div>
+        <div class="rp-option selected" id="opt-select" onclick="selectMode('select')">
+          <input type="radio" name="geo-src" checked> Select existing geofence
+        </div>
+        <div class="rp-option" id="opt-draw" onclick="selectMode('draw')">
+          <input type="radio" name="geo-src"> Draw new geofence
+        </div>
+      </div>
+
+      <!-- SELECT EXISTING -->
+      <div class="rp-section" id="panel-select">
+        <div class="rp-label">Available geofences</div>
+        <select class="select-box" id="geo-select-dropdown" onchange="onGeoSelect(this.value)">
+          <option value="">— Select a geofence —</option>
+          <option value="Zone_P2_001">Zone_P2_001 (within boundary)</option>
+          <option value="Zone_EXT_999">Zone_EXT_999 (outside boundary ⚠)</option>
+        </select>
+        <div class="hint-text">Only geofences registered in Zone Management are listed</div>
+        <div id="selected-geo-preview" style="display:none;margin-top:12px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:5px;padding:10px 12px;font-size:13px;color:#2d3748;"></div>
+      </div>
+
+      <!-- DRAW NEW -->
+      <div class="rp-section" id="panel-draw" style="display:none;">
+        <div class="rp-label">Draw on map</div>
+        <div style="font-size:13px;color:#718096;line-height:1.6;margin-bottom:12px;">Use the drawing tool to outline the geofence area directly on the map. The area must be within the Station Geofence boundary.</div>
+        <button class="btn-red" style="width:100%;padding:10px;" onclick="activateDrawing()">✏ Start Drawing</button>
+        <div id="draw-status" style="display:none;margin-top:10px;background:#e6f7ee;border:1px solid #9ae6b4;border-radius:5px;padding:10px 12px;font-size:13px;color:#276749;">✓ Geofence drawn. Review on map and save.</div>
+        <div id="draw-status-err" style="display:none;margin-top:10px;background:#FFF5F5;border:1px solid #FED7D7;border-radius:5px;padding:10px 12px;font-size:13px;color:#C53030;">⚠ Area exceeds Station Geofence boundary.</div>
+      </div>
+
+      <div class="rp-footer">
+        <button class="btn-outline" style="flex:1;" onclick="showView('view-entry-list')">Cancel</button>
+        <button class="btn-red" style="flex:2;" id="btn-save-rp" onclick="trySave()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint-bar" id="map-hint-bar"><span class="dot"></span>Selecione uma geofence existente ou clique em <strong>Draw new geofence</strong> · <em>Zone_EXT_999</em> simula erro de área fora do limite · <em>Zone_P2_001</em> salva com sucesso</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     OVERLAYS
+══════════════════════════════════════ -->
+<!-- Error -->
+<div class="ovl" id="ovl-error" onclick="closeOvl('ovl-error')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-icon err">⚠️</div>
+      <div>
+        <div class="modal-title">Geofence outside Station boundary</div>
+        <div class="modal-msg">The selected geofence area is not fully contained within the Station Geofence for UAT_SoC_Santana.</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-detail-err">
+        <p>Please select or draw a geofence that fits within the Station Geofence boundary. Geofences that exceed the station area cannot be linked to entry sites.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeOvl('ovl-error')">Cancel</button>
+      <button class="btn-red" onclick="closeOvl('ovl-error')">OK, adjust</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success -->
+<div class="ovl" id="ovl-success" onclick="closeOvl('ovl-success')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-icon suc">✅</div>
+      <div>
+        <div class="modal-title" id="suc-title">Geofence linked successfully</div>
+        <div class="modal-msg" id="suc-msg">The geofence has been linked to the entry site.</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-detail-suc">
+        <p id="suc-detail">The system will now detect driver presence within this parking area.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-green" onclick="saveSuccess()">OK</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /scene -->
+</div><!-- /scene-wrap -->
+
+<script>
+// Scale
+(function(){
+  var scene = document.getElementById('scene');
+  var W = 1920, H = 1080;
+  var availW = window.innerWidth - 40;
+  var scale = Math.min(availW / W, 1);
+  scene.style.transform = 'scale(' + scale + ')';
+  document.querySelector('.scene-wrap').style.width = (W*scale)+'px';
+  document.querySelector('.scene-wrap').style.height = (H*scale)+'px';
+})();
+
+var currentSite = '';
+var currentGeo = '';
+var hasExistingGeo = false;
+var selectedGeoValue = '';
+var drawMode = 'select';
+var drawnGeo = false;
+var drawnOutside = false;
+
+function showView(id){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  resetDrawState();
+}
+
+function openMapEdit(site, geo, hasGeo){
+  currentSite = site;
+  currentGeo = geo;
+  hasExistingGeo = hasGeo;
+  selectedGeoValue = '';
+  drawnGeo = false;
+  drawnOutside = false;
+
+  document.getElementById('map-breadcrumb').textContent = 'Entry Site Geofence – ' + site;
+  document.getElementById('rp-site-name').textContent = site + ' – Geofence Config';
+
+  // Reset panel state
+  selectMode('select');
+  document.getElementById('geo-select-dropdown').value = hasGeo ? 'Zone_P2_001' : '';
+  document.getElementById('selected-geo-preview').style.display = hasGeo ? 'block' : 'none';
+  if(hasGeo){
+    document.getElementById('selected-geo-preview').innerHTML = '<strong>'+geo+'</strong> — within Station Geofence ✓';
+    document.getElementById('new-geo').style.display = 'block';
+    selectedGeoValue = 'Zone_P2_001';
+  } else {
+    document.getElementById('new-geo').style.display = 'none';
+  }
+
+  showView('view-map-edit');
+}
+
+function selectMode(mode){
+  drawMode = mode;
+  document.getElementById('opt-select').className = mode==='select' ? 'rp-option selected' : 'rp-option';
+  document.getElementById('opt-draw').className = mode==='draw' ? 'rp-option selected' : 'rp-option';
+  document.getElementById('panel-select').style.display = mode==='select' ? 'block' : 'none';
+  document.getElementById('panel-draw').style.display = mode==='draw' ? 'block' : 'none';
+  if(mode==='select'){
+    document.getElementById('draw-indicator').classList.remove('show');
+    document.getElementById('draw-overlay').classList.remove('active');
+    document.getElementById('draw-tool-btn').classList.remove('active');
+    document.getElementById('err-geo').style.display = 'none';
+    document.getElementById('new-geo').style.display = selectedGeoValue && selectedGeoValue !== 'Zone_EXT_999' ? 'block' : 'none';
+  }
+}
+
+function onGeoSelect(val){
+  selectedGeoValue = val;
+  var preview = document.getElementById('selected-geo-preview');
+  if(!val){
+    preview.style.display = 'none';
+    document.getElementById('new-geo').style.display = 'none';
+    document.getElementById('err-geo').style.display = 'none';
+    return;
+  }
+  preview.style.display = 'block';
+  if(val === 'Zone_EXT_999'){
+    preview.innerHTML = '<span style="color:#C53030;">⚠ <strong>'+val+'</strong> — outside Station Geofence boundary</span>';
+    document.getElementById('new-geo').style.display = 'none';
+    document.getElementById('err-geo').style.display = 'block';
+  } else {
+    preview.innerHTML = '<strong>'+val+'</strong> — within Station Geofence ✓';
+    document.getElementById('new-geo').style.display = 'block';
+    document.getElementById('err-geo').style.display = 'none';
+  }
+}
+
+function activateDrawing(){
+  document.getElementById('draw-indicator').classList.add('show');
+  document.getElementById('draw-overlay').classList.add('active');
+  document.getElementById('draw-tool-btn').classList.add('active');
+  document.getElementById('draw-status').style.display = 'none';
+  document.getElementById('draw-status-err').style.display = 'none';
+  document.getElementById('new-geo').style.display = 'none';
+  document.getElementById('err-geo').style.display = 'none';
+}
+
+function toggleDrawMode(){
+  if(drawMode === 'draw') activateDrawing();
+}
+
+var drawClickCount = 0;
+function simulateDraw(){
+  drawClickCount++;
+  if(drawClickCount % 2 === 1){
+    // First click: draw valid area
+    drawnGeo = true; drawnOutside = false;
+    document.getElementById('new-geo').style.display = 'block';
+    document.getElementById('err-geo').style.display = 'none';
+    document.getElementById('draw-indicator').classList.remove('show');
+    document.getElementById('draw-overlay').classList.remove('active');
+    document.getElementById('draw-status').style.display = 'block';
+    document.getElementById('draw-status-err').style.display = 'none';
+  } else {
+    // Second click: draw outside
+    drawnGeo = true; drawnOutside = true;
+    document.getElementById('new-geo').style.display = 'none';
+    document.getElementById('err-geo').style.display = 'block';
+    document.getElementById('draw-indicator').classList.remove('show');
+    document.getElementById('draw-overlay').classList.remove('active');
+    document.getElementById('draw-status').style.display = 'none';
+    document.getElementById('draw-status-err').style.display = 'block';
+  }
+}
+
+function trySave(){
+  // Check if there's something to save
+  if(drawMode === 'select'){
+    if(!selectedGeoValue){ alert('Please select a geofence first.'); return; }
+    if(selectedGeoValue === 'Zone_EXT_999'){
+      document.getElementById('ovl-error').classList.add('open'); return;
+    }
+    // Success
+    document.getElementById('suc-title').textContent = 'Geofence linked successfully';
+    document.getElementById('suc-msg').textContent = selectedGeoValue + ' has been linked to ' + currentSite + '.';
+    document.getElementById('suc-detail').textContent = 'The system will now track driver location within this parking area.';
+    document.getElementById('ovl-success').classList.add('open');
+  } else {
+    if(!drawnGeo){ alert('Please draw a geofence first.'); return; }
+    if(drawnOutside){
+      document.getElementById('ovl-error').classList.add('open'); return;
+    }
+    document.getElementById('suc-title').textContent = 'Geofence saved and linked';
+    document.getElementById('suc-msg').textContent = 'New geofence drawn and linked to ' + currentSite + '.';
+    document.getElementById('suc-detail').textContent = 'The system will now track driver location within this parking area.';
+    document.getElementById('ovl-success').classList.add('open');
+  }
+}
+
+function saveSuccess(){
+  document.getElementById('ovl-success').classList.remove('open');
+  // Update badge in list
+  var siteKey = currentSite.replace(' Site','').toLowerCase();
+  var badgeId = 'geo-' + siteKey;
+  var el = document.getElementById(badgeId);
+  if(el){
+    el.className = 'badge-geo';
+    var geoName = drawMode==='select' ? selectedGeoValue : 'Zone_NEW_'+currentSite.replace(' ','');
+    el.innerHTML = '◉ ' + geoName;
+  }
+  showView('view-entry-list');
+}
+
+function closeOvl(id){ document.getElementById(id).classList.remove('open'); }
+
+function resetDrawState(){
+  drawClickCount = 0; drawnGeo = false; drawnOutside = false;
+  var di = document.getElementById('draw-indicator');
+  var dov = document.getElementById('draw-overlay');
+  if(di) di.classList.remove('show');
+  if(dov) dov.classList.remove('active');
+}
+</script>
+</body>
+</html>

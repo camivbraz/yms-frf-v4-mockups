@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.2.3.4 — STA Check on Geofence Entry</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#f0f2f5;font-family:'Segoe UI',Arial,sans-serif;min-height:100%;padding:28px 24px;}
+
+.page-title{text-align:center;margin-bottom:24px;}
+.page-title h1{font-size:15px;font-weight:700;color:#1a202c;margin-bottom:3px;}
+.page-title p{font-size:11px;color:#718096;}
+
+.flow{display:flex;flex-direction:column;align-items:center;max-width:1100px;margin:0 auto;gap:0;}
+
+/* NODES */
+.node-trigger{background:#1a1f36;color:#fff;padding:9px 32px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;}
+.node-sys{background:#fff;border:2px solid #EE4D2D;border-radius:7px;padding:10px 16px;text-align:center;}
+.node-sys .t{font-size:12px;font-weight:600;color:#1a202c;}
+.node-sys .s{font-size:10px;color:#718096;margin-top:3px;}
+.node-ok{background:#f0fff4;border:1.5px solid #9ae6b4;border-radius:6px;padding:10px 14px;text-align:center;}
+.node-ok .t{font-size:12px;font-weight:700;color:#276749;}
+.node-ok .s{font-size:10px;color:#48bb78;margin-top:3px;}
+.node-pending{background:#fff7ed;border:1.5px solid #fb923c;border-radius:6px;padding:10px 14px;text-align:center;}
+.node-pending .t{font-size:12px;font-weight:700;color:#c2410c;}
+.node-pending .s{font-size:10px;color:#fb923c;margin-top:3px;}
+.node-skip{background:#f7fafc;border:1.5px solid #cbd5e0;border-radius:6px;padding:10px 14px;text-align:center;}
+.node-skip .t{font-size:12px;font-weight:600;color:#4a5568;}
+.node-skip .s{font-size:10px;color:#a0aec0;margin-top:3px;}
+.node-calc{background:#f0f4ff;border:1.5px solid #a3bffa;border-radius:6px;padding:10px 14px;text-align:center;}
+.node-calc .t{font-size:12px;font-weight:600;color:#3c366b;}
+.node-calc .s{font-size:10px;color:#667eea;margin-top:3px;}
+
+/* FIELDS CARD */
+.fields-card{background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:10px 14px;width:100%;}
+.fields-card .fc-title{font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;}
+.field-row{display:flex;align-items:flex-start;gap:6px;font-size:10px;color:#4a5568;margin-bottom:5px;line-height:1.35;}
+.field-row:last-child{margin-bottom:0;}
+.field-dot{width:6px;height:6px;border-radius:50%;background:#EE4D2D;flex-shrink:0;margin-top:3px;}
+
+/* ARROWS vertical */
+.arr{display:flex;flex-direction:column;align-items:center;}
+.arr-line{width:2px;background:#cbd5e0;height:14px;}
+.arr-head{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #cbd5e0;}
+.arr-line-red{background:#EE4D2D;}
+.arr-head-red{border-top-color:#EE4D2D;}
+
+/* BADGES */
+.yes{display:inline-block;background:#f0fff4;border:1px solid #9ae6b4;color:#276749;font-size:9px;font-weight:700;padding:1px 8px;border-radius:3px;white-space:nowrap;}
+.no{display:inline-block;background:#fff5f5;border:1px solid #fc8181;color:#c53030;font-size:9px;font-weight:700;padding:1px 8px;border-radius:3px;white-space:nowrap;}
+.neu{display:inline-block;background:#f7fafc;border:1px solid #cbd5e0;color:#4a5568;font-size:9px;font-weight:600;padding:1px 8px;border-radius:3px;white-space:nowrap;}
+
+/* STEP LABEL */
+.step-lbl{font-size:8px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:0.8px;background:#f0f2f5;padding:2px 8px;border-radius:3px;margin:3px 0;}
+
+/* VSPLIT */
+.vsplit{display:flex;width:100%;align-items:flex-start;}
+.vsplit .h{flex:1;height:2px;background:#cbd5e0;margin-top:8px;}
+.vsplit .v{width:2px;height:18px;background:#cbd5e0;}
+
+/* FORMULA BOX */
+.formula{background:#f0f4ff;border:1.5px solid #a3bffa;border-radius:6px;padding:10px 16px;text-align:center;}
+.formula .f-label{font-size:9px;font-weight:700;color:#667eea;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.formula .f-expr{font-size:13px;font-weight:700;color:#3c366b;margin-bottom:4px;}
+.formula .f-ex{font-size:10px;color:#667eea;}
+
+/* STATUS TABLE */
+.status-table{width:100%;border-collapse:collapse;font-size:11px;}
+.status-table th{background:#f7fafc;color:#4a5568;font-weight:700;text-align:left;padding:7px 12px;border:1px solid #e2e8f0;}
+.status-table td{padding:7px 12px;border:1px solid #e2e8f0;color:#2d3748;}
+.status-table tr:nth-child(even) td{background:#fafcff;}
+.st-assigned{color:#276749;font-weight:700;}
+.st-pending{color:#c2410c;font-weight:700;}
+.st-none{color:#718096;}
+
+/* SKIP ARROW (horizontal) */
+.skip-wrap{display:flex;align-items:center;gap:0;}
+.skip-line{height:2px;background:#cbd5e0;flex:1;}
+.skip-head{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #cbd5e0;}
+
+/* REF BOX */
+.ref-box{background:#faf5ff;border:1.5px solid #c4b5fd;border-radius:6px;padding:8px 14px;text-align:center;}
+.ref-box .t{font-size:11px;font-weight:600;color:#5b21b6;}
+.ref-box .s{font-size:9px;color:#7c3aed;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="page-title">
+  <h1>4.2.3.4 — STA Check on Geofence Entry</h1>
+  <p>Detailed system check flow when a vehicle enters the Station Geofence</p>
+</div>
+
+<div class="flow">
+
+  <!-- TRIGGER -->
+  <div class="node-trigger">Vehicle enters Station Geofence</div>
+  <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+  <!-- STEP 1: ARRIVAL TYPE READ -->
+  <div class="step-lbl">Step 1 — Arrival Type check</div>
+  <div style="width:100%;max-width:460px;">
+    <div class="node-sys" style="margin-bottom:8px;">
+      <div class="t">System reads Arrival Type from the driver's task</div>
+    </div>
+    <div class="fields-card">
+      <div class="fc-title">Field read from driver's task — path: <span style="background:#fef3c7;padding:1px 6px;border-radius:3px;color:#92400e;font-weight:700;">[path to be defined]</span></div>
+      <div class="field-row"><div class="field-dot"></div><strong>Arrival Type</strong>&nbsp;— can be LH Inbound, LH Outbound, or other operation types. STA check only applies to LH Inbound and LH Outbound.</div>
+    </div>
+  </div>
+  <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+  <!-- STEP 2: ARRIVAL TYPE CHECK -->
+  <div class="step-lbl">Step 2 — Arrival Type evaluation</div>
+  <div class="node-sys" style="min-width:380px;">
+    <div class="t">Is the Arrival Type LH Inbound or LH Outbound?</div>
+    <div class="s">STA check only applies to these two arrival types</div>
+  </div>
+
+  <!-- SPLIT: YES / NO -->
+  <div style="width:100%;max-width:860px;">
+    <div class="vsplit"><div class="h"></div><div class="v"></div><div class="h"></div></div>
+    <div style="display:flex;width:100%;justify-content:space-between;align-items:flex-start;gap:20px;">
+
+      <!-- YES: LH -->
+      <div style="flex:2;display:flex;flex-direction:column;align-items:center;">
+        <span class="yes">YES — LH Inbound or LH Outbound</span>
+        <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+        <!-- STEP 3: STA THRESHOLD CHECK -->
+        <div class="step-lbl">Step 3 — STA threshold check</div>
+        <div style="width:100%;">
+          <div class="node-sys" style="margin-bottom:8px;">
+            <div class="t">Is an STA threshold configured at station level for this arrival type?</div>
+            <div class="s">Reads from Vehicle Capacity Control — STA Threshold card</div>
+          </div>
+          <div class="fields-card">
+            <div class="fc-title">Field read from station config — Vehicle Capacity Control</div>
+            <div class="field-row"><div class="field-dot"></div><strong>STA LH Inbound</strong>&nbsp;or&nbsp;<strong>STA LH Outbound</strong>&nbsp;— value in minutes</div>
+          </div>
+        </div>
+
+        <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+        <!-- STEP 3b: LH TRIP DATA READ -->
+        <div class="step-lbl">Step 3b — LH Trip data retrieval</div>
+        <div style="width:100%;">
+          <div class="node-sys" style="margin-bottom:8px;">
+            <div class="t">System reads scheduled arrival time from the LH Trip</div>
+          </div>
+          <div class="fields-card">
+            <div class="fc-title">Field read from LH Trip — path: LineHaul &gt; Linehaul Trips</div>
+            <div class="field-row"><div class="field-dot"></div><strong>STA/STD</strong>&nbsp;— scheduled arrival time at the station · used to calculate the release time window</div>
+          </div>
+        </div>
+
+        <!-- SPLIT: CONFIGURED / NOT -->
+        <div style="width:100%;">
+          <div class="vsplit"><div class="h"></div><div class="v"></div><div class="h"></div></div>
+          <div style="display:flex;width:100%;justify-content:space-between;align-items:flex-start;gap:16px;">
+
+            <!-- THRESHOLD NOT CONFIGURED -->
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+              <span class="neu">No threshold configured</span>
+              <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+              <div class="node-skip" style="min-width:160px;">
+                <div class="t">STA check skipped</div>
+                <div class="s">No restriction applied</div>
+              </div>
+              <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+              <div class="ref-box" style="min-width:160px;">
+                <div class="t">→ 4.2.3.6</div>
+                <div class="s">Entry site assignment</div>
+              </div>
+            </div>
+
+            <!-- THRESHOLD CONFIGURED -->
+            <div style="flex:2;display:flex;flex-direction:column;align-items:center;">
+              <span class="yes">Threshold configured</span>
+              <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+              <!-- STEP 4: WINDOW CALCULATION -->
+              <div class="step-lbl">Step 4 — Window calculation</div>
+              <div class="formula" style="width:100%;margin-bottom:6px;">
+                <div class="f-label">Release time formula</div>
+                <div class="f-expr">Release time = Scheduled arrival − STA threshold</div>
+                <div class="f-ex">e.g. LH arrival 14:30 · STA = 60 min → Release time = 13:30</div>
+              </div>
+
+              <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+
+              <!-- STEP 5: ARRIVAL EVALUATION -->
+              <div class="step-lbl">Step 5 — Arrival time evaluation</div>
+              <div class="node-sys" style="width:100%;">
+                <div class="t">Current time ≥ Release time?</div>
+                <div class="s">Is the vehicle arriving within the STA window?</div>
+              </div>
+
+              <!-- SPLIT: within / outside -->
+              <div style="width:100%;">
+                <div class="vsplit"><div class="h"></div><div class="v"></div><div class="h"></div></div>
+                <div style="display:flex;width:100%;justify-content:space-between;align-items:flex-start;gap:12px;">
+
+                  <!-- WITHIN WINDOW -->
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+                    <span class="yes">YES — within window</span>
+                    <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+                    <div class="node-ok" style="width:100%;">
+                      <div class="t">Status: ASSIGNED</div>
+                      <div class="s">Proceeds to entry site check</div>
+                    </div>
+                    <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+                    <div class="ref-box" style="width:100%;">
+                      <div class="t">→ 4.2.3.6</div>
+                      <div class="s">Entry site assignment</div>
+                    </div>
+                  </div>
+
+                  <!-- OUTSIDE WINDOW -->
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+                    <span class="no">NO — arrived too early</span>
+                    <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+                    <div class="node-pending" style="width:100%;">
+                      <div class="t">Status: PENDING</div>
+                      <div class="s">Driver notified · system monitors until release time</div>
+                    </div>
+                    <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+                    <div class="ref-box" style="width:100%;border-color:#fb923c;background:#fff7ed;">
+                      <div class="t" style="color:#c2410c;">→ 4.2.3.5</div>
+                      <div class="s" style="color:#fb923c;">Early arrival monitoring</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- NO: not LH -->
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+        <span class="neu">NO — other operation type</span>
+        <div class="arr"><div class="arr-line" style="height:20px;"></div><div class="arr-head"></div></div>
+        <div class="node-skip" style="min-width:150px;">
+          <div class="t">STA check skipped</div>
+          <div class="s">Not applicable</div>
+        </div>
+        <div class="arr"><div class="arr-line"></div><div class="arr-head"></div></div>
+        <div class="ref-box" style="min-width:150px;">
+          <div class="t">→ 4.2.3.6</div>
+          <div class="s">Entry site assignment</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STATUS SUMMARY TABLE -->
+  <div style="height:32px;"></div>
+  <div style="width:100%;max-width:860px;">
+    <div style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;text-align:center;">Driver status summary</div>
+    <div style="background:#fff;border-radius:8px;border:1px solid #e2e8f0;overflow:hidden;">
+      <table class="status-table">
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>STA check executed?</th>
+            <th>Driver status</th>
+            <th>Next step</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Arrival Type is not LH Inbound or LH Outbound</td>
+            <td>No</td>
+            <td class="st-none">—</td>
+            <td>4.2.3.6 Entry site assignment</td>
+          </tr>
+          <tr>
+            <td>Arrival Type is LH · no STA threshold configured</td>
+            <td>No</td>
+            <td class="st-none">—</td>
+            <td>4.2.3.6 Entry site assignment</td>
+          </tr>
+          <tr>
+            <td>Arrival Type is LH · within STA window</td>
+            <td>Yes</td>
+            <td class="st-assigned">ASSIGNED</td>
+            <td>4.2.3.6 Entry site assignment</td>
+          </tr>
+          <tr>
+            <td>Arrival Type is LH · outside STA window (too early)</td>
+            <td>Yes</td>
+            <td class="st-pending">PENDING</td>
+            <td>4.2.3.5 Early arrival monitoring</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

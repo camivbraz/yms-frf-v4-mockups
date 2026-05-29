@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YMS – Entry Site Config</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#e8eaf0;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:16px;font-family:'Segoe UI',Arial,sans-serif;}
+.scene-wrap{overflow:hidden;position:relative;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.18);}
+#scene{width:1200px;height:820px;transform-origin:top left;position:relative;background:#f0f2f5;overflow:hidden;display:flex;flex-direction:column;}
+
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;overflow:hidden;}
+.sb{width:196px;background:#1a1f36;flex-shrink:0;color:#8892b0;}
+.sb-logo{padding:14px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sb-logo .sp{color:#fff;font-size:17px;font-weight:700;}
+.sb-logo .xp{color:#EE4D2D;}
+.sb-live{background:#EE4D2D;color:#fff;font-size:9px;padding:1px 4px;border-radius:2px;margin-left:3px;}
+.sb-sub{color:#5a6380;font-size:10px;margin-top:2px;}
+.sb-sec{font-size:9px;color:#4a5568;padding:10px 14px 3px;text-transform:uppercase;letter-spacing:0.5px;}
+.sb-item{padding:8px 14px;font-size:12px;color:#8892b0;border-left:2px solid transparent;}
+.sb-item.act{color:#fff;background:rgba(238,77,45,0.15);border-left-color:#EE4D2D;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;font-size:11px;color:#718096;flex-shrink:0;}
+.topbar a{color:#EE4D2D;text-decoration:none;}
+.topbar-r{margin-left:auto;font-size:11px;color:#718096;}
+
+/* ── TABS ── */
+.page-tabs{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 20px;flex-shrink:0;}
+.ptab{padding:11px 16px;font-size:12px;color:#718096;border-bottom:2px solid transparent;white-space:nowrap;}
+.ptab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:13px 18px;overflow-y:auto;}
+
+/* ── CARD (generic) ── */
+.box{background:#fff;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,0.07);margin-bottom:10px;}
+.box-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f0f0f0;}
+.box-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#1a202c;}
+.box-title::before{content:'';display:inline-block;width:3px;height:13px;background:#EE4D2D;border-radius:2px;}
+
+/* ── STA THRESHOLD CARD ── */
+.sta-body{display:flex;align-items:center;gap:32px;padding:10px 14px;}
+.sta-field{display:flex;flex-direction:column;gap:2px;}
+.sta-field label{font-size:9px;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.sta-val{font-size:13px;font-weight:600;color:#2d3748;}
+.sta-edit-fields{display:flex;align-items:center;gap:6px;}
+.sta-inp{border:1px solid #e2e8f0;border-radius:3px;padding:5px 8px;font-size:12px;width:60px;text-align:center;color:#2d3748;}
+.sta-inp:focus{outline:none;border-color:#EE4D2D;}
+.sta-unit{font-size:11px;color:#718096;}
+.btn-sm{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:3px;padding:4px 12px;font-size:11px;cursor:pointer;}
+.btn-sm-red{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:4px 12px;font-size:11px;cursor:pointer;}
+
+/* ── TOGGLE ── */
+.tgl{width:30px;height:16px;background:#e2e8f0;border-radius:8px;position:relative;flex-shrink:0;display:inline-block;cursor:pointer;transition:background .2s;}
+.tgl.on{background:#48bb78;}
+.tgl::after{content:'';width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,0.2);}
+.tgl.on::after{left:16px;}
+.tgl.dis{opacity:0.4;pointer-events:none;}
+
+/* ── SETTING ROW (used in STA + QSDC) ── */
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;}
+.set-row + .set-row{border-top:1px solid #f5f5f5;}
+.set-lbl{font-size:11px;color:#4a5568;font-weight:500;flex:1;}
+.set-lbl small{display:block;font-size:10px;color:#a0aec0;font-weight:400;margin-top:1px;max-width:460px;}
+.set-r{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.set-val{font-size:12px;font-weight:600;color:#2d3748;}
+.set-inp{border:1px solid #e2e8f0;border-radius:3px;padding:4px 6px;font-size:12px;width:56px;text-align:center;}
+.set-inp:focus{outline:none;border-color:#EE4D2D;}
+
+/* ── FILTERS ── */
+.filter-wrap{display:flex;align-items:center;gap:7px;padding:10px 14px;flex-wrap:wrap;}
+.fi{display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:3px;height:27px;overflow:hidden;background:#fff;}
+.fi-l{padding:0 7px;font-size:10px;color:#4a5568;border-right:1px solid #e2e8f0;white-space:nowrap;height:100%;display:flex;align-items:center;background:#f7fafc;}
+.fi select{border:none;outline:none;padding:0 5px;font-size:10px;color:#2d3748;background:transparent;height:100%;width:84px;}
+.btn-srch{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:0 12px;height:27px;font-size:11px;cursor:pointer;font-weight:500;}
+.btn-rst{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:3px;padding:0 8px;height:27px;font-size:11px;cursor:pointer;}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.sec-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:#1a202c;}
+.sec-title::before{content:'';display:inline-block;width:3px;height:14px;background:#EE4D2D;border-radius:2px;}
+.sec-actions{display:flex;align-items:center;gap:6px;}
+.btn-act{background:#fff;color:#2d3748;border:1px solid #e2e8f0;border-radius:3px;padding:4px 10px;font-size:10px;cursor:pointer;font-weight:500;}
+
+/* ── TABLE ── */
+.tbl-wrap{background:#fff;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,0.07);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid #e2e8f0;white-space:nowrap;font-size:10px;}
+td{padding:8px 10px;border-bottom:1px solid #f5f5f5;color:#2d3748;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafcff;}
+.badge-on{background:#e6f7ee;color:#276749;font-size:9px;padding:1px 6px;border-radius:6px;font-weight:500;}
+.badge-off{background:#f0f0f0;color:#718096;font-size:9px;padding:1px 6px;border-radius:6px;font-weight:500;}
+.dot-on{color:#48bb78;font-size:10px;}
+.dot-off{color:#a0aec0;font-size:10px;}
+.geo-chip{display:inline-flex;align-items:center;background:#f0fff4;color:#276749;font-size:9px;padding:2px 6px;border-radius:6px;border:1px solid #9ae6b4;}
+.geo-none{display:inline-flex;align-items:center;background:#fff5f5;color:#c53030;font-size:9px;padding:2px 6px;border-radius:6px;border:1px solid #fed7d7;}
+.pool-chip{display:inline-block;background:#fff0ed;color:#c53030;font-size:9px;padding:1px 5px;border-radius:6px;border:1px solid #feb2b2;margin:1px;}
+.v-chip{display:inline-block;background:#e6f3ff;color:#2b6cb0;font-size:9px;padding:1px 5px;border-radius:6px;border:1px solid #bee3f8;margin:1px;}
+.btn-ed{color:#3182ce;font-size:11px;background:none;border:none;cursor:pointer;}
+
+/* ── MODAL OVERLAY ── */
+.ovl{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-start;justify-content:center;padding-top:28px;z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;}
+.ovl.show{opacity:1;pointer-events:all;}
+.modal{width:580px;background:#fff;border-radius:6px;box-shadow:0 16px 48px rgba(0,0,0,0.28);display:flex;flex-direction:column;overflow:hidden;transform:scale(0.96);transition:transform .25s;max-height:760px;}
+.ovl.show .modal{transform:scale(1);}
+.mhdr{padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.mtit{font-size:13px;font-weight:600;color:#1a202c;}
+.mcls{background:#f7fafc;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;color:#718096;font-size:13px;}
+.mbdy{flex:1;overflow-y:auto;padding:13px 16px;}
+.mftr{padding:10px 16px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;}
+.btn-cnl{background:#fff;border:1px solid #e2e8f0;color:#4a5568;border-radius:3px;padding:5px 16px;font-size:11px;cursor:pointer;}
+.btn-cfm{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:5px 18px;font-size:11px;font-weight:500;cursor:pointer;}
+
+/* ── MODAL INTERNAL ── */
+.msec{margin-bottom:14px;}
+.msec-title{font-size:11px;font-weight:600;color:#2d3748;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:5px;}
+.msec-title::before{content:'';display:inline-block;width:2px;height:12px;background:#EE4D2D;border-radius:2px;}
+.mrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:14px;}
+.mlbl{font-size:11px;color:#4a5568;font-weight:500;}
+.mlbl small{display:block;font-size:10px;color:#a0aec0;font-weight:400;margin-top:1px;}
+.prereq{background:#FFF8F0;border:1px solid #F6AD55;border-radius:4px;padding:8px 11px;font-size:11px;color:#744210;display:flex;gap:7px;margin-bottom:10px;}
+
+/* ── GEO BOX (modal) ── */
+.geo-box{background:#f7fafc;border:1px solid #e2e8f0;border-radius:5px;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.geo-box-info{display:flex;flex-direction:column;gap:3px;}
+.geo-box-name{font-size:12px;font-weight:600;color:#2d3748;}
+.geo-box-meta{font-size:10px;color:#718096;}
+.btn-ghost{background:none;color:#3182ce;border:1px solid #bee3f8;border-radius:3px;padding:4px 10px;font-size:10px;cursor:pointer;}
+
+/* ── POOL BLOCKS ── */
+.pool-block{background:#f7fafc;border:1px solid #e2e8f0;border-radius:5px;padding:11px 12px;margin-bottom:8px;}
+.pool-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.pool-num{font-size:10px;font-weight:600;color:#EE4D2D;background:#fff0ed;border:1px solid #feb2b2;padding:1px 6px;border-radius:6px;}
+.pool-rm{background:none;border:none;color:#e53e3e;cursor:pointer;font-size:15px;line-height:1;}
+.pool-fields{display:flex;gap:10px;align-items:flex-start;}
+.pool-vagas{display:flex;flex-direction:column;gap:3px;}
+.pool-vagas label{font-size:9px;color:#718096;}
+.pool-vagas input{width:64px;border:1px solid #e2e8f0;border-radius:3px;padding:5px 6px;font-size:11px;text-align:center;}
+.pool-vagas input:focus{outline:none;border-color:#EE4D2D;}
+.pool-types{flex:1;display:flex;flex-direction:column;gap:3px;}
+.pool-types label{font-size:9px;color:#718096;}
+.pool-select{border:1px solid #e2e8f0;border-radius:3px;padding:5px 8px;font-size:10px;color:#4a5568;background:#fff;width:100%;}
+.pool-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.pchip{display:inline-flex;align-items:center;gap:3px;background:#fff0ed;color:#c53030;font-size:10px;padding:2px 7px;border-radius:8px;border:1px solid #feb2b2;}
+.pool-note{font-size:10px;color:#718096;margin-top:4px;font-style:italic;}
+.btn-addpool{background:#fff;border:1px dashed #e2e8f0;color:#4a5568;border-radius:4px;padding:8px;font-size:11px;cursor:pointer;width:100%;text-align:center;margin-top:4px;}
+.ninp{border:1px solid #e2e8f0;border-radius:3px;padding:5px 8px;font-size:12px;width:80px;text-align:center;color:#2d3748;}
+.ninp:focus{outline:none;border-color:#EE4D2D;}
+.cap-bar{height:7px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin:6px 0;}
+.cap-fill{height:100%;border-radius:3px;background:#48bb78;}
+.cap-info{display:flex;justify-content:space-between;font-size:10px;color:#718096;}
+
+/* ── ZONE MANAGEMENT FULLSCREEN ── */
+#zm-screen{display:none;position:absolute;inset:0;z-index:200;background:#f0f2f5;flex-direction:column;}
+#zm-screen.open{display:flex;}
+.zm-topbar{height:44px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 18px;gap:12px;flex-shrink:0;}
+.zm-back{display:flex;align-items:center;gap:5px;background:none;border:none;color:#3182ce;font-size:12px;cursor:pointer;font-weight:500;}
+.zm-back::before{content:'←';font-size:14px;}
+.zm-title{font-size:13px;font-weight:600;color:#1a202c;}
+.zm-layout{display:flex;flex:1;overflow:hidden;}
+.zm-sb{width:280px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;flex-shrink:0;}
+.zm-sb-hdr{padding:12px 14px;border-bottom:1px solid #e2e8f0;}
+.zm-sb-hdr h3{font-size:12px;font-weight:600;color:#1a202c;margin-bottom:3px;}
+.zm-sb-hdr p{font-size:10px;color:#718096;}
+.zm-info{background:#ebf4ff;border:1px solid #bee3f8;border-radius:3px;padding:7px 10px;font-size:10px;color:#2b6cb0;margin:8px 12px 0;}
+.zm-list{flex:1;overflow-y:auto;padding:10px;}
+.zm-item{border:1px solid #e2e8f0;border-radius:5px;padding:10px 12px;margin-bottom:7px;cursor:pointer;transition:all .15s;}
+.zm-item:hover{border-color:#3182ce;background:#ebf4ff;}
+.zm-item.sel{border-color:#3182ce;background:#ebf4ff;box-shadow:0 0 0 2px #bee3f8;}
+.zm-item-name{font-size:11px;font-weight:600;color:#2d3748;}
+.zm-item-meta{font-size:10px;color:#718096;margin-top:2px;}
+.zm-tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-top:3px;font-weight:500;}
+.zm-tag-linked{background:#bee3f8;color:#2b6cb0;border:1px solid #90cdf4;}
+.zm-tag-avail{background:#f0f0f0;color:#718096;border:1px solid #e2e8f0;}
+.zm-map{flex:1;position:relative;overflow:hidden;background:linear-gradient(135deg,#dde3ea 0%,#e8edf2 100%);}
+.zm-footer{padding:11px 16px;border-top:1px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:space-between;}
+.zm-sel-label{font-size:11px;color:#718096;}
+.poly-stn{fill:rgba(72,187,120,0.12);stroke:#48bb78;stroke-width:2;stroke-dasharray:6,3;}
+.poly-ent{fill:rgba(49,130,206,0.12);stroke:#3182ce;stroke-width:2;}
+.poly-ent.poly-sel{fill:rgba(49,130,206,0.28);stroke:#2b6cb0;stroke-width:3;}
+.geo-lbl{font-size:11px;fill:#2d3748;font-weight:600;font-family:sans-serif;}
+.geo-lbl-sm{font-size:9px;fill:#718096;font-family:sans-serif;}
+
+/* ── TOAST ── */
+.toast{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:#276749;color:#fff;border-radius:5px;padding:9px 18px;font-size:12px;font-weight:500;z-index:3000;box-shadow:0 4px 12px rgba(0,0,0,0.2);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* ── STEP LABEL ── */
+.step-lbl{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(26,31,54,0.88);color:#fff;border-radius:4px;padding:5px 14px;font-size:11px;z-index:9990;pointer-events:none;transition:opacity .3s;white-space:nowrap;}
+
+/* ── CURSOR ── */
+#cur{width:14px;height:14px;background:rgba(15,15,25,0.82);border-radius:50% 50% 50% 0;transform:rotate(-45deg);position:absolute;pointer-events:none;z-index:9999;transition:left .5s cubic-bezier(.25,.46,.45,.94),top .5s cubic-bezier(.25,.46,.45,.94);}
+#ring{width:24px;height:24px;border-radius:50%;border:2px solid #EE4D2D;position:absolute;pointer-events:none;z-index:9998;opacity:0;}
+@keyframes cr{0%{opacity:1;transform:translate(-5px,-5px)scale(.4);}100%{opacity:0;transform:translate(-5px,-5px)scale(1.7);}}
+.ringing{animation:cr .4s ease-out forwards;}
+</style>
+</head>
+<body>
+<div class="scene-wrap" id="swrap">
+<div id="scene">
+
+  <div class="layout">
+
+    <!-- ── SIDEBAR ── -->
+    <div class="sb">
+      <div class="sb-logo">
+        <div><span class="sp">Shopee</span><span class="xp">Xpress</span><span class="sb-live">UAT</span></div>
+        <div class="sb-sub">UAT_SoC_Santana</div>
+      </div>
+      <div class="sb-sec">Menu</div>
+      <div class="sb-item">▦ Dashboard</div>
+      <div class="sb-item act">🏢 Station Management</div>
+      <div class="sb-item">📍 Zone Management</div>
+      <div class="sb-item">🚛 LineHaul</div>
+      <div class="sb-item">🛠 Operation Support</div>
+    </div>
+
+    <!-- ── MAIN ── -->
+    <div class="main">
+
+      <div class="topbar">
+        Station Management
+        <span style="margin:0 5px;color:#cbd5e0;">/</span>
+        <a>Queue &amp; Dock Configurations</a>
+        <div class="topbar-r">🔔 &nbsp; EN ▾ &nbsp; camila.braz ▾</div>
+      </div>
+
+      <div class="page-tabs">
+        <div class="ptab">Queue Prioritisation</div>
+        <div class="ptab">Automatic Assignment Logic</div>
+        <div class="ptab">Geofencing Registration</div>
+        <div class="ptab act">Vehicle Capacity Control</div>
+      </div>
+
+      <div class="content" id="main-content">
+
+        <!-- ══ STA THRESHOLD CARD ══ -->
+        <div class="box" id="sta-card">
+          <div class="box-hdr">
+            <div class="box-title">STA Threshold</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:10px;color:#a0aec0;background:#f7fafc;border:1px solid #e2e8f0;border-radius:3px;padding:2px 7px;">Applies to: LH Inbound · LH Outbound</span>
+              <button class="btn-sm"     id="sta-edit-btn"   onclick="enterSTA()">Edit</button>
+              <button class="btn-sm"     id="sta-cancel-btn" onclick="exitSTA(false)" style="display:none;">Cancel</button>
+              <button class="btn-sm-red" id="sta-save-btn"   onclick="exitSTA(true)"  style="display:none;">Save</button>
+            </div>
+          </div>
+
+          <!-- display mode -->
+          <div class="sta-body" id="sta-display">
+            <div class="sta-field">
+              <label>STA LH Inbound</label>
+              <div class="sta-val"><span id="sta-inb-v">30</span> min</div>
+            </div>
+            <div class="sta-field">
+              <label>STA LH Outbound</label>
+              <div class="sta-val"><span id="sta-out-v">30</span> min</div>
+            </div>
+          </div>
+
+          <!-- edit mode (hidden) -->
+          <div class="sta-body" id="sta-edit" style="display:none;">
+            <div class="sta-field">
+              <label>STA LH Inbound</label>
+              <div class="sta-edit-fields">
+                <input class="sta-inp" id="sta-inb-inp" type="number" value="30"/>
+                <span class="sta-unit">min</span>
+              </div>
+            </div>
+            <div class="sta-field">
+              <label>STA LH Outbound</label>
+              <div class="sta-edit-fields">
+                <input class="sta-inp" id="sta-out-inp" type="number" value="30"/>
+                <span class="sta-unit">min</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Show Release Time toggle — station-level setting -->
+          <div class="set-row" style="border-top:1px solid #f5f5f5;">
+            <div class="set-lbl">
+              Show Release Time to Driver
+              <small>When ON, drivers blocked due to early arrival will see the exact release time on the Driver App. When OFF, only a generic "Entry not permitted" message is shown.</small>
+            </div>
+            <div class="tgl" id="tgl-release-time" onclick="toggleReleaseTime()"></div>
+          </div>
+        </div>
+
+        <!-- ══ QUEUE SEQUENCE DISPLAY CONTROL CARD ══ -->
+        <div class="box">
+          <div class="box-hdr"><div class="box-title">Queue Sequence Display Control</div></div>
+          <div class="set-row">
+            <div class="set-lbl">
+              Hide Queue Sequence From Driver After Certain Sequence
+              <small>Drivers above the threshold will not see their queue position number</small>
+            </div>
+            <div class="set-r">
+              <span class="set-val" id="qsdc-val">YES</span>
+              <div class="tgl on" id="tgl-qsdc" onclick="toggleQSDC()"></div>
+            </div>
+          </div>
+          <div class="set-row" id="qsdc-thr-row">
+            <div class="set-lbl">
+              Default Value for Hidden Sequence (From Xth Onwards)
+              <small>From this position onwards, drivers won't see their sequence number</small>
+            </div>
+            <div class="set-r">
+              <input class="set-inp" id="qsdc-thr" type="number" value="3"/>
+              <span style="font-size:10px;color:#718096;">th onwards</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ FILTERS ══ -->
+        <div class="box" style="padding:0;">
+          <div class="filter-wrap">
+            <div class="fi"><span class="fi-l">Site</span><select><option>All Sites</option><option>1st Site</option><option>2nd Site</option></select></div>
+            <div class="fi"><span class="fi-l">Status</span><select><option>All</option><option>Active</option><option>Inactive</option></select></div>
+            <div class="fi"><span class="fi-l">Vehicle Type</span><select><option>All Types</option><option>TRUCK</option><option>MOTO</option></select></div>
+            <div class="fi"><span class="fi-l">Block Early</span><select><option>All</option><option>ON</option><option>OFF</option></select></div>
+            <button class="btn-srch">Search</button>
+            <button class="btn-rst">Reset</button>
+          </div>
+        </div>
+
+        <!-- ══ ENTRY SITE TABLE ══ -->
+        <div class="sec-hdr">
+          <div class="sec-title">Entry Site Configuration</div>
+          <div class="sec-actions">
+            <button class="btn-act">Batch Action ▼</button>
+            <button class="btn-act">Export</button>
+            <button class="btn-act">Log</button>
+          </div>
+        </div>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Site</th>
+                <th>Status</th>
+                <th>Geofence</th>
+                <th>Entry Cap. Limit</th>
+                <th>Block Early</th>
+                <th>Queue Freezing</th>
+                <th>Vehicle Type Pools</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1st Site</strong><br><small style="color:#718096;font-size:9px;">estacionamento SOC</small></td>
+                <td><span class="badge-on">Active</span></td>
+                <td><span class="geo-chip">📍 Zone_ENT_1st</span></td>
+                <td><strong>50</strong> vehicles</td>
+                <td><span class="dot-on">● ON</span></td>
+                <td><span class="dot-on">● ON</span></td>
+                <td>
+                  <div><span class="pool-chip">Pool A · 30v</span> <span class="v-chip">TRUCK</span> <span class="v-chip">TOCO</span></div>
+                  <div style="margin-top:2px;"><span class="pool-chip">Pool B · 20v</span> <span class="v-chip">MOTO</span></div>
+                </td>
+                <td><button class="btn-ed" onclick="openModal('1st')">Edit</button></td>
+              </tr>
+              <tr>
+                <td><strong>2nd Site</strong></td>
+                <td><span class="badge-off" id="badge-2nd">Inactive</span></td>
+                <td><span class="geo-none" id="geo-2nd">⚠ Not linked</span></td>
+                <td>—</td>
+                <td><span class="dot-off">● OFF</span></td>
+                <td>—</td>
+                <td><span style="color:#a0aec0;font-size:10px;">Not configured</span></td>
+                <td><button class="btn-ed" onclick="openModal('2nd')">Edit</button></td>
+              </tr>
+              <tr>
+                <td><strong>3rd Site</strong></td>
+                <td><span class="badge-off">Inactive</span></td>
+                <td><span class="geo-none">⚠ Not linked</span></td>
+                <td>—</td>
+                <td><span class="dot-off">● OFF</span></td>
+                <td>—</td>
+                <td><span style="color:#a0aec0;font-size:10px;">Not configured</span></td>
+                <td><button class="btn-ed">Edit</button></td>
+              </tr>
+              <tr>
+                <td><strong>4th Site</strong></td>
+                <td><span class="badge-on">Active</span></td>
+                <td><span class="geo-chip">📍 Zone_ENT_4th</span></td>
+                <td><strong>20</strong> vehicles</td>
+                <td><span class="dot-on">● ON</span></td>
+                <td>—</td>
+                <td><span class="pool-chip">Pool A · 20v</span> <span class="v-chip">VAN</span> <span class="v-chip">VUC</span></td>
+                <td><button class="btn-ed">Edit</button></td>
+              </tr>
+              <tr>
+                <td><strong>5th Site</strong></td>
+                <td><span class="badge-off">Inactive</span></td>
+                <td><span class="geo-none">⚠ Not linked</span></td>
+                <td>—</td>
+                <td><span class="dot-off">● OFF</span></td>
+                <td>—</td>
+                <td><span style="color:#a0aec0;font-size:10px;">Not configured</span></td>
+                <td><button class="btn-ed">Edit</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /content -->
+    </div><!-- /main -->
+  </div><!-- /layout -->
+
+  <!-- ══ EDIT MODAL ══ -->
+  <div class="ovl" id="ovl">
+    <div class="modal">
+      <div class="mhdr">
+        <span class="mtit" id="modal-title">Edit Site</span>
+        <button class="mcls" onclick="closeModal()">✕</button>
+      </div>
+      <div class="mbdy">
+
+        <!-- Geofence -->
+        <div class="msec">
+          <div class="msec-title">Geofence</div>
+          <div class="geo-box">
+            <div class="geo-box-info">
+              <div class="geo-box-name" id="modal-geo-name">No geofence linked to this entry site.</div>
+              <div class="geo-box-meta" id="modal-geo-meta" style="display:none;"></div>
+            </div>
+            <button class="btn-ghost" id="modal-geo-btn" onclick="goToZM()">Configure in Zone Management →</button>
+          </div>
+        </div>
+
+        <!-- General -->
+        <div class="msec">
+          <div class="msec-title">General</div>
+          <div class="prereq" id="modal-prereq" style="display:none;">
+            <span>⚠</span>
+            <span><strong>A geofence is required to activate this site.</strong> Configure the geofence before enabling the status.</span>
+          </div>
+          <div class="mrow">
+            <div class="mlbl">Status<small>Enable or disable this parking site</small></div>
+            <div class="tgl" id="modal-status-tgl" onclick="toggleModalStatus()"></div>
+          </div>
+          <div class="mrow">
+            <div class="mlbl">Block Early Vehicles<small>Block drivers arriving before STA window</small></div>
+            <div class="tgl on"></div>
+          </div>
+          <div class="mrow" id="modal-freeze-row" style="display:none;">
+            <div class="mlbl">Queue Freezing for 1st Site Tag Holder<small>Freeze queue position while driver holds 1st Site tag</small></div>
+            <div class="tgl on"></div>
+          </div>
+        </div>
+
+        <!-- Capacity -->
+        <div class="msec">
+          <div class="msec-title">Entry Capacity Limit</div>
+          <div class="mrow">
+            <div class="mlbl">Total vehicles allowed in this site<small>Maximum simultaneous vehicles</small></div>
+            <input class="ninp" id="modal-cap" type="number" value="0"/>
+          </div>
+        </div>
+
+        <!-- Pools -->
+        <div class="msec">
+          <div class="msec-title">Vehicle Type Pools</div>
+          <div style="font-size:10px;color:#718096;margin-bottom:8px;">Create pools and assign vehicle types. Types in the same pool share vacancies. Leave empty to accept all vehicle types.</div>
+          <div id="pool-list"></div>
+          <button class="btn-addpool" id="btn-add-pool" onclick="addPool()">+ Add vacancy pool</button>
+          <div id="cap-summary" style="display:none;margin-top:8px;">
+            <div class="cap-bar"><div class="cap-fill" id="cap-fill" style="width:100%"></div></div>
+            <div class="cap-info"><span id="cap-alloc-txt">50 allocated</span><span id="cap-total-txt">/ 50 total</span></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="mftr">
+        <button class="btn-cnl" onclick="closeModal()">Cancel</button>
+        <button class="btn-cfm" onclick="saveModal()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ZONE MANAGEMENT SCREEN ══ -->
+  <div id="zm-screen">
+    <div class="zm-topbar">
+      <button class="zm-back" onclick="closeZM()">Back to Vehicle Capacity Control</button>
+      <span style="color:#cbd5e0;margin:0 8px;">|</span>
+      <span class="zm-title">Zone Management – Link Geofence to 2nd Site</span>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <button class="btn-sm" style="font-size:10px;">✏ Draw new geofence</button>
+        <button class="btn-sm-red" id="zm-link-btn" style="display:none;font-size:10px;" onclick="linkGeo()">Link to 2nd Site</button>
+      </div>
+    </div>
+    <div class="zm-layout">
+      <div class="zm-sb">
+        <div class="zm-sb-hdr">
+          <h3>Select geofence for 2nd Site</h3>
+          <p>Select an existing geofence or draw a new one. Must be within the Station Geofence.</p>
+        </div>
+        <div class="zm-info">ℹ Geofence must be contained within <strong>Zone_STN_001</strong> (Station Geofence).</div>
+        <div class="zm-list">
+          <div class="zm-item">
+            <div class="zm-item-name">Zone_ENT_1st</div>
+            <div class="zm-item-meta">Area: ~1,200 m²</div>
+            <span class="zm-tag zm-tag-linked">Linked: 1st Site</span>
+          </div>
+          <div class="zm-item">
+            <div class="zm-item-name">Zone_ENT_4th</div>
+            <div class="zm-item-meta">Area: ~900 m²</div>
+            <span class="zm-tag zm-tag-linked">Linked: 4th Site</span>
+          </div>
+          <div class="zm-item" id="zm-item-spare" onclick="selectGeo('spare')">
+            <div class="zm-item-name">Zone_SPARE_001</div>
+            <div class="zm-item-meta">Area: ~1,050 m²</div>
+            <span class="zm-tag zm-tag-avail" id="spare-tag">Available</span>
+          </div>
+          <div class="zm-item" id="zm-item-spare2" onclick="selectGeo('spare2')">
+            <div class="zm-item-name">Zone_SPARE_002</div>
+            <div class="zm-item-meta">Area: ~750 m²</div>
+            <span class="zm-tag zm-tag-avail">Available</span>
+          </div>
+        </div>
+      </div>
+      <div class="zm-map">
+        <svg width="100%" height="100%" viewBox="0 0 740 720" style="position:absolute;inset:0;">
+          <polygon points="60,50 680,40 690,660 50,670" class="poly-stn"/>
+          <text x="370" y="36" class="geo-lbl" text-anchor="middle" fill="#276749" font-size="12">Station Geofence – Zone_STN_001</text>
+          <polygon points="80,80 260,75 265,240 75,248" class="poly-ent"/>
+          <text x="170" y="165" class="geo-lbl" text-anchor="middle">Zone_ENT_1st</text>
+          <text x="170" y="180" class="geo-lbl-sm" text-anchor="middle">Linked: 1st Site</text>
+          <polygon points="420,380 600,375 605,530 415,535" class="poly-ent"/>
+          <text x="510" y="460" class="geo-lbl" text-anchor="middle">Zone_ENT_4th</text>
+          <text x="510" y="476" class="geo-lbl-sm" text-anchor="middle">Linked: 4th Site</text>
+          <polygon id="poly-spare" points="270,380 440,375 445,530 265,535" class="poly-ent"/>
+          <text x="355" y="460" class="geo-lbl" text-anchor="middle">Zone_SPARE_001</text>
+          <text x="355" y="476" class="geo-lbl-sm" text-anchor="middle">Available</text>
+          <polygon id="poly-spare2" points="80,300 240,295 245,445 75,450" class="poly-ent"/>
+          <text x="160" y="375" class="geo-lbl" text-anchor="middle">Zone_SPARE_002</text>
+          <text x="160" y="390" class="geo-lbl-sm" text-anchor="middle">Available</text>
+        </svg>
+      </div>
+    </div>
+    <div class="zm-footer">
+      <span class="zm-sel-label" id="zm-sel-lbl">No geofence selected. Click a geofence on the map or in the list.</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-sm" onclick="closeZM()">Cancel</button>
+        <button class="btn-sm-red" id="zm-link-btn2" style="display:none;font-size:10px;" onclick="linkGeo()">Link to 2nd Site</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TOAST ══ -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ══ STEP LABEL ══ -->
+  <div class="step-lbl" id="step-lbl">Vehicle Capacity Control</div>
+
+  <!-- ══ CURSOR + RING ══ -->
+  <div id="cur"></div>
+  <div id="ring"></div>
+
+</div><!-- /scene -->
+</div><!-- /scene-wrap -->
+
+<script>
+// ════════════════════════════════════════════
+//  SCALE
+// ════════════════════════════════════════════
+(function(){
+  var sc = document.getElementById('scene');
+  var sw = document.getElementById('swrap');
+  var W = 1200, H = 820;
+  var avail = window.innerWidth - 32;
+  var s = Math.min(avail / W, 1);
+  sc.style.transform = 'scale(' + s + ')';
+  sw.style.width  = (W * s) + 'px';
+  sw.style.height = (H * s) + 'px';
+})();
+
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+var pools = [];
+var currentSite = '';
+var geoLinked2nd = false;
+var ALL_TYPES = ['TRUCK-EXPRESS','ZOF-VAN-AR','CARRETA-EXPRESS','ZOF-MOTO-AR',
+                 'BITREM','WALKER','BICICLETA','HR','3/4','CARRETA','TOCO',
+                 'TRUCK','MOTO','PASSEIO','FIORINO','VUC','VAN'];
+
+// ════════════════════════════════════════════
+//  STA THRESHOLD
+// ════════════════════════════════════════════
+function enterSTA() {
+  document.getElementById('sta-display').style.display = 'none';
+  document.getElementById('sta-edit').style.display   = 'flex';
+  document.getElementById('sta-edit-btn').style.display   = 'none';
+  document.getElementById('sta-cancel-btn').style.display = 'inline-block';
+  document.getElementById('sta-save-btn').style.display   = 'inline-block';
+}
+function exitSTA(save) {
+  if (save) {
+    document.getElementById('sta-inb-v').textContent = document.getElementById('sta-inb-inp').value || 0;
+    document.getElementById('sta-out-v').textContent = document.getElementById('sta-out-inp').value || 0;
+  }
+  document.getElementById('sta-display').style.display = 'flex';
+  document.getElementById('sta-edit').style.display   = 'none';
+  document.getElementById('sta-edit-btn').style.display   = 'inline-block';
+  document.getElementById('sta-cancel-btn').style.display = 'none';
+  document.getElementById('sta-save-btn').style.display   = 'none';
+  if (save) showToast('✓ STA Threshold updated successfully');
+}
+
+// ════════════════════════════════════════════
+//  SHOW RELEASE TIME (station-level toggle)
+// ════════════════════════════════════════════
+function toggleReleaseTime() {
+  document.getElementById('tgl-release-time').classList.toggle('on');
+}
+
+// ════════════════════════════════════════════
+//  QUEUE SEQUENCE DISPLAY CONTROL
+// ════════════════════════════════════════════
+function toggleQSDC() {
+  var tgl = document.getElementById('tgl-qsdc');
+  var on  = tgl.classList.toggle('on');
+  document.getElementById('qsdc-val').textContent     = on ? 'YES' : 'NO';
+  document.getElementById('qsdc-thr-row').style.display = on ? 'flex' : 'none';
+}
+
+// ════════════════════════════════════════════
+//  MODAL
+// ════════════════════════════════════════════
+function openModal(site) {
+  currentSite = site;
+  var is1st   = (site === '1st');
+  var hasGeo  = (site === '1st' || site === '4th' || (geoLinked2nd && site === '2nd'));
+
+  document.getElementById('modal-title').textContent = 'Edit ' + site + ' Site';
+  document.getElementById('modal-freeze-row').style.display = is1st ? 'flex' : 'none';
+
+  // Geofence section
+  if (hasGeo) {
+    var name = site === '2nd' ? 'Zone_SPARE_001'
+             : site === '1st' ? 'Zone_ENT_1st'
+             : 'Zone_ENT_' + site;
+    document.getElementById('modal-geo-name').innerHTML = '<span class="geo-chip">📍 ' + name + '</span>';
+    document.getElementById('modal-geo-meta').style.display = 'block';
+    document.getElementById('modal-geo-meta').textContent = 'Linked · within Station Geofence (Zone_STN_001)';
+    document.getElementById('modal-geo-btn').textContent = 'Edit in Zone Management →';
+    document.getElementById('modal-prereq').style.display = 'none';
+    var stgl = document.getElementById('modal-status-tgl');
+    stgl.classList.add('on');
+    stgl.classList.remove('dis');
+  } else {
+    document.getElementById('modal-geo-name').textContent = 'No geofence linked to this entry site.';
+    document.getElementById('modal-geo-meta').style.display = 'none';
+    document.getElementById('modal-geo-btn').textContent = 'Configure in Zone Management →';
+    document.getElementById('modal-prereq').style.display = 'flex';
+    var stgl = document.getElementById('modal-status-tgl');
+    stgl.classList.remove('on');
+    stgl.classList.add('dis');
+  }
+
+  // Capacity & pools
+  if (is1st) {
+    document.getElementById('modal-cap').value = 50;
+    pools = [{vagas:30, types:['TRUCK','TOCO']}, {vagas:20, types:['MOTO']}];
+  } else {
+    document.getElementById('modal-cap').value = 0;
+    pools = [];
+  }
+  renderPools();
+  document.getElementById('ovl').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('ovl').classList.remove('show');
+}
+function saveModal() {
+  closeModal();
+  showToast('✓ ' + currentSite + ' Site configuration saved');
+}
+function goToZM() {
+  closeModal();
+  openZM();
+}
+function toggleModalStatus() {
+  var t = document.getElementById('modal-status-tgl');
+  if (t.classList.contains('dis')) return;
+  t.classList.toggle('on');
+}
+
+// ════════════════════════════════════════════
+//  POOLS
+// ════════════════════════════════════════════
+function addPool()       { pools.push({vagas:0, types:[]}); renderPools(); }
+function removePool(i)   { pools.splice(i, 1);              renderPools(); }
+function updateVagas(i,v){ pools[i].vagas = parseInt(v)||0; renderPools(); }
+function addType(i, v) {
+  if (!v) return;
+  for (var j = 0; j < pools.length; j++)
+    if (j !== i && pools[j].types.indexOf(v) >= 0) return;
+  if (pools[i].types.indexOf(v) < 0) pools[i].types.push(v);
+  renderPools();
+}
+function removeType(pi, ti) { pools[pi].types.splice(ti, 1); renderPools(); }
+
+function renderPools() {
+  var list = document.getElementById('pool-list');
+  var cap  = parseInt(document.getElementById('modal-cap').value) || 0;
+  list.innerHTML = '';
+  var totalV = 0;
+  pools.forEach(function(p, i) {
+    totalV += (p.vagas || 0);
+    var used = [];
+    pools.forEach(function(pp, j){ if (j !== i) used = used.concat(pp.types); });
+    var opts = ALL_TYPES.map(function(t){
+      return '<option value="' + t + '"' + (used.indexOf(t) >= 0 ? ' disabled' : '') + '>' + t + '</option>';
+    }).join('');
+    var chips = p.types.map(function(t, ti){
+      return '<span class="pchip">' + t +
+        ' <button onclick="removeType(' + i + ',' + ti + ')" style="background:none;border:none;color:#e53e3e;cursor:pointer;font-size:10px;padding:0;">✕</button></span>';
+    }).join('');
+    var note = p.types.length > 1
+      ? 'These ' + p.types.length + ' types share ' + p.vagas + ' vacancies'
+      : p.types.length === 1
+        ? p.types[0] + ' gets ' + p.vagas + ' exclusive vacancies'
+        : 'No vehicle types selected yet';
+    list.innerHTML +=
+      '<div class="pool-block" id="pblock-' + i + '">' +
+        '<div class="pool-hdr"><span class="pool-num">Pool ' + (i+1) + '</span>' +
+          '<button class="pool-rm" onclick="removePool(' + i + ')">✕</button></div>' +
+        '<div class="pool-fields">' +
+          '<div class="pool-vagas"><label>Vacancies</label>' +
+            '<input type="number" min="0" value="' + p.vagas + '" oninput="updateVagas(' + i + ',this.value)"/></div>' +
+          '<div class="pool-types"><label>Vehicle types</label>' +
+            '<select class="pool-select" id="psel-' + i + '" onchange="addType(' + i + ',this.value);this.value=\'\'"><option value="">— Add type —</option>' + opts + '</select>' +
+            '<div class="pool-chips">' + chips + '</div>' +
+            '<div class="pool-note">' + note + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  });
+  var cs = document.getElementById('cap-summary');
+  cs.style.display = (pools.length && cap > 0) ? 'block' : 'none';
+  if (pools.length && cap > 0) {
+    var pct = Math.min((totalV / cap) * 100, 100);
+    document.getElementById('cap-fill').style.width     = pct + '%';
+    document.getElementById('cap-alloc-txt').textContent = totalV + ' allocated';
+    document.getElementById('cap-total-txt').textContent = '/ ' + cap + ' total';
+  }
+}
+
+// ════════════════════════════════════════════
+//  ZONE MANAGEMENT
+// ════════════════════════════════════════════
+var selectedGeo = '';
+function openZM() {
+  selectedGeo = '';
+  document.getElementById('zm-screen').classList.add('open');
+  document.getElementById('zm-link-btn').style.display  = 'none';
+  document.getElementById('zm-link-btn2').style.display = 'none';
+  document.getElementById('zm-sel-lbl').textContent = 'No geofence selected. Click a geofence on the map or in the list.';
+  document.querySelectorAll('.zm-item').forEach(function(el){ el.classList.remove('sel'); });
+  document.querySelectorAll('.poly-ent').forEach(function(el){ el.classList.remove('poly-sel'); });
+}
+function closeZM() {
+  document.getElementById('zm-screen').classList.remove('open');
+}
+function selectGeo(id) {
+  selectedGeo = id;
+  document.querySelectorAll('.zm-item').forEach(function(el){ el.classList.remove('sel'); });
+  document.querySelectorAll('.poly-ent').forEach(function(el){ el.classList.remove('poly-sel'); });
+  document.getElementById('zm-item-' + id).classList.add('sel');
+  document.getElementById('poly-'     + id).classList.add('poly-sel');
+  var name = 'Zone_SPARE_00' + (id === 'spare' ? '1' : '2');
+  document.getElementById('zm-sel-lbl').textContent = name + ' selected — ready to link';
+  document.getElementById('zm-link-btn').style.display  = 'inline-block';
+  document.getElementById('zm-link-btn2').style.display = 'inline-block';
+}
+function linkGeo() {
+  geoLinked2nd = true;
+  var cell = document.getElementById('geo-2nd');
+  cell.className   = 'geo-chip';
+  cell.textContent = '📍 Zone_SPARE_001';
+  document.getElementById('badge-2nd').className   = 'badge-on';
+  document.getElementById('badge-2nd').textContent = 'Active';
+  closeZM();
+  showToast('✓ Zone_SPARE_001 linked to 2nd Site successfully');
+}
+
+// ════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+// ════════════════════════════════════════════
+//  CURSOR
+// ════════════════════════════════════════════
+var cur  = document.getElementById('cur');
+var ring = document.getElementById('ring');
+
+function moveTo(x, y) {
+  cur.style.left = x + 'px';
+  cur.style.top  = y + 'px';
+}
+function click(x, y, cb) {
+  ring.style.left = x + 'px';
+  ring.style.top  = y + 'px';
+  ring.className  = 'ringing';
+  setTimeout(function(){ ring.className = ''; }, 420);
+  if (cb) setTimeout(cb, 80);
+}
+function label(txt) {
+  document.getElementById('step-lbl').textContent = txt;
+}
+function typeInto(id, val, cb) {
+  var el = document.getElementById(id);
+  if (!el) { if (cb) cb(); return; }
+  el.value = '';
+  var chars = String(val).split('');
+  var i = 0;
+  function next() {
+    if (i < chars.length) { el.value += chars[i++]; setTimeout(next, 120); }
+    else { if (cb) setTimeout(cb, 200); }
+  }
+  next();
+}
+
+// ════════════════════════════════════════════
+//  ANIMATION SEQUENCE
+// ════════════════════════════════════════════
+var T = 0;
+function at(ms, fn) { setTimeout(fn, ms); }
+
+moveTo(980, 60);
+
+// ── Intro ──
+at(T+=800,  function(){ label('Vehicle Capacity Control — configurações a nível de station e entry site'); });
+
+// ── 1. STA THRESHOLD EDIT ──
+at(T+=1800, function(){ label('STA Threshold: edição inline, valores aplicados a toda a station'); moveTo(1078,113); });
+at(T+=700,  function(){ click(1078,113, function(){ enterSTA(); }); });
+at(T+=700,  function(){ label('Campos LH Inbound e LH Outbound disponíveis para edição'); moveTo(430,136); });
+at(T+=700,  function(){ click(430,136, function(){ document.getElementById('sta-out-inp').focus(); }); });
+at(T+=500,  function(){
+  label('Editando STA LH Outbound → 45 min');
+  var el = document.getElementById('sta-out-inp');
+  el.value = ''; el.focus();
+  setTimeout(function(){ el.value='4'; },120);
+  setTimeout(function(){ el.value='45'; },280);
+});
+at(T+=1200, function(){ label('Salvando — novo threshold aplicado à station'); moveTo(1114,113); });
+at(T+=600,  function(){ click(1114,113, function(){ exitSTA(true); }); });
+
+// ── 2. SHOW RELEASE TIME TOGGLE ──
+at(T+=1200, function(){ label('Show Release Time to Driver — toggle a nível de station (abaixo do STA Threshold)'); moveTo(970,165); });
+at(T+=900,  function(){ click(970,165, function(){ toggleReleaseTime(); }); });
+at(T+=500,  function(){ label('Toggle ON → driver verá o horário exato de liberação da fila quando bloqueado por early arrival'); });
+at(T+=1600, function(){ moveTo(970,165); click(970,165, function(){ toggleReleaseTime(); }); });
+at(T+=500,  function(){ label('Toggle OFF → driver vê apenas mensagem genérica "Entry not permitted", sem horário'); });
+at(T+=1600, function(){ moveTo(970,165); click(970,165, function(){ toggleReleaseTime(); }); });
+at(T+=500,  function(){ label('Configuração salva: Show Release Time = ON'); });
+
+// ── 3. QSDC TOGGLE ──
+at(T+=1400, function(){ label('Queue Sequence Display Control — ocultar posição de fila a partir de um threshold'); moveTo(1070,218); });
+at(T+=800,  function(){ click(1070,218, function(){ toggleQSDC(); }); });
+at(T+=500,  function(){ label('Toggle OFF → todos os motoristas sempre veem sua posição'); });
+at(T+=1000, function(){ moveTo(1070,218); click(1070,218, function(){ toggleQSDC(); }); });
+at(T+=500,  function(){ label('Toggle ON → campo de threshold aparece'); moveTo(760,252); });
+at(T+=900,  function(){
+  label('Definindo threshold: a partir da 5ª posição, ocultar sequência');
+  click(760,252, function(){
+    var el = document.getElementById('qsdc-thr');
+    el.value=''; el.focus();
+    setTimeout(function(){ el.value='5'; },150);
+  });
+});
+
+// ── 4. MODAL 2nd SITE (sem geofence) ──
+at(T+=1600, function(){ label('2nd Site: sem geofence vinculada — status bloqueado até configurar'); moveTo(1120,480); });
+at(T+=800,  function(){ click(1120,480, function(){ openModal('2nd'); }); });
+at(T+=700,  function(){ label('Banner de aviso: geofence obrigatória para ativar o site'); moveTo(540,390); });
+at(T+=1200, function(){ label('Status toggle desabilitado — necessário vincular geofence primeiro'); moveTo(550,430); });
+at(T+=1200, function(){ label('Acessando Zone Management para configurar a geofence'); moveTo(490,330); });
+at(T+=800,  function(){ click(490,330, function(){ goToZM(); }); });
+
+// ── 5. ZONE MANAGEMENT ──
+at(T+=900,  function(){ label('Zone Management — selecionar geofence disponível para o 2nd Site'); moveTo(200,520); });
+at(T+=900,  function(){
+  label('Selecionando Zone_SPARE_001 — disponível, dentro da Station Geofence');
+  click(200,520, function(){ selectGeo('spare'); });
+});
+at(T+=1000, function(){ label('Polígono destacado no mapa; botão "Link to 2nd Site" habilitado'); moveTo(200,520); });
+at(T+=1200, function(){ moveTo(1048,766); label('Confirmando vínculo da geofence com o 2nd Site'); });
+at(T+=700,  function(){ click(1048,766, function(){ linkGeo(); }); });
+at(T+=800,  function(){ label('✓ Geofence vinculada — 2nd Site agora pode ser ativado'); });
+
+// ── 6. MODAL 1st SITE (configuração completa) ──
+at(T+=1600, function(){ label('1st Site: modal completo com todas as configurações ativas'); moveTo(1120,432); });
+at(T+=800,  function(){ click(1120,432, function(){ openModal('1st'); }); });
+at(T+=700,  function(){ label('Geofence vinculada · Status Active · Block Early ON · Queue Freezing ON'); moveTo(540,300); });
+at(T+=1400, function(){ label('Entry Capacity Limit: 50 vehicles'); moveTo(540,455); });
+at(T+=1000, function(){ label('Vehicle Type Pools configurados: Pool A (TRUCK+TOCO · 30v) e Pool B (MOTO · 20v)'); moveTo(540,560); });
+at(T+=1400, function(){ label('Adicionando um novo pool de capacidade'); moveTo(440,675); });
+at(T+=700,  function(){ click(440,675, function(){ addPool(); }); });
+at(T+=600,  function(){ label('Novo Pool 3 criado — configurando 10 vagas para VUC'); moveTo(360,720); });
+at(T+=600,  function(){
+  click(360,720, function(){
+    var el = document.querySelector('#pblock-2 input[type="number"]');
+    if (el) { el.value=''; el.focus(); setTimeout(function(){ el.value='10'; renderPools(); },200); }
+  });
+});
+at(T+=1200, function(){
+  label('Selecionando tipo de veículo: VUC');
+  var sel = document.getElementById('psel-2');
+  if (sel) { moveTo(540,720); setTimeout(function(){ addType(2,'VUC'); },300); }
+});
+at(T+=1200, function(){ label('Pool 3 configurado: 10 vagas exclusivas para VUC'); moveTo(500,755); });
+at(T+=900,  function(){ label('Salvando configuração do 1st Site'); moveTo(500,755); });
+at(T+=600,  function(){ click(500,755, function(){ saveModal(); }); });
+
+// ── LOOP / RESET ──
+at(T+=2600, function(){
+  label('Reiniciando demonstração...');
+  // reset all state
+  geoLinked2nd = false;
+  exitSTA(false);
+  document.getElementById('sta-inb-v').textContent = '30';
+  document.getElementById('sta-out-v').textContent = '30';
+  document.getElementById('sta-inb-inp').value = '30';
+  document.getElementById('sta-out-inp').value = '30';
+  // reset release time toggle to OFF
+  document.getElementById('tgl-release-time').classList.remove('on');
+  // reset QSDC to ON
+  if (!document.getElementById('tgl-qsdc').classList.contains('on')) toggleQSDC();
+  document.getElementById('qsdc-thr').value = '3';
+  // reset 2nd site table cells
+  var cell = document.getElementById('geo-2nd');
+  cell.className = 'geo-none';
+  cell.textContent = '⚠ Not linked';
+  document.getElementById('badge-2nd').className   = 'badge-off';
+  document.getElementById('badge-2nd').textContent = 'Inactive';
+  moveTo(980, 60);
+  setTimeout(function(){ location.reload(); }, 1200);
+});
+</script>
+</body>
+</html>

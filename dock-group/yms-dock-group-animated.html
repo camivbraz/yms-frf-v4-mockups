@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YMS – Dock Group Assignment Attributes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:#e8eaf0;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:16px;font-family:'Segoe UI',Arial,sans-serif;}
+.scene-wrap{overflow:hidden;position:relative;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.18);}
+#scene{width:1200px;height:820px;transform-origin:top left;position:relative;background:#f0f2f5;overflow:hidden;display:flex;flex-direction:column;}
+
+/* Layout */
+.layout{display:flex;flex:1;overflow:hidden;}
+.sb{width:196px;background:#1a1f36;flex-shrink:0;color:#8892b0;}
+.sb-logo{padding:14px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sb-logo .sp{color:#fff;font-size:17px;font-weight:700;letter-spacing:-0.3px;}
+.sb-logo .xp{color:#EE4D2D;}
+.sb-live{background:#EE4D2D;color:#fff;font-size:9px;padding:1px 4px;border-radius:2px;margin-left:3px;vertical-align:1px;}
+.sb-sub{color:#5a6380;font-size:10px;margin-top:2px;}
+.sb-sec{font-size:9px;color:#4a5568;padding:10px 14px 3px;text-transform:uppercase;letter-spacing:0.5px;}
+.sb-item{padding:8px 14px;font-size:12px;color:#8892b0;border-left:2px solid transparent;}
+.sb-item.act{color:#fff;background:rgba(238,77,45,0.15);border-left-color:#EE4D2D;}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;font-size:11px;color:#718096;flex-shrink:0;}
+.topbar a{color:#EE4D2D;text-decoration:none;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:11px;color:#718096;}
+
+/* Page Tabs */
+.page-tabs{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 20px;flex-shrink:0;}
+.ptab{padding:11px 16px;font-size:12px;color:#718096;border-bottom:2px solid transparent;white-space:nowrap;}
+.ptab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+
+.content{flex:1;padding:14px 20px;overflow-y:auto;}
+
+/* Boxes */
+.box{background:#fff;border-radius:4px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+.box-hdr{display:flex;align-items:center;gap:7px;padding:11px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600;color:#1a202c;}
+.box-hdr::before{content:'';display:inline-block;width:3px;height:14px;background:#EE4D2D;border-radius:2px;}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #f7f7f7;font-size:11px;color:#4a5568;}
+.set-row:last-child{border-bottom:none;}
+.tgl{width:30px;height:16px;background:#e2e8f0;border-radius:8px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;display:inline-block;}
+.tgl.on{background:#48bb78;}
+.tgl::after{content:'';width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,0.2);}
+.tgl.on::after{left:16px;}
+.lnk{color:#EE4D2D;font-size:11px;cursor:pointer;}
+
+/* Sub-tabs */
+.subtabs{display:flex;padding:0 16px;border-bottom:1px solid #e2e8f0;}
+.stab{padding:8px 14px;font-size:12px;color:#718096;border-bottom:2px solid transparent;}
+.stab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+
+/* Filters */
+.filter-wrap{padding:10px 16px;border-bottom:1px solid #f0f0f0;}
+.frow{display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap;}
+.frow:last-child{margin-bottom:0;}
+.fi{display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:3px;height:28px;overflow:hidden;background:#fff;}
+.fi-l{padding:0 8px;font-size:11px;color:#4a5568;border-right:1px solid #e2e8f0;white-space:nowrap;height:100%;display:flex;align-items:center;background:#f7fafc;}
+.fi input,.fi select{border:none;outline:none;padding:0 6px;font-size:11px;color:#2d3748;background:transparent;height:100%;}
+.fi input{width:120px;}.fi select{width:90px;}
+.btn-s{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:0 14px;height:28px;font-size:11px;cursor:pointer;font-weight:500;}
+.btn-r{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:3px;padding:0 10px;height:28px;font-size:11px;cursor:pointer;}
+.btn-m{background:none;border:none;color:#3182ce;font-size:11px;cursor:pointer;}
+
+/* Table */
+.tbl-hdr{padding:8px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;}
+.tbl-act-btn{background:#fff;border:1px solid #e2e8f0;color:#4a5568;border-radius:3px;padding:3px 8px;font-size:11px;cursor:pointer;margin-left:6px;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:8px 12px;border-bottom:1px solid #e2e8f0;white-space:nowrap;}
+td{padding:8px 12px;border-bottom:1px solid #f5f5f5;color:#2d3748;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafcff;}
+.bdg{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:500;}
+.bdg-ob{background:#e6f3ff;color:#2b6cb0;}.bdg-ib{background:#e6ffed;color:#276749;}.bdg-ge{background:#f0f0f0;color:#555;}
+.st-on{color:#48bb78;font-size:11px;}.st-off{color:#a0aec0;font-size:11px;}
+.btn-ed{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:3px 10px;font-size:11px;cursor:pointer;}
+.btn-del{background:#fff;color:#e53e3e;border:1px solid #e53e3e;border-radius:3px;padding:3px 10px;font-size:11px;cursor:pointer;margin-left:4px;}
+
+/* Overlay & Modal */
+.ovl{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-start;justify-content:center;padding-top:18px;z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;}
+.ovl.show{opacity:1;pointer-events:all;}
+.modal{width:580px;max-height:780px;background:#fff;border-radius:6px;box-shadow:0 16px 48px rgba(0,0,0,0.28);display:flex;flex-direction:column;overflow:hidden;transform:scale(0.96);transition:transform .25s;}
+.ovl.show .modal{transform:scale(1);}
+.mhdr{padding:13px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.mtit{font-size:14px;font-weight:600;color:#1a202c;}
+.mcls{background:#f7fafc;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;color:#718096;font-size:14px;}
+.pfb{display:flex;border-bottom:1px solid #e2e8f0;background:#f7fafc;flex-shrink:0;}
+.pfi{flex:1;padding:9px 13px;border-right:1px solid #e2e8f0;}
+.pfi:last-child{border-right:none;}
+.pfl{font-size:9px;color:#718096;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;}
+.pfv{font-size:13px;font-weight:600;color:#1a202c;}
+.mbdy{flex:1;overflow-y:auto;padding:12px 14px;}
+
+/* Warning banner */
+.mwarn{background:#fffbeb;border:1px solid #f6c90e;border-radius:4px;padding:8px 12px;font-size:11px;color:#744210;margin-bottom:10px;display:none;align-items:flex-start;gap:6px;line-height:1.5;}
+.mwarn.show{display:flex;}
+
+/* Modal sections */
+.msec{border:1px solid #e2e8f0;border-radius:5px;margin-bottom:10px;overflow:hidden;}
+.msechdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:#f7fafc;border-bottom:1px solid #e2e8f0;}
+.msecl{display:flex;align-items:center;gap:6px;}
+.msecbar{width:3px;height:14px;background:#EE4D2D;border-radius:2px;flex-shrink:0;}
+.msectit{font-size:13px;font-weight:600;color:#1a202c;}
+.msecopt{font-size:10px;color:#718096;}
+.msecr{display:flex;align-items:center;gap:6px;font-size:11px;color:#718096;}
+.msecbdy{padding:11px 13px;display:none;}
+.msecbdy.open{display:block;}
+.sec-desc{font-size:11px;color:#718096;margin-bottom:10px;}
+
+.gi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.flbl{font-size:11px;font-weight:500;color:#4a5568;margin-bottom:4px;display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
+.tag{font-size:9px;padding:1px 4px;border-radius:2px;font-weight:400;}
+.tag-ms{background:#fff3cd;color:#856404;}.tag-op{background:#d4edda;color:#155724;}
+.chipwrap{border:1px solid #e2e8f0;border-radius:3px;padding:4px;min-height:30px;display:flex;flex-wrap:wrap;align-items:center;gap:3px;background:#fff;font-size:11px;}
+.chip{display:inline-flex;align-items:center;background:#fff0ed;color:#c53030;border:1px solid #feb2b2;border-radius:10px;padding:1px 6px;font-size:10px;gap:3px;}
+.addlnk{color:#EE4D2D;font-size:11px;cursor:pointer;}
+.fnote{font-size:9px;color:#718096;margin-top:3px;font-style:italic;}
+
+.tcsel{border:1px solid #e2e8f0;border-radius:3px;padding:4px 8px;font-size:12px;color:#2d3748;width:200px;background:#fff;}
+
+.ccrow{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px;gap:10px;}
+.cclbl{font-size:12px;font-weight:500;color:#2d3748;padding-top:5px;min-width:130px;flex-shrink:0;}
+.req{color:#EE4D2D;margin-left:1px;}
+.sopt-wrap{display:flex;gap:6px;flex-wrap:wrap;}
+.sopt{border:2px solid #e2e8f0;border-radius:5px;padding:5px 11px;font-size:12px;cursor:pointer;color:#4a5568;background:#fff;transition:all .12s;user-select:none;}
+.sopt.active{border-color:#EE4D2D;background:#fff5f3;color:#EE4D2D;font-weight:500;}
+.lgc-desc{font-size:10px;color:#718096;background:#f7fafc;border-radius:3px;padding:4px 8px;margin-top:5px;}
+.attr-hdr{display:flex;align-items:center;justify-content:space-between;margin:4px 0 8px;}
+.attr-lbl{font-size:12px;font-weight:500;color:#2d3748;}
+.hint{font-size:10px;color:#718096;font-weight:400;}
+.btn-addattr{background:#fff;border:1px solid #EE4D2D;color:#EE4D2D;border-radius:3px;padding:4px 10px;font-size:11px;cursor:pointer;}
+.apicker{background:#fff;border:1px solid #e2e8f0;border-radius:5px;box-shadow:0 3px 10px rgba(0,0,0,0.1);margin-bottom:8px;overflow:hidden;display:none;}
+.apicker.open{display:block;}
+.aitem{padding:7px 11px;font-size:12px;cursor:pointer;color:#2d3748;border-bottom:1px solid #f0f0f0;transition:background .1s;}
+.aitem:last-child{border-bottom:none;}
+.aitem:hover{background:#fff5f3;color:#EE4D2D;}
+.acard{border:1px solid #e2e8f0;border-radius:5px;padding:10px 11px;margin-bottom:8px;background:#fafafa;}
+.acard-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.acard-tit{font-size:12px;font-weight:600;color:#1a202c;display:flex;align-items:center;gap:5px;}
+.btn-rm{background:none;border:none;color:#718096;font-size:11px;cursor:pointer;text-decoration:underline;}
+.mswrap{border:1px solid #e2e8f0;border-radius:3px;padding:4px;min-height:28px;display:flex;flex-wrap:wrap;align-items:center;gap:3px;background:#fff;margin-bottom:6px;}
+.mschip{display:inline-flex;align-items:center;background:#fff0ed;color:#c53030;border:1px solid #feb2b2;border-radius:8px;padding:1px 5px;font-size:10px;gap:2px;}
+.numrow{display:flex;align-items:center;gap:6px;font-size:11px;color:#4a5568;}
+.numinp{width:64px;border:1px solid #e2e8f0;border-radius:3px;padding:4px 6px;font-size:12px;color:#2d3748;background:#fff;}
+
+/* Compliance section */
+.comp-sec{border:1px solid #e2e8f0;border-radius:5px;margin-bottom:10px;overflow:hidden;}
+.comp-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:#f7fafc;border-bottom:1px solid #e2e8f0;}
+.comp-hdr-l{display:flex;align-items:center;gap:8px;}
+.comp-sub{font-size:10px;color:#718096;margin-top:1px;}
+.inv-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:#fff5f5;color:#c53030;border:1px solid #feb2b2;}
+.inv-badge.ok{background:#f0fff4;color:#276749;border-color:#9ae6b4;}
+.ctbl{width:100%;border-collapse:collapse;font-size:11px;}
+.ctbl th{background:#f7fafc;color:#4a5568;font-weight:600;text-align:left;padding:7px 13px;border-bottom:1px solid #e2e8f0;}
+.ctbl td{padding:7px 13px;border-bottom:1px solid #f5f5f5;color:#2d3748;vertical-align:middle;}
+.ctbl tr:last-child td{border-bottom:none;}
+.cv{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;color:#276749;background:#f0fff4;border:1px solid #9ae6b4;border-radius:8px;padding:1px 7px;}
+.ci{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;color:#c53030;background:#fff5f5;border:1px solid #feb2b2;border-radius:8px;padding:1px 7px;}
+.cn{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#718096;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1px 7px;}
+.ci-reason{font-size:10px;color:#c53030;margin-top:2px;font-style:italic;}
+
+.mftr{padding:10px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;background:#fff;}
+.btn-cnl{background:#fff;border:1px solid #e2e8f0;color:#4a5568;border-radius:3px;padding:6px 16px;font-size:12px;cursor:pointer;}
+.btn-cfm{background:#EE4D2D;color:#fff;border:none;border-radius:3px;padding:6px 20px;font-size:12px;font-weight:500;cursor:pointer;}
+
+/* Cursor */
+#cur{width:16px;height:16px;background:rgba(15,15,25,0.82);border-radius:50% 50% 50% 0;transform:rotate(-45deg);position:absolute;pointer-events:none;z-index:9999;transition:left .45s cubic-bezier(.25,.46,.45,.94),top .45s cubic-bezier(.25,.46,.45,.94);box-shadow:0 2px 6px rgba(0,0,0,0.35);}
+#ring{width:28px;height:28px;border-radius:50%;border:2px solid #EE4D2D;position:absolute;pointer-events:none;z-index:9998;opacity:0;}
+@keyframes cr{0%{opacity:1;transform:translate(-6px,-6px)scale(.4);}100%{opacity:0;transform:translate(-6px,-6px)scale(1.6);}}
+.ringing{animation:cr .4s ease-out forwards;}
+</style>
+</head>
+<body>
+<div class="scene-wrap" id="swrap">
+<div id="scene">
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sb">
+      <div class="sb-logo">
+        <div><span class="sp">Shopee</span><span class="xp">Xpress</span><span class="sb-live">LIVE</span></div>
+        <div class="sb-sub">OF Hub_SP_Lapa</div>
+      </div>
+      <div class="sb-sec">Menu</div>
+      <div class="sb-item">Dashboard</div>
+      <div class="sb-item">Inbound</div>
+      <div class="sb-item">Outbound</div>
+      <div class="sb-sec">Station Management</div>
+      <div class="sb-item act">Queue &amp; Dock Config</div>
+      <div class="sb-item">Dock Management</div>
+      <div class="sb-item">Area Management</div>
+      <div class="sb-item">Staging Area Group</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        Station Management <span style="margin:0 5px;color:#cbd5e0;">/</span>
+        <a>Queue &amp; Dock Configurations</a>
+        <div class="topbar-right">&#128276; &nbsp; English &#9660; &nbsp; camila.braz &#9660;</div>
+      </div>
+
+      <div class="page-tabs">
+        <div class="ptab">Queue Prioritisation</div>
+        <div class="ptab act">Automatic Assignment Logic</div>
+        <div class="ptab">Geofencing Registration</div>
+        <div class="ptab">Vehicle Capacity Control</div>
+      </div>
+
+      <div class="content">
+        <!-- Setting -->
+        <div class="box">
+          <div class="box-hdr">Automatic Assignment Setting</div>
+          <div class="set-row"><span>Assign Vehicles Automatically Upon Queue Registration (Inbound)</span><div class="tgl on"></div></div>
+          <div class="set-row"><span>Assign Vehicles Automatically Upon Queue Registration (Outbound)</span><div class="tgl"></div></div>
+          <div class="set-row"><span>Priority of TO Pack Type Attribute: <span style="color:#EE4D2D;font-size:10px;">All Other Pack Attributes</span></span><span class="lnk">Edit</span></div>
+        </div>
+
+        <!-- Attribute Configuration -->
+        <div class="box">
+          <div class="box-hdr">Automatic Assignment Attribute Configuration</div>
+          <div class="subtabs">
+            <div class="stab">Dock</div>
+            <div class="stab act">Dock Group</div>
+          </div>
+
+          <!-- Filters -->
+          <div class="filter-wrap">
+            <div class="frow">
+              <div class="fi"><span class="fi-l">Dock Group Name</span><input placeholder="Input"></div>
+              <div class="fi"><span class="fi-l">Dock Group Type</span><select><option>Select</option><option>General</option><option>Inbound</option><option>Outbound</option></select></div>
+              <div class="fi"><span class="fi-l">Arrival Type</span><select style="width:110px;"><option>Select</option><option>LH - Outbound</option><option>LH - Inbound</option><option>FM - Outbound</option></select></div>
+              <div class="fi"><span class="fi-l">Vehicle Type</span><select><option>Select</option><option>TRUCK &#8211; EXPRESSA</option><option>CARRETA</option></select></div>
+            </div>
+            <div class="frow">
+              <div class="fi"><span class="fi-l">Identification</span><select style="width:60px;"><option>All</option><option>On</option><option>Off</option></select></div>
+              <div class="fi"><span class="fi-l">Cargo Composition</span><select style="width:60px;"><option>All</option><option>On</option><option>Off</option></select></div>
+              <div class="fi"><span class="fi-l">LH Outbound Dest.</span><select style="width:100px;"><option>Select</option><option>[7203] Sul</option><option>[8452] Leste</option></select></div>
+              <button class="btn-s">Search</button>
+              <button class="btn-r">Reset</button>
+              <button class="btn-m">More &#9660;</button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="tbl-hdr">
+            <span style="font-size:11px;color:#718096;">Total: 4 groups</span>
+            <div>
+              <span style="font-size:11px;color:#4a5568;cursor:pointer;">Batch Action &#9660;</span>
+              <button class="tbl-act-btn">Export</button>
+              <button class="tbl-act-btn">Log</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr>
+              <th>Dock Group Name</th><th>Dock Group Type</th><th>Arrival Type</th>
+              <th>Identification</th><th>Cargo Comp</th><th>Action</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>GRP-LH-OUT-01</strong></td>
+                <td><span class="bdg bdg-ob">Outbound</span></td><td>LH &#8211; Outbound</td>
+                <td><span class="st-on">&#9679; On</span></td>
+                <td><span class="st-off">&#9675; Off</span></td>
+                <td><button class="btn-ed" id="editBtn">Edit</button><button class="btn-del">Delete</button></td>
+              </tr>
+              <tr>
+                <td><strong>GRP-FM-OUT-01</strong></td>
+                <td><span class="bdg bdg-ob">Outbound</span></td><td>FM &#8211; Outbound</td>
+                <td><span class="st-on">&#9679; On</span></td>
+                <td><span class="st-on">&#9679; On</span></td>
+                <td><button class="btn-ed">Edit</button><button class="btn-del">Delete</button></td>
+              </tr>
+              <tr>
+                <td><strong>GRP-LH-INB-01</strong></td>
+                <td><span class="bdg bdg-ib">Inbound</span></td><td>LH &#8211; Inbound</td>
+                <td><span class="st-off">&#9675; Off</span></td>
+                <td><span class="st-on">&#9679; On</span></td>
+                <td><button class="btn-ed">Edit</button><button class="btn-del">Delete</button></td>
+              </tr>
+              <tr>
+                <td><strong>GRP-GENERAL-01</strong></td>
+                <td><span class="bdg bdg-ge">General</span></td><td>&#8212;</td>
+                <td><span class="st-off">&#9675; Off</span></td>
+                <td><span class="st-off">&#9675; Off</span></td>
+                <td><button class="btn-ed">Edit</button><button class="btn-del">Delete</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY -->
+  <div id="ovl" class="ovl">
+    <div class="modal" id="modal">
+      <div class="mhdr"><span class="mtit">Edit Automatic Assignment Attributes</span><button class="mcls">&#10005;</button></div>
+      <div class="pfb">
+        <div class="pfi"><div class="pfl">Group Name</div><div class="pfv">GRP-LH-OUT-01</div></div>
+        <div class="pfi"><div class="pfl">Dock Group Type</div><div class="pfv">Outbound</div></div>
+        <div class="pfi"><div class="pfl">Arrival Type</div><div class="pfv">LH &#8211; Outbound</div></div>
+      </div>
+
+      <!-- Warning banner -->
+      <div class="mwarn" id="mwarn">
+        <span style="font-size:14px;flex-shrink:0;">&#9888;</span>
+        <span id="warnTxt">2 docks do not meet the dock group configuration. You can still save — they will use the dock group configuration until their individual settings are updated.</span>
+      </div>
+
+      <div class="mbdy" id="mbdy">
+
+        <!-- IDENTIFICATION -->
+        <div class="msec">
+          <div class="msechdr">
+            <div class="msecl"><div class="msecbar"></div><span class="msectit">Identification</span><span class="msecopt">(optional)</span></div>
+            <div class="msecr">Enable <div class="tgl on" id="idTgl"></div></div>
+          </div>
+          <div class="msecbdy open" id="idBody">
+            <p class="sec-desc">Defines which trips and vehicles are eligible to be assigned to docks within this group. All docks must accept at least the vehicle types and trip classifications configured here.</p>
+            <div class="gi-grid">
+              <div>
+                <div class="flbl">LH Outbound Destination <span class="tag tag-ms">multiselect</span><span class="tag tag-op">optional</span></div>
+                <div class="chipwrap" id="lhWrap"><div class="chip">[7203] LM Hub_SP_Sul <span>&#215;</span></div><span class="addlnk">+ Add</span></div>
+                <div class="fnote">Only editable when Arrival Type = LH &#8211; Outbound.</div>
+              </div>
+              <div>
+                <div class="flbl">Vehicle Type <span class="tag tag-ms">multiselect</span><span class="tag tag-op">optional</span></div>
+                <div class="chipwrap" id="vtWrap"><span class="addlnk" id="vtAdd">+ Add</span></div>
+                <div class="fnote">Default: All. At least one must be selected.</div>
+              </div>
+            </div>
+            <div>
+              <div class="flbl">Trip Classification <span class="tag tag-op">optional</span></div>
+              <select id="tcSel" class="tcsel">
+                <option value="">Select...</option>
+                <option value="LHfield">LHfield</option>
+                <option value="LHtrunking">LHtrunking</option>
+                <option value="LHdirect">LHdirect</option>
+              </select>
+              <div class="fnote">Source: Linehaul Trips &gt; Trip Classification. Single select, exact match.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARGO COMPOSITION -->
+        <div class="msec">
+          <div class="msechdr">
+            <div class="msecl"><div class="msecbar"></div><span class="msectit">Cargo Composition &amp; Parameters</span><span class="msecopt">(optional)</span></div>
+            <div class="msecr">Enable <div class="tgl" id="cargoTgl"></div></div>
+          </div>
+          <div class="msecbdy" id="cargoBody">
+            <p class="sec-desc">Defines the minimum cargo standard that all docks in this group must meet or exceed. Applied directly to docks with Cargo Composition toggled off at dock level.</p>
+            <div class="ccrow">
+              <div class="cclbl">Evaluation<span class="req">*</span></div>
+              <div class="sopt-wrap">
+                <div class="sopt" id="sAbs">Number absolute</div>
+                <div class="sopt" id="sPct">% Percentage</div>
+              </div>
+            </div>
+            <div class="ccrow">
+              <div class="cclbl">Restriction Logic<span class="req">*</span></div>
+              <div>
+                <div class="sopt-wrap">
+                  <div class="sopt" id="sAnd">AND &#8212; all must pass</div>
+                  <div class="sopt" id="sOr">OR &#8212; at least one must pass</div>
+                </div>
+                <div class="lgc-desc" id="lgcDesc" style="display:none;"></div>
+              </div>
+            </div>
+            <div class="attr-hdr">
+              <span class="attr-lbl">Attributes<span class="req">*</span> <span class="hint">(at least one)</span></span>
+              <button class="btn-addattr" id="addAttrBtn">+ Add attribute</button>
+            </div>
+            <div class="apicker" id="apicker">
+              <div class="aitem" id="piTO">TO Pack Type</div>
+              <div class="aitem" id="piSZ">Size Type</div>
+              <div class="aitem" id="piOR">Total of Orders</div>
+            </div>
+            <div id="acards"></div>
+          </div>
+        </div>
+
+        <!-- DOCK COMPLIANCE -->
+        <div class="comp-sec" id="compSec">
+          <div class="comp-hdr">
+            <div class="comp-hdr-l">
+              <div class="msecbar"></div>
+              <div>
+                <div class="msectit">Dock compliance</div>
+                <div class="comp-sub">All docks must meet or exceed the dock group configuration above</div>
+              </div>
+            </div>
+            <span class="inv-badge" id="invBadge">2 invalid</span>
+          </div>
+          <table class="ctbl">
+            <thead>
+              <tr>
+                <th style="width:130px;">Dock</th>
+                <th>Identification</th>
+                <th>Cargo Composition</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="row71">
+                <td><strong>EXT.OUT71</strong></td>
+                <td><span class="cv">&#10003; Valid</span></td>
+                <td><span class="cn">&#8212; Not configured</span></td>
+              </tr>
+              <tr id="row72">
+                <td><strong>EXT.OUT72</strong></td>
+                <td><span class="cv">&#10003; Valid</span></td>
+                <td><span class="cv">&#10003; Valid</span></td>
+              </tr>
+              <tr id="row73">
+                <td><strong>EXT.OUT73</strong></td>
+                <td>
+                  <span class="ci">&#10007; Invalid</span>
+                  <div class="ci-reason">Accepts: TRUCK only &mdash; group requires: TRUCK + CARRETA</div>
+                </td>
+                <td><span class="cn">&#8212; Not configured</span></td>
+              </tr>
+              <tr id="row74">
+                <td><strong>EXT.OUT74</strong></td>
+                <td><span class="cv">&#10003; Valid</span></td>
+                <td>
+                  <span class="ci">&#10007; Invalid</span>
+                  <div class="ci-reason">Saca min: 20% &mdash; group requires: min 50%</div>
+                </td>
+              </tr>
+              <tr id="row75">
+                <td><strong>EXT.OUT75</strong></td>
+                <td><span class="cv">&#10003; Valid</span></td>
+                <td><span class="cv">&#10003; Valid</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      <div class="mftr">
+        <button class="btn-cnl" id="cnlBtn">Cancel</button>
+        <button class="btn-cfm" id="cfmBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="cur"></div>
+  <div id="ring"></div>
+</div>
+</div>
+
+<script>
+const scene=document.getElementById('scene'),swrap=document.getElementById('swrap');
+function scaleScene(){
+  const availW=window.innerWidth-32,availH=window.innerHeight-32;
+  const s=Math.min(availW/1200,availH/820,1);
+  swrap.style.width=Math.round(1200*s)+'px';
+  scene.style.transform='scale('+s+')';
+  swrap.style.height=Math.round(820*s)+'px';
+}
+scaleScene();window.addEventListener('resize',scaleScene);
+
+const cur=document.getElementById('cur'),ring=document.getElementById('ring');
+let aC=0,chips={};
+const TO_OPTS=['Individual Parcel','SP To','Scuttle','Saca','Pallet','Volumoso','Saca Sorter'];
+const SZ_OPTS=['Out of standard','Bulky','Quasi-bulky','Medium','Small','Extra Small'];
+
+function selEval(m){
+  document.getElementById('sAbs').classList.toggle('active',m==='abs');
+  document.getElementById('sPct').classList.toggle('active',m==='pct');
+}
+function selLogic(m){
+  document.getElementById('sAnd').classList.toggle('active',m==='and');
+  document.getElementById('sOr').classList.toggle('active',m==='or');
+  const d=document.getElementById('lgcDesc');
+  d.style.display='block';
+  d.textContent=m==='and'?'All selected attribute restrictions must be satisfied simultaneously.':'The cargo is accepted if at least one attribute restriction is met.';
+}
+function addVtChip(v){
+  const wrap=document.getElementById('vtWrap'),add=document.getElementById('vtAdd');
+  const c=document.createElement('div');c.className='chip';
+  c.innerHTML=v+' <span>&#215;</span>';
+  wrap.insertBefore(c,add);
+}
+function addAttr(type){
+  document.getElementById('apicker').classList.remove('open');
+  aC++;const id=aC;
+  const isOrders=(type==='orders');
+  const title=type==='to-pack'?'TO Pack Type':type==='size'?'Size Type':'Total of Orders';
+  const opts=type==='to-pack'?TO_OPTS:SZ_OPTS;
+  const card=document.createElement('div');card.className='acard';card.id='ac'+id;
+  card.innerHTML='<div class="acard-hdr"><span class="acard-tit">'+title+(!isOrders?' <span style="background:#e9f5fe;color:#2b6cb0;font-size:9px;padding:1px 4px;border-radius:2px;">multiselect</span>':'')+'</span><button class="btn-rm" onclick="rmAttr('+id+')">Remove</button></div>'
+    +(!isOrders?'<div style="font-size:10px;color:#718096;margin-bottom:4px;">Selected values</div>'
+    +'<div class="mswrap" id="mw'+id+'"><span class="addlnk" id="ma'+id+'" style="font-size:11px;">+ Add</span></div>'
+    +'<div class="apicker" id="md'+id+'">'+opts.map(o=>'<div class="aitem" data-v="'+o+'" onclick="addChip('+id+',\''+o+'\')">'+o+'</div>').join('')+'</div>':'')
+    +'<div class="numrow" style="margin-top:7px;"><span>Min<span class="req">*</span></span><input class="numinp" id="mn'+id+'" type="number" placeholder="0"><span>Max<span class="req">*</span></span><input class="numinp" id="mx'+id+'" type="number" placeholder="100"><span style="color:#718096;">'+(isOrders?'orders':'% units')+'</span></div>';
+  document.getElementById('acards').appendChild(card);
+  if(!isOrders){
+    document.getElementById('ma'+id).onclick=function(){document.getElementById('md'+id).classList.toggle('open');};
+    chips[id]=[];
+  }
+}
+function addChip(cid,v){
+  if(chips[cid]&&chips[cid].includes(v))return;
+  if(!chips[cid])chips[cid]=[];
+  chips[cid].push(v);
+  const wrap=document.getElementById('mw'+cid),add=document.getElementById('ma'+cid);
+  const c=document.createElement('div');c.className='mschip';
+  c.innerHTML=v+' <span style="cursor:pointer;">&#215;</span>';
+  wrap.insertBefore(c,add);
+  const drop=document.getElementById('md'+cid);
+  drop.querySelectorAll('.aitem').forEach(i=>{if(i.dataset.v===v)i.style.display='none';});
+  drop.classList.remove('open');
+}
+function rmAttr(id){const c=document.getElementById('ac'+id);if(c)c.remove();delete chips[id];}
+function openModal(){document.getElementById('ovl').classList.add('show');}
+function closeModal(){document.getElementById('ovl').classList.remove('show');}
+
+function highlightRow(id,on){
+  const r=document.getElementById(id);
+  if(r)r.style.outline=on?'2px solid #e53e3e':'none';
+  if(r)r.style.background=on?'#fff5f5':'';
+}
+
+function resetAll(){
+  closeModal();
+  const ct=document.getElementById('cargoTgl'),cb=document.getElementById('cargoBody');
+  ct.classList.remove('on');cb.classList.remove('open');
+  ['sAbs','sPct','sAnd','sOr'].forEach(i=>document.getElementById(i).classList.remove('active'));
+  document.getElementById('lgcDesc').style.display='none';
+  document.getElementById('acards').innerHTML='';
+  document.getElementById('apicker').classList.remove('open');
+  const tcSel=document.getElementById('tcSel');if(tcSel)tcSel.value='';
+  const vtWrap=document.getElementById('vtWrap');
+  vtWrap.querySelectorAll('.chip').forEach(c=>c.remove());
+  aC=0;chips={};
+  document.getElementById('mbdy').scrollTop=0;
+  document.getElementById('mwarn').classList.remove('show');
+  ['row71','row72','row73','row74','row75'].forEach(id=>highlightRow(id,false));
+  cur.style.left='-80px';cur.style.top='-80px';
+}
+
+function getP(el){
+  const sr=scene.getBoundingClientRect(),er=el.getBoundingClientRect(),sx=1200/sr.width,sy=820/sr.height;
+  return{x:(er.left-sr.left+er.width/2)*sx,y:(er.top-sr.top+er.height/2)*sy};
+}
+function sl(ms){return new Promise(r=>setTimeout(r,ms));}
+async function clk(el,fn,t){
+  const p=getP(el);
+  cur.style.left=p.x+'px';cur.style.top=p.y+'px';
+  ring.style.left=p.x+'px';ring.style.top=p.y+'px';
+  await sl(t||500);
+  ring.className='ringing';setTimeout(()=>ring.className='',450);
+  if(fn)fn();await sl(450);
+}
+async function chipSeq(cid,vals){
+  for(const v of vals){
+    const addEl=document.getElementById('ma'+cid);
+    await clk(addEl,()=>{document.getElementById('md'+cid).classList.add('open');},350);
+    await sl(250);
+    const drop=document.getElementById('md'+cid);
+    const item=Array.from(drop.querySelectorAll('.aitem')).find(i=>i.dataset.v===v&&i.style.display!=='none');
+    if(item)await clk(item,()=>addChip(cid,v),300);
+    await sl(200);
+  }
+}
+async function smoothScroll(el,target,dur){
+  const start=el.scrollTop,dist=target-start,steps=Math.ceil(dur/16);
+  for(let i=1;i<=steps;i++){
+    el.scrollTop=start+dist*(i/steps);
+    await sl(16);
+  }
+}
+
+async function animate(){
+  while(true){
+    resetAll();await sl(700);
+
+    // Click Edit
+    await clk(document.getElementById('editBtn'),openModal,600);
+    await sl(500);
+
+    // Select Trip Classification
+    const tcSel=document.getElementById('tcSel');
+    await clk(tcSel,()=>{tcSel.value='LHfield';},400);
+    await sl(350);
+
+    // Add Vehicle Type
+    await clk(document.getElementById('vtAdd'),()=>{addVtChip('TRUCK – EXPRESSA');},400);
+    await sl(350);
+
+    // Enable Cargo Composition
+    await clk(document.getElementById('cargoTgl'),()=>{
+      document.getElementById('cargoTgl').classList.add('on');
+      document.getElementById('cargoBody').classList.add('open');
+    },450);
+    await sl(400);
+
+    // Scroll down to see cargo section
+    const mbdy=document.getElementById('mbdy');
+    await smoothScroll(mbdy,120,300);
+    await sl(200);
+
+    // Evaluation mode
+    await clk(document.getElementById('sPct'),()=>selEval('pct'),400);
+    await sl(300);
+
+    // Restriction logic
+    await clk(document.getElementById('sOr'),()=>selLogic('or'),400);
+    await sl(300);
+
+    // Add TO Pack Type
+    await clk(document.getElementById('addAttrBtn'),()=>{document.getElementById('apicker').classList.add('open');},400);
+    await sl(300);
+    await clk(document.getElementById('piTO'),()=>addAttr('to-pack'),400);
+    await sl(350);
+    await chipSeq(1,['Saca','Pallet','Volumoso']);
+    const mn1=document.getElementById('mn1'),mx1=document.getElementById('mx1');
+    if(mn1)await clk(mn1,()=>{mn1.value='50';},300);
+    if(mx1)await clk(mx1,()=>{mx1.value='100';},300);
+    await sl(300);
+
+    // Scroll and Add Size Type
+    let target=mbdy.scrollHeight-mbdy.clientHeight;
+    await smoothScroll(mbdy,target*0.55,400);
+    await sl(200);
+
+    await clk(document.getElementById('addAttrBtn'),()=>{document.getElementById('apicker').classList.add('open');},400);
+    await sl(300);
+    await clk(document.getElementById('piSZ'),()=>addAttr('size'),400);
+    await sl(350);
+    await chipSeq(2,['Bulky','Quasi-bulky']);
+    await sl(400);
+
+    // Scroll to compliance section
+    target=mbdy.scrollHeight-mbdy.clientHeight;
+    await smoothScroll(mbdy,target,500);
+    await sl(500);
+
+    // Show warning banner (scroll modal to top to reveal it)
+    document.getElementById('mwarn').classList.add('show');
+    await smoothScroll(mbdy,0,400);
+    await sl(600);
+
+    // Scroll back down to highlight invalid rows
+    target=mbdy.scrollHeight-mbdy.clientHeight;
+    await smoothScroll(mbdy,target,500);
+    await sl(300);
+
+    // Highlight invalid rows
+    highlightRow('row73',true);
+    highlightRow('row74',true);
+    await sl(1800);
+    highlightRow('row73',false);
+    highlightRow('row74',false);
+    await sl(400);
+
+    // Save
+    await clk(document.getElementById('cfmBtn'),closeModal,500);
+    await sl(1200);
+  }
+}
+setTimeout(animate,600);
+</script>
+</body>
+</html>

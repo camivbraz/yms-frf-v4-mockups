@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Process Notifications Config – SPX Admin Mockup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#e8eaf0;display:flex;align-items:flex-start;justify-content:center;padding:20px;font-family:'Segoe UI',Arial,sans-serif;}
+.scene-wrap{border-radius:10px;box-shadow:0 6px 32px rgba(0,0,0,0.22);overflow:hidden;}
+#scene{width:1920px;height:1080px;transform-origin:top left;background:#f0f2f5;display:flex;flex-direction:row;position:relative;}
+
+/* SIDEBAR */
+.sb{width:220px;background:#1a1f36;flex-shrink:0;display:flex;flex-direction:column;font-size:13px;}
+.sb-logo{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo .sp{color:#fff;font-size:20px;font-weight:700;}
+.sb-logo .xp{color:#EE4D2D;}
+.sb-uattag{background:#EE4D2D;color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:4px;}
+.sb-sec{font-size:10px;color:#4a5568;padding:12px 20px 4px;text-transform:uppercase;letter-spacing:.7px;}
+.sb-item{padding:10px 20px;color:#8892b0;border-left:3px solid transparent;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.sb-item.act{color:#fff;background:rgba(238,77,45,.15);border-left-color:#EE4D2D;}
+.sb-item.sub{padding-left:32px;font-size:12px;}
+.sb-item.sub.act{color:#fff;background:rgba(238,77,45,.1);border-left-color:#EE4D2D;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{height:52px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 28px;flex-shrink:0;}
+.bread{font-size:13px;color:#718096;display:flex;align-items:center;gap:6px;}
+.bread .cur{color:#1a202c;font-weight:500;}
+.bread-sep{color:#cbd5e0;}
+
+/* PAGE TABS */
+.page-tabs{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 28px;flex-shrink:0;}
+.ptab{padding:14px 20px;font-size:13px;color:#718096;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;}
+.ptab:hover{color:#EE4D2D;}
+.ptab.act{color:#EE4D2D;border-bottom-color:#EE4D2D;font-weight:500;}
+
+/* CONTENT */
+.content{flex:1;padding:24px 32px;overflow-y:auto;background:#f5f6f8;}
+
+/* PAGE TITLE */
+.page-title{font-size:16px;font-weight:600;color:#1a202c;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.page-title::before{content:'';display:inline-block;width:4px;height:18px;background:#EE4D2D;border-radius:2px;}
+.page-sub{font-size:12.5px;color:#718096;margin-bottom:20px;padding-left:12px;}
+
+/* CONFIG SECTION */
+.cfg-section{background:#fff;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:16px;overflow:hidden;}
+.cfg-section-hdr{
+  display:grid;grid-template-columns:1fr 140px 140px;
+  padding:12px 22px;background:#f7f8fa;border-bottom:1px solid #e2e8f0;
+}
+.cfg-section-hdr .title{font-size:13.5px;font-weight:600;color:#2d3748;}
+.cfg-section-hdr .col-lbl{font-size:12px;font-weight:600;color:#718096;text-align:center;}
+
+/* CONFIG ROW */
+.cfg-row{
+  display:grid;grid-template-columns:1fr 140px 140px;align-items:center;
+  padding:13px 22px;border-bottom:1px solid #f5f5f5;
+}
+.cfg-row:last-child{border-bottom:none;}
+.cfg-row:hover{background:#fafafa;}
+.cfg-row .label{font-size:13px;color:#2d3748;}
+
+/* TOGGLE CELL */
+.tgl-cell{display:flex;align-items:center;justify-content:center;gap:7px;}
+.tgl-lbl{font-size:12.5px;font-weight:500;}
+.tgl-lbl.on{color:#38a169;}
+.tgl-lbl.off{color:#a0aec0;}
+.tgl{width:40px;height:22px;border-radius:11px;position:relative;cursor:pointer;display:inline-block;flex-shrink:0;transition:background .15s;}
+.tgl.on{background:#38a169;}
+.tgl.off{background:#e2e8f0;}
+.tgl::after{content:'';width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:3px;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tgl.on::after{left:21px;}
+.tgl.off::after{left:3px;}
+
+/* SETTINGS CELL */
+.settings-cell{display:flex;align-items:center;justify-content:center;gap:4px;}
+.settings-cell input{
+  width:64px;border:1px solid #e2e8f0;border-radius:4px;
+  padding:5px 8px;font-size:13px;color:#2d3748;text-align:right;background:#fff;
+}
+.settings-cell input:focus{outline:none;border-color:#EE4D2D;}
+.settings-cell input:disabled{background:#f7f8fa;color:#a0aec0;cursor:not-allowed;}
+.settings-cell .unit{font-size:12px;color:#a0aec0;}
+.settings-cell .na{font-size:12px;color:#cbd5e0;}
+
+/* SAVE BAR */
+.save-bar{background:#fff;border-top:1px solid #e2e8f0;padding:14px 32px;display:flex;justify-content:flex-end;gap:12px;flex-shrink:0;}
+.btn-save{background:#EE4D2D;color:#fff;border:none;border-radius:4px;padding:9px 28px;font-size:14px;cursor:pointer;font-weight:500;}
+.btn-cancel{background:#fff;color:#4a5568;border:1px solid #e2e8f0;border-radius:4px;padding:9px 20px;font-size:14px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="scene-wrap">
+<div id="scene">
+
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-logo">
+      <span class="sp">Shopee<span class="xp">Xpress</span></span><span class="sb-uattag">UAT</span>
+      <div style="font-size:11px;color:#5a6380;margin-top:3px;">Hub_SP_Mauá ▾</div>
+    </div>
+    <div style="padding:8px 20px;font-size:11px;color:#8892b0;border-bottom:1px solid rgba(255,255,255,.06);">📍 Hub SP Mauá</div>
+    <div style="flex:1;">
+      <div class="sb-sec">Menu</div>
+      <div class="sb-item">▦ Dashboard</div>
+      <div class="sb-item">📦 Order Management</div>
+      <div class="sb-item">🚛 LineHaul</div>
+      <div class="sb-item act">🏢 Station Management</div>
+      <div class="sb-item sub">Zone Management</div>
+      <div class="sb-item sub act">Queue &amp; Dock Configurations</div>
+      <div class="sb-item sub">Dock Management</div>
+      <div class="sb-item sub">Entry Site Config</div>
+      <div class="sb-item">⚙ Operation Support</div>
+      <div class="sb-item">💰 Finance</div>
+      <div class="sb-item">👥 Workforce Management</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <div class="topbar">
+      <div class="bread">
+        Station Management <span class="bread-sep">›</span>
+        <span class="cur">Queue &amp; Dock Configurations</span>
+      </div>
+    </div>
+
+    <div class="page-tabs">
+      <div class="ptab">Queue Dock Configurations</div>
+      <div class="ptab">Vehicle Capacity Control</div>
+      <div class="ptab">Entry Site Configuration</div>
+      <div class="ptab">Automatic Queue Registration</div>
+      <div class="ptab act">Process Notifications</div>
+    </div>
+
+    <div class="content">
+
+      <div class="page-title">Configurations For Process Notifications</div>
+      <div class="page-sub">Configure automated notifications sent to drivers during dock operations. All settings apply at station level. X₁% and X₂% are configured independently per task type.</div>
+
+      <!-- ══════════════════════════════
+           SECTION 1 — PROGRESS ALERT (Current driver · notification 1)
+      ══════════════════════════════ -->
+      <div class="cfg-section">
+        <div class="cfg-section-hdr">
+          <span class="title">Progress Alert Toggles — Current Driver</span>
+          <span class="col-lbl">Status</span>
+          <span class="col-lbl">Threshold (X₁%)</span>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Inbound Vehicles Progress Alert</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="tog(this, 'x1-lh-ib')"></div></div>
+          <div class="settings-cell"><input id="x1-lh-ib" type="number" value="80" min="1" max="99"/><span class="unit">%</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Outbound Vehicles Progress Alert</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="tog(this, 'x1-lh-ob')"></div></div>
+          <div class="settings-cell"><input id="x1-lh-ob" type="number" value="" min="1" max="99" disabled placeholder="—"/><span class="unit">%</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Inbound &amp; Outbound Vehicles Progress Alert</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="tog(this, 'x1-lh-io')"></div></div>
+          <div class="settings-cell"><input id="x1-lh-io" type="number" value="" min="1" max="99" disabled placeholder="—"/><span class="unit">%</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">FM - Inbound Vehicles Progress Alert</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="tog(this, 'x1-fm-ib')"></div></div>
+          <div class="settings-cell"><input id="x1-fm-ib" type="number" value="75" min="1" max="99"/><span class="unit">%</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">Delivery - Outbound Vehicles Progress Alert</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="tog(this, 'x1-del-ob')"></div></div>
+          <div class="settings-cell"><input id="x1-del-ob" type="number" value="" min="1" max="99" disabled placeholder="—"/><span class="unit">%</span></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           SECTION 2 — END PROCESS (Current driver · notification 2)
+      ══════════════════════════════ -->
+      <div class="cfg-section">
+        <div class="cfg-section-hdr">
+          <span class="title">End Process Notification Toggles — Current Driver</span>
+          <span class="col-lbl">Status</span>
+          <span class="col-lbl"></span>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Inbound Vehicles End Process Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Outbound Vehicles End Process Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Inbound &amp; Outbound Vehicles End Process Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">FM - Inbound Vehicles End Process Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">Delivery - Outbound Vehicles End Process Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           SECTION 3 — PRE-CALL (Next driver · notification 3)
+      ══════════════════════════════ -->
+      <div class="cfg-section">
+        <div class="cfg-section-hdr">
+          <span class="title">Pre-Call Notification Toggles — Next Driver</span>
+          <span class="col-lbl">Status</span>
+          <span class="col-lbl">Threshold (X₂%)</span>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Inbound Vehicles Pre-Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="tog(this,'x2-lh-ib')"></div></div>
+          <div class="settings-cell"><input id="x2-lh-ib" type="number" value="60" min="1" max="99"/><span class="unit">%</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Outbound Vehicles Pre-Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="tog(this,'x2-lh-ob')"></div></div>
+          <div class="settings-cell"><input id="x2-lh-ob" type="number" value="" min="1" max="99" disabled placeholder="—"/><span class="unit">%</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Inbound &amp; Outbound Vehicles Pre-Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="tog(this,'x2-lh-io')"></div></div>
+          <div class="settings-cell"><input id="x2-lh-io" type="number" value="" min="1" max="99" disabled placeholder="—"/><span class="unit">%</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">FM - Inbound Vehicles Pre-Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="tog(this,'x2-fm-ib')"></div></div>
+          <div class="settings-cell"><input id="x2-fm-ib" type="number" value="55" min="1" max="99"/><span class="unit">%</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">Delivery - Outbound Vehicles Pre-Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="tog(this,'x2-del-ob')"></div></div>
+          <div class="settings-cell"><input id="x2-del-ob" type="number" value="" min="1" max="99" disabled placeholder="—"/><span class="unit">%</span></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           SECTION 4 — EFFECTIVE CALL (Next driver · notification 4)
+      ══════════════════════════════ -->
+      <div class="cfg-section">
+        <div class="cfg-section-hdr">
+          <span class="title">Effective Call Notification Toggles — Next Driver</span>
+          <span class="col-lbl">Status</span>
+          <span class="col-lbl"></span>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Inbound Vehicles Effective Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Outbound Vehicles Effective Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">LH - Inbound &amp; Outbound Vehicles Effective Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">FM - Inbound Vehicles Effective Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl on">On</span><div class="tgl on" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+        <div class="cfg-row">
+          <div class="label">Delivery - Outbound Vehicles Effective Call Notification</div>
+          <div class="tgl-cell"><span class="tgl-lbl off">Off</span><div class="tgl off" onclick="togSimple(this)"></div></div>
+          <div class="settings-cell"><span class="na">—</span></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <div class="save-bar">
+      <button class="btn-cancel">Cancel</button>
+      <button class="btn-save">Save</button>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /scene -->
+</div><!-- /scene-wrap -->
+
+<script>
+function scaleScene(){
+  const scene=document.getElementById('scene');
+  const wrap=document.querySelector('.scene-wrap');
+  const scale=Math.min((window.innerWidth-40)/1920,(window.innerHeight-40)/1080);
+  scene.style.transform=`scale(${scale})`;
+  wrap.style.width=Math.round(1920*scale)+'px';
+  wrap.style.height=Math.round(1080*scale)+'px';
+}
+window.addEventListener('resize',scaleScene);
+scaleScene();
+
+function tog(tgl, inputId){
+  const isOn=tgl.classList.contains('on');
+  const lbl=tgl.previousElementSibling;
+  const inp=document.getElementById(inputId);
+  if(isOn){
+    tgl.classList.replace('on','off');
+    lbl.classList.replace('on','off');
+    lbl.textContent='Off';
+    if(inp){inp.disabled=true;inp.value='';inp.placeholder='—';}
+  } else {
+    tgl.classList.replace('off','on');
+    lbl.classList.replace('off','on');
+    lbl.textContent='On';
+    if(inp){inp.disabled=false;inp.placeholder='';}
+  }
+}
+
+function togSimple(tgl){
+  const isOn=tgl.classList.contains('on');
+  const lbl=tgl.previousElementSibling;
+  if(isOn){
+    tgl.classList.replace('on','off');
+    lbl.classList.replace('on','off');
+    lbl.textContent='Off';
+  } else {
+    tgl.classList.replace('off','on');
+    lbl.classList.replace('off','on');
+    lbl.textContent='On';
+  }
+}
+</script>
+</body>
+</html>

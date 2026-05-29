@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>4.2.3.8 — Vacancy Cascade Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #F4F5F7;
+    padding: 20px 24px 32px;
+    min-width: 900px;
+  }
+
+  h1 { text-align: center; font-size: 13px; font-weight: 700; color: #333; margin-bottom: 3px; }
+  .subtitle { text-align: center; font-size: 10px; color: #999; margin-bottom: 20px; }
+
+  .canvas { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  .arrow-v { width: 2px; background: #BBBFC9; margin: 0 auto; }
+  .arrowhead-d {
+    width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 6px solid #BBBFC9; margin: 0 auto;
+  }
+  .arrowhead-d.green  { border-top-color: #43A047; }
+  .arrowhead-d.blue   { border-top-color: #1E88E5; }
+  .arrowhead-d.purple { border-top-color: #7B61FF; }
+
+  .box {
+    border-radius: 8px; padding: 7px 14px;
+    text-align: center; font-size: 10.5px; font-weight: 600;
+    line-height: 1.4; min-width: 160px; max-width: 230px;
+  }
+  .box-trigger  { background: #E8EAF6; border: 2px solid #5C6BC0; color: #283593; }
+  .box-action   { background: #E3F2FD; border: 2px solid #1E88E5; color: #0D47A1; }
+  .box-success  { background: #E8F5E9; border: 2px solid #43A047; color: #1B5E20; }
+  .box-purple   { background: #EDE7F6; border: 2px solid #7B61FF; color: #4527A0; }
+  .box-wait     { background: #FCE4EC; border: 2px solid #E53935; color: #880E4F; }
+  .box-notify   { background: #FFF3E0; border: 2px solid #FB8C00; color: #E65100; }
+
+  .diamond-outer { display: flex; flex-direction: column; align-items: center; }
+  .diamond {
+    width: 128px; height: 62px;
+    background: #FFF8E1; border: 2px solid #FFA000;
+    color: #E65100; font-size: 9.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 4px 12px;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    line-height: 1.3;
+  }
+
+  .lbl {
+    display: inline-block; padding: 1px 7px; border-radius: 8px;
+    font-size: 8.5px; font-weight: 800; color: #fff; letter-spacing: 0.3px;
+  }
+  .lbl-yes    { background: #43A047; }
+  .lbl-no     { background: #E53935; }
+  .lbl-purple { background: #7B61FF; }
+
+  .pill {
+    display: inline-block; padding: 1px 8px; border-radius: 20px;
+    font-size: 8px; font-weight: 800; letter-spacing: 0.4px; margin-top: 4px;
+  }
+  .pill-assigned { background: #C8E6C9; color: #1B5E20; border: 1px solid #43A047; }
+
+  .h-line { height: 2px; background: #BBBFC9; }
+  .arrowhead-r {
+    width: 0; height: 0;
+    border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+    border-left: 6px solid #BBBFC9;
+  }
+
+  /* two-column split */
+  .split { display: flex; align-items: flex-start; justify-content: center; width: 100%; gap: 40px; }
+  .split-col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  .section-divider {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; max-width: 640px; margin: 14px 0 10px;
+  }
+  .divider-line { flex: 1; height: 1px; background: #d0d3da; }
+  .divider-tag {
+    font-size: 9px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #888; white-space: nowrap;
+  }
+
+  .info-card {
+    margin-top: 14px; padding: 8px 16px;
+    background: #E8EAF6; border-radius: 8px; border: 1px solid #9FA8DA;
+    font-size: 9.5px; color: #283593; max-width: 580px;
+    text-align: center; line-height: 1.6;
+  }
+
+  .note { font-size: 9px; color: #aaa; font-style: italic; text-align: center; margin-top: 3px; max-width: 180px; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<h1>4.2.3.8 — Vacancy Cascade</h1>
+<p class="subtitle">Chain reassignment triggered when a vacancy opens at a lower-numbered site</p>
+
+<div class="canvas">
+
+  <!-- TRIGGER -->
+  <div class="box box-trigger">
+    Vacancy opens at a site<br>
+    <span style="font-size:9.5px;font-weight:400;">Vehicle removed from queue, called to dock, or config updated</span>
+  </div>
+
+  <div class="arrow-v" style="height:14px;"></div>
+  <div class="arrowhead-d"></div>
+
+  <!-- IDENTIFY VACANCY -->
+  <div class="box box-action">
+    Identify vacancy site level<br>
+    <span style="font-size:9.5px;font-weight:400;">Which site now has available quota?</span>
+  </div>
+
+  <div class="arrow-v" style="height:14px;"></div>
+  <div class="arrowhead-d"></div>
+
+  <!-- CHECK: is there a driver at a higher site? -->
+  <div class="diamond-outer">
+    <div class="diamond">Driver assigned to<br>a higher-numbered site<br><span style="font-size:8.5px;font-weight:400;">(further from dock)</span></div>
+  </div>
+
+  <div style="display:flex; width:640px; align-items:flex-start; justify-content:center; gap:0;">
+
+    <!-- NO branch -->
+    <div style="display:flex; flex-direction:column; align-items:flex-end; width:48%; padding-top:28px;">
+      <div style="display:flex; align-items:center; justify-content:flex-end; width:100%;">
+        <span class="lbl lbl-no" style="margin-right:5px;">NO</span>
+        <div class="h-line" style="width:48px;"></div>
+        <div class="arrowhead-r"></div>
+      </div>
+    </div>
+
+    <!-- YES branch -->
+    <div style="display:flex; flex-direction:column; align-items:flex-start; width:48%;">
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <span class="lbl lbl-yes" style="margin-bottom:3px;">YES</span>
+        <div class="arrow-v" style="height:14px;"></div>
+        <div class="arrowhead-d"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TWO COLUMNS: YES path (cascade) + NO path (check geofence) -->
+  <div class="split" style="gap:24px; width:640px; align-items:flex-start;">
+
+    <!-- YES col: cascade move -->
+    <div class="split-col" style="flex:1;">
+      <div class="box box-purple" style="font-size:9.5px;">
+        Move driver down<br>to vacancy site<br>
+        <span style="font-size:9px;font-weight:400;">Update entry tag to new (lower) site</span>
+      </div>
+      <div class="arrow-v" style="height:12px; background:#7B61FF;"></div>
+      <div class="arrowhead-d purple"></div>
+      <div class="box box-action" style="font-size:9.5px;">
+        Vacancy created<br>at previous (higher) site<br>
+        <span style="font-size:9px;font-weight:400;">Quota updated</span>
+      </div>
+      <div class="arrow-v" style="height:12px;"></div>
+      <div class="arrowhead-d"></div>
+      <div class="diamond-outer">
+        <div class="diamond">More drivers at<br>higher sites?</div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <span class="lbl lbl-purple" style="margin-bottom:3px; margin-top:4px;">YES → repeat cascade</span>
+        <div class="note">Chain continues until no more drivers can move down</div>
+      </div>
+    </div>
+
+    <!-- NO col: check geofence waiting drivers -->
+    <div class="split-col" style="flex:1; padding-top:0;">
+      <div class="box box-action" style="font-size:9.5px;">
+        Check drivers waiting<br>in geofence area<br>
+        <span style="font-size:9px;font-weight:400;">Any unassigned drivers in queue?</span>
+      </div>
+      <div class="arrow-v" style="height:12px;"></div>
+      <div class="arrowhead-d"></div>
+      <div class="diamond-outer">
+        <div class="diamond">Eligible geofence<br>driver found?<br><span style="font-size:8.5px;font-weight:400;">(type match + quota)</span></div>
+      </div>
+      <div style="display:flex; width:100%; align-items:flex-start; justify-content:center; gap:0;">
+        <!-- NO -->
+        <div style="display:flex; flex-direction:column; align-items:flex-end; width:48%; padding-top:28px;">
+          <div style="display:flex; align-items:center; justify-content:flex-end; width:100%;">
+            <span class="lbl lbl-no" style="margin-right:5px;">NO</span>
+            <div class="h-line" style="width:32px;"></div>
+            <div class="arrowhead-r"></div>
+          </div>
+        </div>
+        <!-- YES -->
+        <div style="display:flex; flex-direction:column; align-items:flex-start; width:48%;">
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <span class="lbl lbl-yes" style="margin-bottom:3px;">YES</span>
+            <div class="arrow-v" style="height:12px; background:#43A047;"></div>
+            <div class="arrowhead-d green"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Branches: NO = vacancy stays open, YES = assign -->
+      <div style="display:flex; width:100%; gap:8px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-end; flex:1; padding-top:4px;">
+          <div class="box box-wait" style="font-size:9px; min-width:110px; max-width:130px;">
+            Vacancy remains open<br>
+            <span style="font-size:8.5px;font-weight:400;">Awaits next trigger</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-start; flex:1;">
+          <div class="box box-success" style="font-size:9px; min-width:110px; max-width:130px;">
+            Assign entry tag<br>to driver<br>
+            <span class="pill pill-assigned" style="font-size:7.5px;">TAG ASSIGNED</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NOTIFY -->
+  <div class="section-divider">
+    <div class="divider-line"></div>
+    <div class="divider-tag">Driver notification</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="box box-notify">
+    Driver App updated<br>
+    <span style="font-size:9.5px;font-weight:400;">New entry tag displayed · Push notification sent if tag changed</span>
+  </div>
+
+  <div class="info-card">
+    <strong>Cascade direction:</strong> always moves drivers toward lower-numbered sites (closer to dock) &nbsp;·&nbsp;
+    <strong>Priority:</strong> queue order is preserved during reassignment &nbsp;·&nbsp;
+    <strong>Geofence drivers</strong> are only assigned after all cascade moves are complete
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experiência do Motorista — 4.2.3.4 Verificação STA na Entrada da Geofence</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #ECEEF2;
+    padding: 32px 24px 48px;
+  }
+
+  h1 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    margin-top: 36px;
+  }
+  .section-header:first-of-type { margin-top: 0; }
+  .section-line { flex: 1; height: 1px; background: #d0d3da; }
+  .section-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    white-space: nowrap;
+  }
+
+  .row {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .phone-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    text-align: center;
+  }
+  .phone-desc {
+    font-size: 10px;
+    color: #aaa;
+    text-align: center;
+    max-width: 220px;
+    line-height: 1.4;
+  }
+
+  .toggle-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .toggle-on  { background: #E8F5E9; color: #2E7D32; }
+  .toggle-off { background: #FFF3E0; color: #E65100; }
+  .toggle-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .toggle-on  .toggle-dot { background: #4CAF50; }
+  .toggle-off .toggle-dot { background: #FF9800; }
+
+  .phone {
+    width: 230px;
+    background: #fff;
+    border-radius: 32px;
+    box-shadow: 0 10px 36px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.09);
+    overflow: hidden;
+    border: 5px solid #1a1a1a;
+    position: relative;
+  }
+
+  .sbar {
+    background: #fff;
+    padding: 8px 16px 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sbar-time { font-size: 11px; font-weight: 700; color: #111; }
+  .sbar-icons { font-size: 9px; color: #111; }
+
+  .aheader {
+    background: #fff;
+    padding: 6px 14px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .aheader-back { font-size: 16px; color: #333; }
+  .aheader-title { font-size: 13px; font-weight: 600; color: #111; }
+
+  .update-bar {
+    background: #fafafa;
+    padding: 5px 12px;
+    font-size: 9px;
+    color: #bbb;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .sbody {
+    background: #F5F6F8;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .banner-blue {
+    background: #EBF4FD;
+    padding: 8px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .banner-blue .bicon { font-size: 15px; margin-top: 1px; }
+  .banner-blue .btext { font-size: 10px; color: #1565C0; line-height: 1.5; font-weight: 500; }
+
+  .mcard {
+    background: #fff;
+    margin: 10px 10px 8px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .stats {
+    display: flex;
+    border-bottom: 1px solid #F2F2F2;
+  }
+  .sc { flex: 1; padding: 12px 10px 8px; text-align: center; }
+  .sc + .sc { border-left: 1px solid #F2F2F2; }
+  .sv { font-size: 22px; font-weight: 800; color: #111; line-height: 1; margin-bottom: 3px; }
+  .sl { font-size: 9px; color: #bbb; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  .irow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 12px;
+    border-bottom: 1px solid #F8F8F8;
+  }
+  .irow:last-child { border-bottom: none; }
+  .ik { font-size: 10px; color: #bbb; }
+  .iv { font-size: 10px; color: #333; font-weight: 500; text-align: right; }
+  .iv.teal  { color: #00897B; font-weight: 700; }
+  .iv.red   { color: #C62828; font-weight: 700; }
+  .iv.muted { color: #ccc; font-style: italic; }
+
+  .bcarea { padding: 8px 12px 10px; text-align: center; }
+  .bc {
+    background: repeating-linear-gradient(
+      90deg,
+      #111 0px,#111 3px,#fff 3px,#fff 5px,
+      #111 5px,#111 7px,#fff 7px,#fff 11px,
+      #111 11px,#111 13px,#fff 13px,#fff 16px,
+      #111 16px,#111 18px,#fff 18px,#fff 20px,
+      #111 20px,#111 22px,#fff 22px,#fff 26px
+    );
+    height: 46px; border-radius: 2px; margin-bottom: 5px;
+  }
+  .bchint { font-size: 9px; color: #bbb; line-height: 1.4; }
+
+  .rel-card {
+    margin: 0 10px 8px;
+    background: #F8F8F8;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .rel-inner { padding: 14px; text-align: center; }
+  .rel-label { font-size: 9px; color: #bbb; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-bottom: 6px; }
+  .rel-time  { font-size: 28px; font-weight: 800; color: #333; line-height: 1; }
+  .rel-date  { font-size: 10px; color: #bbb; margin-top: 3px; }
+
+  .instr-card {
+    margin: 0 10px 10px;
+    background: #FFF8F2;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .instr-card input[type=checkbox] { width: 12px; height: 12px; margin-top: 1px; flex-shrink: 0; }
+  .instr-card span { font-size: 10px; color: #999; line-height: 1.5; }
+
+  .early-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 16px;
+    flex: 1;
+  }
+  .early-icon {
+    width: 64px; height: 64px;
+    background: #FDECEA;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .early-icon svg { width: 32px; height: 32px; }
+  .early-title {
+    font-size: 15px; font-weight: 700; color: #C62828;
+    text-align: center; margin-bottom: 7px;
+  }
+  .early-desc {
+    font-size: 11px; color: #888;
+    text-align: center; line-height: 1.6;
+    margin-bottom: 22px; padding: 0 6px;
+  }
+
+  .cta {
+    background: #E84321;
+    color: #fff;
+    text-align: center;
+    padding: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: auto;
+  }
+
+  .push-pill {
+    position: absolute;
+    top: 56px;
+    left: 8px;
+    right: 8px;
+    background: rgba(255,255,255,0.97);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 20;
+  }
+  .pp-icon {
+    width: 32px; height: 32px;
+    background: #E84321; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .pp-content { flex: 1; }
+  .pp-app   { font-size: 9px; color: #bbb; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pp-title { font-size: 11px; font-weight: 700; color: #111; line-height: 1.3; margin-top: 1px; }
+  .pp-body  { font-size: 10px; color: #666; line-height: 1.3; margin-top: 2px; }
+  .pp-time  { font-size: 9px; color: #ccc; flex-shrink: 0; align-self: flex-start; }
+
+  .dimmed { filter: brightness(0.55); }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 30px 20px;
+  }
+  .empty-icon { font-size: 40px; opacity: 0.2; }
+  .empty-text { font-size: 11px; color: #ccc; text-align: center; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<h1>4.2.3.4 — Verificação STA na Entrada da Geofence · Experiência do Motorista</h1>
+<p class="subtitle">Todos os estados exibidos dentro do Aplicativo do Motorista › Status da Fila</p>
+
+
+<!-- ══════════════════════════════════════════════════
+     SEÇÃO 1 — CHEGADA ANTECIPADA (PENDENTE)
+     ══════════════════════════════════════════════════ -->
+<div class="section-header">
+  <div class="section-line"></div>
+  <div class="section-tag">Chegada Antecipada — Status da Fila: Pendente</div>
+  <div class="section-line"></div>
+</div>
+
+<div class="row">
+
+  <!-- A1: Toggle OFF — sem horário de liberação -->
+  <div class="phone-wrap">
+    <div class="phone-label">Toggle OFF</div>
+    <span class="toggle-badge toggle-off">
+      <span class="toggle-dot"></span> Exibir horário de liberação: Não
+    </span>
+    <div class="phone">
+      <div class="sbar">
+        <span class="sbar-time">21:34</span>
+        <span class="sbar-icons">🔒 📶 🔋</span>
+      </div>
+      <div class="aheader">
+        <span class="aheader-back">←</span>
+        <span class="aheader-title">Status da Fila</span>
+      </div>
+      <div class="sbody">
+        <div class="early-screen">
+          <div class="early-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="11" width="18" height="11" rx="2" stroke="#C62828" stroke-width="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4" stroke="#C62828" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="early-title">Entrada não permitida</div>
+          <div class="early-desc">Você chegou antes do horário permitido para sua viagem agendada.</div>
+          <div class="instr-card" style="width:100%;">
+            <input type="checkbox" disabled>
+            <span>Apresente-se novamente no horário indicado.</span>
+          </div>
+        </div>
+        <div class="cta">Registro de Fila</div>
+      </div>
+    </div>
+    <div class="phone-desc">Motorista vê o bloqueio — sem horário de liberação exposto</div>
+  </div>
+
+  <!-- A2: Toggle ON — com horário de liberação -->
+  <div class="phone-wrap">
+    <div class="phone-label">Toggle ON</div>
+    <span class="toggle-badge toggle-on">
+      <span class="toggle-dot"></span> Exibir horário de liberação: Sim
+    </span>
+    <div class="phone">
+      <div class="sbar">
+        <span class="sbar-time">21:34</span>
+        <span class="sbar-icons">🔒 📶 🔋</span>
+      </div>
+      <div class="aheader">
+        <span class="aheader-back">←</span>
+        <span class="aheader-title">Status da Fila</span>
+      </div>
+      <div class="sbody">
+        <div class="early-screen">
+          <div class="early-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="11" width="18" height="11" rx="2" stroke="#C62828" stroke-width="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4" stroke="#C62828" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="early-title">Entrada não permitida</div>
+          <div class="early-desc">Você chegou antes do horário permitido para sua viagem agendada.</div>
+          <div class="rel-card" style="width:100%; margin: 0 0 10px;">
+            <div class="rel-inner">
+              <div class="rel-label">Entrada na fila liberada a partir de</div>
+              <div class="rel-time">14:30</div>
+              <div class="rel-date">hoje, 08/05/2026</div>
+            </div>
+          </div>
+          <div class="instr-card" style="width:100%;">
+            <input type="checkbox" disabled>
+            <span>Apresente-se novamente no horário indicado.</span>
+          </div>
+        </div>
+        <div class="cta">Registro de Fila</div>
+      </div>
+    </div>
+    <div class="phone-desc">Motorista vê o horário de liberação — sabe exatamente quando retornar</div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     SEÇÃO 2 — HORÁRIO DE LIBERAÇÃO ATINGIDO (AUTO-ATRIBUÍDO)
+     ══════════════════════════════════════════════════ -->
+<div class="section-header">
+  <div class="section-line"></div>
+  <div class="section-tag">Horário de Liberação Atingido — Notificação Push + Auto-Atribuído</div>
+  <div class="section-line"></div>
+</div>
+
+<div class="row">
+  <div class="phone-wrap">
+    <div class="phone-label">Notificação Push</div>
+    <div class="phone" style="position:relative;">
+      <div class="push-pill">
+        <div class="pp-icon">🚚</div>
+        <div class="pp-content">
+          <div class="pp-app">Aplicativo do Motorista</div>
+          <div class="pp-title">Entrada na fila liberada!</div>
+          <div class="pp-body">Você foi atribuído à fila. Verifique o status da sua fila.</div>
+        </div>
+        <div class="pp-time">agora</div>
+      </div>
+      <div class="dimmed">
+        <div class="sbar">
+          <span class="sbar-time">14:30</span>
+          <span class="sbar-icons">🔒 📶 🔋</span>
+        </div>
+        <div class="aheader">
+          <span class="aheader-back">←</span>
+          <span class="aheader-title">Status da Fila</span>
+        </div>
+        <div class="update-bar">Último Horário da Atualização: 2026-03-12 14:30:00</div>
+        <div class="sbody">
+          <div class="banner-blue">
+            <span class="bicon">🚛</span>
+            <span class="btext">Você está esperando. Existe(m) 1 veículo(s) na sua frente. Favor siga para VAGAS INTERNAS.</span>
+          </div>
+          <div class="mcard">
+            <div class="stats">
+              <div class="sc"><div class="sv">LH0031</div><div class="sl">Número na Fila</div></div>
+              <div class="sc"><div class="sv">1</div><div class="sl">Caminhões à Frente</div></div>
+            </div>
+            <div class="irow"><span class="ik">Doca designada (Grupo)</span><span class="iv">LH_group_1</span></div>
+            <div class="irow"><span class="ik">Tipo de Chegada</span><span class="iv">LH - Inbound</span></div>
+            <div class="irow"><span class="ik">Número do Veículo</span><span class="iv">XYZ1234</span></div>
+            <div class="irow"><span class="ik">Estação Atual</span><span class="iv">LM Hub_SP_São José...</span></div>
+            <div class="irow"><span class="ik">Tag de entrada</span><span class="iv teal">estacionamento 1</span></div>
+            <div class="bcarea"><div class="bc"></div><div class="bchint">Mostre seu código de barras ao operador da estação.</div></div>
+          </div>
+          <div class="cta">Registro de Fila</div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-desc">Sistema atribui automaticamente; notificação push enviada independente do estado do app</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     SEÇÃO 3 — DENTRO DA JANELA STA (ATRIBUÍDO NORMAL)
+     ══════════════════════════════════════════════════ -->
+<div class="section-header">
+  <div class="section-line"></div>
+  <div class="section-tag">Dentro da Janela STA — Status da Fila: Atribuído</div>
+  <div class="section-line"></div>
+</div>
+
+<div class="row">
+  <div class="phone-wrap">
+    <div class="phone-label">Atribuído</div>
+    <div class="phone">
+      <div class="sbar">
+        <span class="sbar-time">21:34</span>
+        <span class="sbar-icons">🔒 📶 🔋</span>
+      </div>
+      <div class="aheader">
+        <span class="aheader-back">←</span>
+        <span class="aheader-title">Status da Fila</span>
+      </div>
+      <div class="update-bar">Último Horário da Atualização: 2026-03-12 21:34:44</div>
+      <div class="sbody">
+        <div class="banner-blue">
+          <span class="bicon">🚛</span>
+          <span class="btext">Você está esperando a 1 minutos. Existe(m) 1 veículo(s) na sua frente. Favor siga para VAGAS INTERNAS.</span>
+        </div>
+        <div class="mcard">
+          <div class="stats">
+            <div class="sc"><div class="sv">LH0031</div><div class="sl">Número na Fila</div></div>
+            <div class="sc"><div class="sv">1</div><div class="sl">Caminhões à Frente</div></div>
+          </div>
+          <div class="irow"><span class="ik">Doca designada (Grupo)</span><span class="iv">LH_group_1</span></div>
+          <div class="irow"><span class="ik">Tipo de Chegada</span><span class="iv">LH - Inbound</span></div>
+          <div class="irow"><span class="ik">Número do Veículo</span><span class="iv">XYZ1234</span></div>
+          <div class="irow"><span class="ik">Estação Atual</span><span class="iv">LM Hub_SP_São José...</span></div>
+          <div class="irow"><span class="ik">Tag de entrada</span><span class="iv teal">estacionamento 1</span></div>
+          <div class="bcarea">
+            <div class="bc"></div>
+            <div class="bchint">Mostre seu código de barras do motorista ao operador da estação na baia de carregamento.</div>
+          </div>
+        </div>
+        <div class="cta">Registro de Fila</div>
+      </div>
+    </div>
+    <div class="phone-desc">View normal — número da fila, doca, tag de entrada e código de barras visíveis</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     SEÇÃO 4 — SAIU DA GEOFENCE DURANTE MONITORAMENTO
+     ══════════════════════════════════════════════════ -->
+<div class="section-header">
+  <div class="section-line"></div>
+  <div class="section-tag">Saiu da Geofence Durante o Monitoramento — Tela Limpa</div>
+  <div class="section-line"></div>
+</div>
+
+<div class="row">
+  <div class="phone-wrap">
+    <div class="phone-label">Sem registro ativo</div>
+    <div class="phone">
+      <div class="sbar">
+        <span class="sbar-time">21:47</span>
+        <span class="sbar-icons">🔒 📶 🔋</span>
+      </div>
+      <div class="aheader">
+        <span class="aheader-back">←</span>
+        <span class="aheader-title">Status da Fila</span>
+      </div>
+      <div class="update-bar">Último Horário da Atualização: 2026-03-12 21:47:22</div>
+      <div class="sbody">
+        <div class="empty-state">
+          <div class="empty-icon">📍</div>
+          <div class="empty-text">Nenhum registro de fila ativo.<br><br>Retorne à área de geofence da estação para se registrar.</div>
+        </div>
+        <div class="cta">Registro de Fila</div>
+      </div>
+    </div>
+    <div class="phone-desc">Monitoramento de chegada antecipada encerrado; nenhuma notificação enviada ao motorista</div>
+  </div>
+</div>
+
+</body>
+</html>
