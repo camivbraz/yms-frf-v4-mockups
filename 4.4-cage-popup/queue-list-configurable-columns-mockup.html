@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>4.4.1 — Queue List: Configurable Columns</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; font-size: 13px; }
+
+    /* SIDEBAR */
+    .sidebar { width: 200px; min-height: 100vh; background: #1a1f36; flex-shrink: 0; }
+    .sidebar-logo { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .logo { color: white; font-size: 15px; font-weight: 700; }
+    .logo span { color: #EE4D2D; }
+    .logo-badge { background: rgba(255,255,255,0.15); color: white; font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
+    .station { padding: 8px 16px; color: rgba(255,255,255,0.5); font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .station span { color: white; }
+    .search-box { margin: 10px 12px; background: rgba(255,255,255,0.08); border: none; border-radius: 4px; padding: 7px 10px; color: rgba(255,255,255,0.4); font-size: 11px; width: calc(100% - 24px); }
+    .nav-item { padding: 9px 16px; color: rgba(255,255,255,0.55); font-size: 11.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .nav-item.active { color: white; background: rgba(255,255,255,0.08); border-left: 3px solid #EE4D2D; }
+    .nav-group { padding: 8px 16px 4px; color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: white; border-bottom: 1px solid #e8e8e8; padding: 0 20px; height: 48px; display: flex; align-items: center; justify-content: space-between; }
+    .breadcrumb { font-size: 12px; color: #999; }
+    .breadcrumb b { color: #333; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; font-size: 12px; color: #555; }
+    .content { padding: 20px; }
+
+    /* TABS */
+    .tabs { display: flex; border-bottom: 2px solid #f0f0f0; margin-bottom: 14px; }
+    .tab { padding: 8px 16px; font-size: 12.5px; color: #999; cursor: pointer; }
+    .tab.active { color: #EE4D2D; border-bottom: 2px solid #EE4D2D; font-weight: 600; margin-bottom: -2px; }
+    .tab-count { background: #FFF0EE; color: #EE4D2D; border-radius: 10px; padding: 1px 7px; font-size: 11px; }
+
+    /* FILTERS */
+    .filters { background: white; border: 1px solid #e8e8e8; border-radius: 4px; padding: 12px 16px; margin-bottom: 12px; }
+    .filter-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .filter-item { display: flex; align-items: center; gap: 6px; }
+    .filter-item label { font-size: 11.5px; color: #666; white-space: nowrap; }
+    .filter-input { border: 1px solid #ddd; border-radius: 3px; padding: 5px 8px; font-size: 11.5px; color: #555; width: 120px; }
+    .btn-search { background: #EE4D2D; color: white; border: none; padding: 6px 16px; border-radius: 3px; font-size: 12px; cursor: pointer; }
+    .btn-reset { background: white; color: #555; border: 1px solid #ddd; padding: 6px 12px; border-radius: 3px; font-size: 12px; cursor: pointer; }
+
+    /* STATUS TABS */
+    .status-tabs { background: white; border: 1px solid #e8e8e8; border-radius: 4px; padding: 10px 16px; display: flex; align-items: center; margin-bottom: 12px; gap: 0; }
+    .status-tab { display: flex; align-items: center; gap: 5px; margin-right: 20px; font-size: 12px; color: #555; }
+    .status-tab input { accent-color: #EE4D2D; }
+    .tab-actions { margin-left: auto; display: flex; gap: 8px; }
+    .btn-outline { background: white; color: #555; border: 1px solid #ddd; padding: 5px 12px; border-radius: 3px; font-size: 12px; cursor: pointer; }
+    .btn-config { background: white; color: #555; border: 1px solid #ddd; padding: 5px 12px; border-radius: 3px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; position: relative; }
+    .btn-config:hover { border-color: #EE4D2D; color: #EE4D2D; }
+
+    /* TABLE */
+    .table-wrap { background: white; border: 1px solid #e8e8e8; border-radius: 4px; overflow-x: auto; position: relative; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #fafafa; }
+    th { padding: 10px 12px; font-size: 11.5px; color: #555; font-weight: 600; text-align: left; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+    td { padding: 10px 12px; font-size: 12px; color: #333; border-bottom: 1px solid #f2f2f2; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    /* NEW COLUMNS HIGHLIGHT */
+    th.new-col { background: #F6FFED; color: #389e0d; }
+    td.new-col { background: #F6FFED; font-size: 12px; }
+    .new-badge { font-size: 9px; background: #52c41a; color: white; padding: 1px 4px; border-radius: 2px; margin-left: 4px; font-weight: 700; vertical-align: middle; }
+
+    /* STATUS */
+    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    .dot-assigned { background: #52c41a; }
+    .dot-occupied { background: #1890ff; }
+    .dot-ended { background: #bbb; }
+    .yes { color: #52c41a; font-weight: 600; }
+    .wt-red { color: #EE4D2D; font-weight: 600; }
+    .wt-green { color: #52c41a; font-weight: 600; }
+    .dash { color: #bbb; }
+    .action-link { color: #1890ff; font-size: 12px; cursor: pointer; margin-right: 6px; }
+
+    /* PAGINATION */
+    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid #f0f0f0; font-size: 12px; color: #555; }
+    .page-btn { border: 1px solid #ddd; background: white; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+    .page-btn.active { background: #EE4D2D; color: white; border-color: #EE4D2D; }
+
+    /* ══════════════════════════════
+       CONFIGURATION PANEL
+    ══════════════════════════════ */
+    .config-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+    .config-overlay.open { display: block; }
+
+    .config-panel {
+      position: fixed;
+      top: 50%; right: 24px;
+      transform: translateY(-50%);
+      width: 300px;
+      background: white;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+      z-index: 101;
+      display: none;
+    }
+    .config-panel.open { display: block; }
+
+    .config-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .config-header h3 { font-size: 13px; font-weight: 600; color: #222; }
+    .config-close { cursor: pointer; color: #999; font-size: 18px; line-height: 1; }
+    .config-close:hover { color: #333; }
+
+    .config-hint { padding: 8px 16px; font-size: 11px; color: #999; background: #fafafa; border-bottom: 1px solid #f0f0f0; }
+
+    .config-list { padding: 8px 0; max-height: 400px; overflow-y: auto; }
+
+    .config-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px; cursor: grab; user-select: none;
+    }
+    .config-item:hover { background: #fafafa; }
+    .config-item.dragging { opacity: 0.5; background: #fff0ee; }
+    .config-item.drag-over { border-top: 2px solid #EE4D2D; }
+
+    .drag-handle { color: #ccc; font-size: 14px; cursor: grab; flex-shrink: 0; }
+    .drag-handle:hover { color: #888; }
+
+    .config-toggle {
+      width: 34px; height: 18px; background: #ddd;
+      border-radius: 9px; position: relative; cursor: pointer;
+      flex-shrink: 0; transition: background 0.2s;
+    }
+    .config-toggle.on { background: #EE4D2D; }
+    .config-toggle::after {
+      content: ''; position: absolute;
+      width: 14px; height: 14px; background: white;
+      border-radius: 50%; top: 2px; left: 2px;
+      transition: left 0.2s;
+    }
+    .config-toggle.on::after { left: 18px; }
+
+    .config-col-name { font-size: 12px; color: #333; flex: 1; }
+    .config-col-name.new { color: #389e0d; font-weight: 500; }
+    .config-col-tag { font-size: 9px; background: #F6FFED; color: #389e0d; border: 1px solid #b7eb8f; border-radius: 2px; padding: 1px 4px; margin-left: 4px; }
+
+    .config-footer {
+      padding: 12px 16px; border-top: 1px solid #f0f0f0;
+      display: flex; gap: 8px; justify-content: flex-end;
+    }
+    .btn-apply { background: #EE4D2D; color: white; border: none; padding: 6px 16px; border-radius: 3px; font-size: 12px; cursor: pointer; font-weight: 500; }
+    .btn-cancel { background: white; color: #555; border: 1px solid #ddd; padding: 6px 12px; border-radius: 3px; font-size: 12px; cursor: pointer; }
+    .btn-reset-cols { background: white; color: #1890ff; border: none; font-size: 11.5px; cursor: pointer; padding: 0; text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo">Shopee<span>Xpress</span><span class="logo-badge">LIVE</span></div>
+  </div>
+  <div class="station"><span>LM Hub_SP_Mauá ▾</span></div>
+  <input class="search-box" placeholder="Search Menu" type="text"/>
+  <div class="nav-item">⊞ Dashboard</div>
+  <div class="nav-item">🏢 Agency</div>
+  <div class="nav-item">📥 Inbound</div>
+  <div class="nav-item">📤 Outbound</div>
+  <div class="nav-group">Station Management</div>
+  <div class="nav-item active">📋 Queue List</div>
+  <div class="nav-item">🚪 Dock Management</div>
+  <div class="nav-item">⚙️ Queue & Dock Config.</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb">Station Management / <b>Queue List</b></div>
+    <div class="topbar-right">
+      <span>🔔</span><span>📋</span>
+      <span>English ▾</span>
+      <span>camila.braz ▾</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ADD TRUCK -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <span style="font-size:15px;font-weight:700;color:#222;border-left:4px solid #EE4D2D;padding-left:10px;">Add Trucks in Queue</span>
+      <input type="text" placeholder="Scan or Input Driver ID" style="border:1px solid #ddd;border-radius:3px;padding:6px 10px;font-size:12px;width:200px;margin-left:6px;"/>
+      <button style="background:white;border:1px solid #EE4D2D;color:#EE4D2D;padding:6px 14px;border-radius:3px;font-size:12px;cursor:pointer;">Add Manually</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab" style="color:#999;">Inbound Queue List <span style="background:#eee;border-radius:10px;padding:1px 7px;font-size:11px;">0</span></div>
+      <div class="tab active">Outbound Queue List <span class="tab-count">177</span></div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <div class="filter-row">
+        <div class="filter-item"><label>Queue Number</label><input class="filter-input" placeholder="Input"/></div>
+        <div class="filter-item"><label>Vehicle Number</label><input class="filter-input" placeholder="Input"/></div>
+        <div class="filter-item"><label>Arrival Type</label><input class="filter-input" placeholder="Select"/></div>
+        <div class="filter-item"><label>Assigned Dock</label><input class="filter-input" placeholder="Select"/></div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn-search">Search</button>
+          <button class="btn-reset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS COUNTS + ACTIONS -->
+    <div class="status-tabs">
+      <div class="status-tab"><input type="checkbox" checked/> Pending <span style="font-weight:600;">0</span></div>
+      <div class="status-tab"><input type="checkbox" checked/> Assigned <span style="font-weight:600;color:#EE4D2D;">28</span></div>
+      <div class="status-tab"><input type="checkbox" checked/> Occupied <span style="font-weight:600;">4</span></div>
+      <div class="status-tab"><input type="checkbox" checked/> On-hold <span style="font-weight:600;">0</span></div>
+      <div class="status-tab"><input type="checkbox" checked/> Ended ⓘ <span style="font-weight:600;">145</span></div>
+      <div class="tab-actions">
+        <button class="btn-config" onclick="openConfig()">⚙ Configuration ▾</button>
+        <button class="btn-outline">Print</button>
+        <button class="btn-outline">Export ▾</button>
+        <button class="btn-outline">Log</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table id="queue-table">
+        <thead>
+          <tr id="table-headers">
+            <th style="width:32px;"><input type="checkbox"/></th>
+            <th>Queue Number</th>
+            <th>Vehicle Number</th>
+            <th>Waiting Time ↕</th>
+            <th>Prioritised</th>
+            <th>Prioritised Factors</th>
+            <th class="new-col">LH ETA <span class="new-badge">NEW</span></th>
+            <th class="new-col">CPT <span class="new-badge">NEW</span></th>
+            <th class="new-col">Destination <span class="new-badge">NEW</span></th>
+            <th class="new-col">AT <span class="new-badge">NEW</span></th>
+            <th>Handover Task Number</th>
+            <th>Status</th>
+            <th>Dock</th>
+            <th>Corridor / Cage</th>
+            <th>Dock Occupancy Sequence</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0153</b></td>
+            <td>TKF3C34</td>
+            <td><span class="wt-red">00:01</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td class="new-col">14:30</td>
+            <td class="new-col">15:00</td>
+            <td class="new-col">Hub SP</td>
+            <td class="new-col">AT2026052901AP7</td>
+            <td>-</td>
+            <td><span class="dot dot-assigned"></span>Assigned</td>
+            <td>MESA 7</td>
+            <td>C-07</td>
+            <td>-</td>
+            <td><a class="action-link">Re-assign</a><a class="action-link">More</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0154</b></td>
+            <td>FZK0B22</td>
+            <td><span class="wt-red">00:02</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td class="new-col">14:45</td>
+            <td class="new-col">15:15</td>
+            <td class="new-col">Hub RJ</td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td>-</td>
+            <td><span class="dot dot-assigned"></span>Assigned</td>
+            <td>MESA 8</td>
+            <td><span class="dash">—</span></td>
+            <td>-</td>
+            <td><a class="action-link">Re-assign</a><a class="action-link">More</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0163</b></td>
+            <td>PLF4H33</td>
+            <td><span class="wt-green">00:20</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td class="new-col">AT2026052902BZ3</td>
+            <td>-</td>
+            <td><span class="dot dot-assigned"></span>Assigned</td>
+            <td>-</td>
+            <td><span class="dash">—</span></td>
+            <td>-</td>
+            <td><a class="action-link">Re-assign</a><a class="action-link">More</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0166</b></td>
+            <td>DTL2D47</td>
+            <td><span class="wt-green">00:11</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td class="new-col">13:55</td>
+            <td class="new-col">14:30</td>
+            <td class="new-col">Hub BH</td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td>-</td>
+            <td><span class="dot dot-occupied"></span>Occupied</td>
+            <td>MESA 7</td>
+            <td><span class="dash">—</span></td>
+            <td>-</td>
+            <td><a class="action-link">View</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"/></td>
+            <td><b>OB0025</b></td>
+            <td>DTL2D47</td>
+            <td><span class="dash">00:25</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td>Ascending Corridor,...</td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td class="new-col"><span class="dash">—</span></td>
+            <td>-</td>
+            <td><span class="dot dot-ended"></span>Ended</td>
+            <td>-</td>
+            <td><span class="dash">—</span></td>
+            <td>-</td>
+            <td><a class="action-link">View</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <span>Total: 177</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">›</button>
+          <span>500 / Page ▾</span>
+          <input type="text" style="width:36px;border:1px solid #ddd;border-radius:3px;padding:3px 6px;font-size:12px;"/>
+          <button class="page-btn">Go</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONFIG OVERLAY -->
+<div class="config-overlay" id="config-overlay" onclick="closeConfig()"></div>
+
+<!-- CONFIG PANEL -->
+<div class="config-panel" id="config-panel">
+  <div class="config-header">
+    <h3>⚙ Column Configuration</h3>
+    <span class="config-close" onclick="closeConfig()">×</span>
+  </div>
+  <div class="config-hint">Drag to reorder · Toggle to show/hide · Saved per user</div>
+  <div class="config-list" id="config-list">
+    <!-- Populated by JS -->
+  </div>
+  <div class="config-footer">
+    <button class="btn-reset-cols" onclick="resetCols()">Reset to default</button>
+    <button class="btn-cancel" onclick="closeConfig()">Cancel</button>
+    <button class="btn-apply" onclick="applyConfig()">Apply</button>
+  </div>
+</div>
+
+<script>
+  // Column definitions
+  const columns = [
+    { id: 'queue_number',     label: 'Queue Number',          visible: true,  fixed: true,  isNew: false },
+    { id: 'vehicle_number',   label: 'Vehicle Number',         visible: true,  fixed: false, isNew: false },
+    { id: 'waiting_time',     label: 'Waiting Time',           visible: true,  fixed: false, isNew: false },
+    { id: 'prioritised',      label: 'Prioritised',            visible: true,  fixed: false, isNew: false },
+    { id: 'prio_factors',     label: 'Prioritised Factors',    visible: true,  fixed: false, isNew: false },
+    { id: 'lh_eta',           label: 'LH ETA',                 visible: true,  fixed: false, isNew: true  },
+    { id: 'cpt',              label: 'CPT',                    visible: true,  fixed: false, isNew: true  },
+    { id: 'destination',      label: 'Destination',            visible: true,  fixed: false, isNew: true  },
+    { id: 'at',               label: 'AT',                     visible: true,  fixed: false, isNew: true  },
+    { id: 'handover_task',    label: 'Handover Task Number',   visible: true,  fixed: false, isNew: false },
+    { id: 'status',           label: 'Status',                 visible: true,  fixed: false, isNew: false },
+    { id: 'dock',             label: 'Dock',                   visible: true,  fixed: false, isNew: false },
+    { id: 'corridor_cage',    label: 'Corridor / Cage',        visible: true,  fixed: false, isNew: false },
+    { id: 'dock_seq',         label: 'Dock Occupancy Sequence',visible: true,  fixed: false, isNew: false },
+    { id: 'action',           label: 'Action',                 visible: true,  fixed: true,  isNew: false },
+  ];
+
+  let workingCols = JSON.parse(JSON.stringify(columns));
+  let dragSrc = null;
+
+  function renderConfigList() {
+    const list = document.getElementById('config-list');
+    list.innerHTML = '';
+    workingCols.forEach((col, i) => {
+      const item = document.createElement('div');
+      item.className = 'config-item';
+      item.draggable = !col.fixed;
+      item.dataset.index = i;
+
+      item.innerHTML = `
+        <span class="drag-handle">${col.fixed ? '  ' : '⠿'}</span>
+        <span class="config-col-name${col.isNew ? ' new' : ''}">${col.label}${col.isNew ? '<span class="config-col-tag">NEW</span>' : ''}</span>
+        <div class="config-toggle ${col.visible ? 'on' : ''}" onclick="toggleCol(${i})"></div>
+      `;
+
+      if (!col.fixed) {
+        item.addEventListener('dragstart', e => { dragSrc = i; item.classList.add('dragging'); });
+        item.addEventListener('dragend', () => item.classList.remove('dragging'));
+        item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+        item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+        item.addEventListener('drop', e => {
+          e.preventDefault();
+          item.classList.remove('drag-over');
+          if (dragSrc !== null && dragSrc !== i) {
+            const moved = workingCols.splice(dragSrc, 1)[0];
+            workingCols.splice(i, 0, moved);
+            renderConfigList();
+          }
+          dragSrc = null;
+        });
+      }
+      list.appendChild(item);
+    });
+  }
+
+  function toggleCol(i) {
+    if (workingCols[i].fixed) return;
+    workingCols[i].visible = !workingCols[i].visible;
+    renderConfigList();
+  }
+
+  function openConfig() {
+    workingCols = JSON.parse(JSON.stringify(columns));
+    renderConfigList();
+    document.getElementById('config-overlay').classList.add('open');
+    document.getElementById('config-panel').classList.add('open');
+  }
+
+  function closeConfig() {
+    document.getElementById('config-overlay').classList.remove('open');
+    document.getElementById('config-panel').classList.remove('open');
+  }
+
+  function resetCols() {
+    workingCols = JSON.parse(JSON.stringify(columns));
+    renderConfigList();
+  }
+
+  function applyConfig() {
+    // Update column visibility in table headers
+    const headers = document.querySelectorAll('#table-headers th');
+    // Simple feedback — in a real implementation, this would re-render the table
+    // For demo purposes, show a brief confirmation
+    const btn = document.querySelector('.btn-apply');
+    btn.textContent = '✓ Applied';
+    btn.style.background = '#52c41a';
+    setTimeout(() => {
+      btn.textContent = 'Apply';
+      btn.style.background = '#EE4D2D';
+      closeConfig();
+    }, 800);
+  }
+
+  // Initialize
+  renderConfigList();
+</script>
+
+</body>
+</html>
