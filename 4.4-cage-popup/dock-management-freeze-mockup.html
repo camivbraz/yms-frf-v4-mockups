@@ -5,7 +5,7 @@
   <title>4.4.2 — Dock Management: Queue Freeze (Blocked)</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 1920px; min-height: 1080px; }
+
     body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; font-size: 13px; }
 
     /* SIDEBAR */
@@ -434,5 +434,14 @@
   }
 </script>
 
+<script>
+  (function(){
+    var BASE=1920;
+    function scale(){var s=window.innerWidth/BASE;document.body.style.transform="scale("+s+")";document.body.style.transformOrigin="top left";document.body.style.width=BASE+"px";document.documentElement.style.height=(document.body.scrollHeight*s)+"px";}
+    window.addEventListener("resize",scale);
+    window.addEventListener("load",scale);
+    scale();
+  })();
+</script>
 </body>
 </html>
