@@ -243,10 +243,10 @@
             <th>Waiting Time ↕</th>
             <th>Prioritised</th>
             <th>Prioritised Factors</th>
-            <th class="new-col">LH ETA <span class="new-badge">NEW</span></th>
-            <th class="new-col">CPT <span class="new-badge">NEW</span></th>
-            <th class="new-col">Destination <span class="new-badge">NEW</span></th>
-            <th class="new-col">AT <span class="new-badge">NEW</span></th>
+            <th class="new-col">LH ETA </th>
+            <th class="new-col">CPT </th>
+            <th class="new-col">Destination </th>
+            <th class="new-col">AT </th>
             <th>Handover Task Number</th>
             <th>Status</th>
             <th>Dock</th>
@@ -420,7 +420,7 @@
 
       item.innerHTML = `
         <span class="drag-handle">${col.fixed ? '  ' : '⠿'}</span>
-        <span class="config-col-name${col.isNew ? ' new' : ''}">${col.label}${col.isNew ? '<span class="config-col-tag">NEW</span>' : ''}</span>
+        <span class="config-col-name${col.isNew ? ' new' : ''}">${col.label}</span>
         <div class="config-toggle ${col.visible ? 'on' : ''}" onclick="toggleCol(${i})"></div>
       `;
 
